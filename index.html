@@ -52,7 +52,7 @@ button.del{background:transparent;color:var(--red);border:1px solid var(--line)}
 .hdr h1{color:#fff;font-size:20px;line-height:1.1}.tag{font-size:10px;letter-spacing:1.5px;opacity:.8}
 .hb{background:rgba(255,255,255,.18);color:#fff;border-radius:16px;padding:6px 12px;font-size:14px}
 .plus{background:#fff;color:var(--hdr);border-radius:50%;width:34px;height:34px;padding:0;font-size:22px;line-height:1}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.st{margin:0;padding:10px 12px;display:flex;flex-direction:column}.st b{font-size:24px;color:var(--acc)}.st span{color:var(--mute);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.st{margin:0;padding:10px 12px;display:flex;flex-direction:column}.st b{font-size:24px;color:var(--acc)}.st span{color:var(--mute);font-size:13px}
 .pill{flex:none;font-size:12px;font-weight:600;border-radius:12px;padding:3px 10px;white-space:nowrap}
 .p0{background:#dbeafe;color:#1d4ed8}.p1{background:#d1fae5;color:#047857}.p2{background:#fef3c7;color:#b45309}.p3{background:#ffedd5;color:#c2410c}.p4{background:#ede9fe;color:#6d28d9}.p5{background:#dcfce7;color:#166534}
 .thumb{width:84px;height:84px;border-radius:10px;background:#dfeee3 center/cover;flex:none;display:flex;align-items:center;justify-content:center;font-size:30px}
@@ -82,6 +82,25 @@ body{padding-bottom:40px}
 [data-ask]{width:auto!important;padding:0 10px!important;border-radius:12px!important;background:var(--red)!important;color:#fff!important}
 input[type=file]::file-selector-button{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:8px 14px;margin-right:10px;font:inherit}
 input[type=file]{padding:8px}
+.th,.dcols{display:none}
+.stats .card{margin:0}
+.bc{flex:none;width:230px}
+@media (min-width:900px){
+body{max-width:1440px;padding:0 40px 48px}
+.hdr{margin:0 0 10px;padding:28px 0 12px}.hdr h1{font-size:38px}
+.stats{grid-template-columns:repeat(4,1fr);gap:20px;margin-top:6px}
+.st{padding:22px 26px}.st b{font-size:52px;line-height:1.1}.st span{font-size:16px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+#q{height:60px;font-size:18px;margin:22px 0 14px!important}
+.tabs{gap:10px;padding-bottom:14px}.tab{font-size:16px;padding:12px 22px;font-weight:600}
+.hb{font-size:16px;padding:12px 22px}.plus{width:60px;height:60px;font-size:32px}
+.th,.dcols{display:grid;grid-template-columns:2.4fr 1.3fr 1.3fr 1fr 1.2fr;gap:16px;align-items:center}
+.th{padding:6px 22px;color:var(--mute);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.lead.card{margin:8px 0;padding:18px 22px;border-radius:16px}.lead:hover{box-shadow:0 2px 4px rgba(20,35,27,.1),0 10px 28px rgba(20,35,27,.12)}
+.lead .mob{display:none}.dcols{font-size:17px}.dcols b{font-size:19px}.pill{font-size:14px;padding:5px 14px}
+body[data-v="d"]{max-width:860px}
+body[data-v="board"] .bc{flex:1;width:auto;min-width:190px}
+body[data-v="board"] .bc .card{font-size:16px}
+}
 </style>
 </head>
 <body>
@@ -123,7 +142,7 @@ function fillAv(){Array.prototype.forEach.call(document.querySelectorAll("[data-
 function list(){
  var act=leads.filter(function(l){return [2,3,4].indexOf(S.indexOf(l.s))>=0}).length,done=leads.filter(function(l){return l.s==S[5]}).length,lights=0;leads.forEach(function(l){lights+=tot(l)});
  var h='<div class="hdr"><h1>Sales</h1><span style="flex:1"></span><button class="hb" id="vb">Board</button><button class="plus" id="ab">'+(addOpen?'\u00d7':'+')+'</button></div>';
- h+='<div class="stats">'+[[leads.length,"Leads"],[act,"Active jobs"],[done,"Completed"]].map(function(x){return '<div class="card st"><b>'+x[0]+'</b><span>'+x[1]+'</span></div>'}).join("")+'</div>';
+ h+='<div class="stats">'+[[leads.length,"Leads"],[act,"Active jobs"],[done,"Completed"],[leads.filter(due).length,"Follow-ups"]].map(function(x){return '<div class="card st"><b>'+x[0]+'</b><span>'+x[1]+'</span></div>'}).join("")+'</div>';
  if(addOpen)h+='<div class="card g"><input id="nn" placeholder="Lead name or address"><input id="nc" placeholder="Company (optional)"><input id="np" type="tel" placeholder="Phone (optional)"><button id="add" class="big">Add lead</button></div>';
  h+='<input id="q" placeholder="Search leads..." value="'+esc(q)+'" style="margin:12px 0 8px"><div class="tabs">';
  ["All","Due"].concat(S).forEach(function(s){var n=s=="All"?leads.length:s=="Due"?leads.filter(due).length:leads.filter(function(l){return l.s==s}).length;h+='<button class="tab'+(s==filter?' on':'')+'" data-f="'+esc(s)+'">'+esc(s)+' ('+n+')</button>'});
@@ -139,8 +158,8 @@ function drawItems(){
  var qq=q.toLowerCase(),h="";
  var it=leads.filter(function(l){var m=filter=="All"||(filter=="Due"?due(l):l.s==filter);return m&&(!qq||[l.n,l.c,l.p,l.ad,l.ti,l.e,l.st,l.uc,l.bt].join(" ").toLowerCase().indexOf(qq)>=0)});
  it.sort(function(a,b){return (a.d||"9").localeCompare(b.d||"9")});
- if(!it.length)h='<p class="sub">No leads here yet.</p>';
- it.forEach(function(l){var ph=(l.p||"").replace(/[^+\d]/g,"");h+='<div class="card item lead" data-o="'+l.id+'"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div style="flex:1;min-width:0"><div class="row" style="flex-wrap:nowrap;justify-content:space-between;align-items:flex-start"><h3>'+esc(l.n)+'</h3>'+pill(l.s)+'</div><div class="sub">'+esc([l.c,l.ti].filter(Boolean).join(" \u00b7 "))+'</div><div class="sub">'+esc(l.p)+'</div>'+((l.ad||l.st)?'<div class="sub">'+esc([l.ad,l.st].filter(Boolean).join(", "))+'</div>':'')+(l.sf?'<div class="sub">'+Number(l.sf).toLocaleString()+' sq ft'+(l.bt?' \u00b7 '+esc(l.bt):'')+'</div>':'')+(tot(l)?'<div class="sub">Lights: '+tot(l)+'</div>':'')+(l.d?'<div class="sub" style="'+(due(l)?'color:var(--red);font-weight:600':'')+'">Follow up: '+esc(l.d)+'</div>':'')+(l.a.length?'<div class="sub">'+l.a.length+' file'+(l.a.length>1?'s':'')+'</div>':'')+'</div></div></div>'});
+ if(!it.length)h='<p class="sub">No leads here yet.</p>';else h='<div class="th"><span>Company / Building</span><span>Status</span><span>Next step</span><span>Follow-up</span><span>Phone</span></div>';
+ it.forEach(function(l){var ph=(l.p||"").replace(/[^+\d]/g,"");h+='<div class="card item lead" data-o="'+l.id+'"><div class="dcols"><div><b>'+esc(l.n)+'</b><div class="sub">'+esc([l.c,l.ad].filter(Boolean).join(" \u00b7 "))+'</div></div><div>'+pill(l.s)+'</div><div>'+esc(NEXT[S.indexOf(l.s)])+'</div><div style="'+(due(l)?'color:var(--red);font-weight:600':'')+'">'+esc(l.d||"\u2014")+'</div><div>'+esc(l.p||"\u2014")+'</div></div><div class="mob row" style="flex-wrap:nowrap;align-items:flex-start"><div style="flex:1;min-width:0"><div class="row" style="flex-wrap:nowrap;justify-content:space-between;align-items:flex-start"><h3>'+esc(l.n)+'</h3>'+pill(l.s)+'</div><div class="sub">'+esc([l.c,l.ti].filter(Boolean).join(" \u00b7 "))+'</div><div class="sub">'+esc(l.p)+'</div>'+((l.ad||l.st)?'<div class="sub">'+esc([l.ad,l.st].filter(Boolean).join(", "))+'</div>':'')+(l.sf?'<div class="sub">'+Number(l.sf).toLocaleString()+' sq ft'+(l.bt?' \u00b7 '+esc(l.bt):'')+'</div>':'')+(tot(l)?'<div class="sub">Lights: '+tot(l)+'</div>':'')+(l.d?'<div class="sub" style="'+(due(l)?'color:var(--red);font-weight:600':'')+'">Follow up: '+esc(l.d)+'</div>':'')+(l.a.length?'<div class="sub">'+l.a.length+' file'+(l.a.length>1?'s':'')+'</div>':'')+'</div></div></div>'});
  $("items").innerHTML=h;fillAv();
  Array.prototype.forEach.call(document.querySelectorAll("[data-o]"),function(b){b.onclick=function(){openId=b.getAttribute("data-o");dtab="i";render()}});
  Array.prototype.forEach.call(document.querySelectorAll("[data-m],[data-n],.ic"),function(b){b.onclick=function(e){e.stopPropagation()}});
@@ -151,6 +170,7 @@ function ask(b,fn,label){
  if(b.getAttribute("data-ask")){clearTimeout(b._t);b.removeAttribute("data-ask");fn();return}
  var o=b.textContent;b.setAttribute("data-ask","1");b.textContent=label||"Tap again to confirm";
  b._t=setTimeout(function(){b.removeAttribute("data-ask");b.textContent=o},3500)}
+var NEXT=["Call","Get bills","Follow up","Schedule survey","Start job","Done"];
 function pill(s){return '<span class="pill p'+S.indexOf(s)+'">'+esc(s)+'</span>'}
 function sel(lb,id,arr,v,ph){return '<label class="fld"><span>'+lb+'</span><select id="'+id+'"><option value="">'+ph+'</option>'+arr.map(function(x){return '<option'+(x==v?' selected':'')+'>'+esc(x)+'</option>'}).join("")+'</select></label>'}
 function fld(ic,lb,id,v,t){return '<label class="fld"><span>'+lb+'</span><input id="'+id+'" type="'+(t||"text")+'" value="'+esc(v)+'"></label>'}
@@ -218,14 +238,14 @@ $("oc").onclick=function(){$("ov").className="";$("ob").innerHTML=""};
 function boardView(){
  var h='<div class="hdr"><h1>Sales</h1><span style="flex:1"></span><button class="hb" id="vb">List</button></div><div class="card row" style="margin-top:0"><input id="nn" placeholder="New lead name" style="flex:1"><button id="add">Add</button></div><div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;align-items:flex-start">';
  S.forEach(function(s,si){var c=leads.filter(function(l){return l.s==s});
-  h+='<div style="flex:none;width:230px;border:1px solid var(--line);border-radius:12px;padding:8px"><b>'+esc(s)+' ('+c.length+')</b>'+c.map(function(l){return '<div class="card item" data-o="'+l.id+'" style="margin:8px 0;padding:10px"><b>'+esc(l.n)+'</b><div class="sub">'+esc(l.c)+'</div>'+(tot(l)?'<div class="sub">Lights: '+tot(l)+'</div>':'')+(l.d?'<div class="sub" style="'+(due(l)?'color:var(--red)':'')+'">Follow up: '+esc(l.d)+'</div>':'')+'<div class="row" style="margin-top:6px">'+(si>0?'<button class="ghost" data-bm="'+l.id+'" data-d="-1">&larr;</button>':'')+(si<5?'<button class="ghost" data-bm="'+l.id+'" data-d="1">&rarr;</button>':'')+'</div></div>'}).join("")+'</div>'});
+  h+='<div style="border:1px solid var(--line);border-radius:12px;padding:8px" class="bc"><b>'+esc(s)+' ('+c.length+')</b>'+c.map(function(l){return '<div class="card item" data-o="'+l.id+'" style="margin:8px 0;padding:10px"><b>'+esc(l.n)+'</b><div class="sub">'+esc(l.c)+'</div>'+(tot(l)?'<div class="sub">Lights: '+tot(l)+'</div>':'')+(l.d?'<div class="sub" style="'+(due(l)?'color:var(--red)':'')+'">Follow up: '+esc(l.d)+'</div>':'')+'<div class="row" style="margin-top:6px">'+(si>0?'<button class="ghost" data-bm="'+l.id+'" data-d="-1">&larr;</button>':'')+(si<5?'<button class="ghost" data-bm="'+l.id+'" data-d="1">&rarr;</button>':'')+'</div></div>'}).join("")+'</div>'});
  $("app").innerHTML=h+'</div>';
  $("vb").onclick=function(){view="list";render()};
  $("add").onclick=function(){var n=$("nn").value.trim();if(!n)return;var l=norm({n:n});leads.unshift(l);save();openId=l.id;dtab="i";render()};
  Array.prototype.forEach.call(document.querySelectorAll("[data-o]"),function(b){b.onclick=function(){openId=b.getAttribute("data-o");dtab="i";render()}});
  Array.prototype.forEach.call(document.querySelectorAll("[data-bm]"),function(b){b.onclick=function(e){e.stopPropagation();var l=find(b.getAttribute("data-bm"));l.s=S[Math.max(0,Math.min(5,S.indexOf(l.s)+(+b.getAttribute("data-d"))))];save();render()}});
 }
-function render(){var l=openId&&find(openId);if(l)detail(l);else{openId=null;if(view=="board")boardView();else list()}}
+function render(){var l=openId&&find(openId);document.body.setAttribute("data-v",l?"d":view);if(l)detail(l);else{openId=null;if(view=="board")boardView();else list()}}
 load();openDB(render);
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
 </script>
