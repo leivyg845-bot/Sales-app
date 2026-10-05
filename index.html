@@ -567,7 +567,9 @@ function syncOpen(keep){
   else h+='<button class="ghost" id="tml">Leave team (go back to my own leads)</button>';
   h+='<button class="ghost" id="smo">Sign out</button><button id="smx">Close</button></div>'}
  else h='<div class="card"><h2>Sign in to sync</h2><p class="sub">Use the same email and password on every device.</p><input id="sme" type="email" autocomplete="username" placeholder="Email"><input id="smp" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="'+cls+'" >'+esc(msg)+'</div><button class="big" id="smi">Sign in</button><button class="ghost" id="smc">First time? Create account</button><button class="ghost" id="smx">Close</button></div>';
+ if(SY.role!="view")h=h.replace(/<\/div>$/,'<label class="sub">Import leads from a file<input id="imf" type="file" accept=".json,application/json"></label><div class="smsg" id="imm"></div></div>');
  m.innerHTML=h;
+ if($("imf"))$("imf").onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result),a=o.leads||[],n=0;a.forEach(function(x){if(x&&x.id&&!find(x.id)){leads.push(norm(x));n++}});save();$("imm").className="smsg ok";$("imm").textContent=n?("Imported "+n+" leads."):"Already imported.";render()}catch(e){$("imm").className="smsg bad";$("imm").textContent="That file didn't work."}};r.readAsText(f)};
  var set=function(t,ok){var e=m.querySelector(".smsg");if(e){e.textContent=t;e.className="smsg "+(ok?"ok":"bad")}};
  var go=function(fn){var e=$("sme").value.trim(),p=$("smp").value;if(!e||!p){set("Type your email and password.");return}set("Working…",true);fn(e,p).then(function(){m.remove()}).catch(function(x){set(authMsg(x))})};
  if($("smi"))$("smi").onclick=function(){go(SY.ad.signIn)};
