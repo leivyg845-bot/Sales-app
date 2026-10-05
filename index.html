@@ -367,9 +367,9 @@ function lcard(l,mode){
  return h}
 function filtersHTML(lite){
  function so(id,lb,arr,v){return '<select data-fl="'+id+'"><option value="">'+lb+'</option>'+arr.map(function(x){var o=Array.isArray(x)?x:[x,x];return '<option value="'+esc(o[0])+'"'+(o[0]==v?' selected':'')+'>'+esc(o[1])+'</option>'}).join("")+'</select>'}
- return '<div class="fb">'+so("sp","Salesperson",reps(),F.sp)+(lite?"":so("s","Status",S.map(function(s,i){return[s,COLT[i]]}),F.s))+so("st","Location",uniq("st"),F.st)+(lite?"":so("fu","Follow-up date",[["over","Overdue"],["today","Today"],["week","Next 7 days"],["none","No date set"]],F.fu)+so("uc","Utility company",uniq("uc"),F.uc))
+ return '<div class="fb">'+so("sp","Salesperson",reps(),F.sp)+(lite?"":so("s","Status",S.map(function(s,i){return[s,COLT[i]]}),F.s))+(lite?"":so("fu","Follow-up date",[["over","Overdue"],["today","Today"],["week","Next 7 days"],["none","No date set"]],F.fu)+so("uc","Utility company",uniq("uc"),F.uc))
   +'<select data-fl="sort">'+[["fu","Sort: Next follow-up"],["name","Sort: Name"],["val","Sort: Project value"],["recent","Sort: Recently updated"],["status","Sort: Status"]].map(function(o){return '<option value="'+o[0]+'"'+(F.sort==o[0]?' selected':'')+'>'+o[1]+'</option>'}).join("")+'</select>'
-  +(F.sp||F.st||(!lite&&(F.s||F.fu||F.uc))?'<button class="ghost" id="fclr">Clear</button>':'')+'</div>'}
+  +(F.sp||(!lite&&(F.s||F.fu||F.uc))?'<button class="ghost" id="fclr">Clear</button>':'')+'</div>'}
 function statsHTML(){
  var c=function(i){return leads.filter(function(l){return l.s==S[i]}).length},od=leads.filter(over).length,fu=leads.filter(due).length;
  return '<div class="sc">'+[["users","New Leads",c(0),"b","new this stage",0],["clock","Follow-Ups",fu,od?"r":"y",od?od+" overdue":"all caught up","fu"],["bill","Waiting for Bills",c(2),"o","ask for bills",2],["mail","Bills Received",c(3),"t","ready to review",3],["doc","Proposal Sent / Signed",c(4),"v","sent or signed",4],["check","Job Done",c(7),"d","finished",7]].map(function(x){return '<div class="stc go '+x[3]+'" data-go="'+x[5]+'"><div class="ib">'+ico(x[0])+'</div><div><b>'+x[2]+'</b><span>'+x[1]+'</span><small>'+x[4]+'</small></div></div>'}).join("")+'</div>'}
