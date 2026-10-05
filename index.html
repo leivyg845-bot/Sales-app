@@ -101,11 +101,18 @@ body[data-v="d"]{max-width:860px}
 body[data-v="board"] .bc{flex:1;width:auto;min-width:190px}
 body[data-v="board"] .bc .card{font-size:16px}
 }
+#sm{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+#sm .card{width:100%;max-width:400px;margin:0;display:grid;gap:10px}
+#sm h2{margin:0;font-size:22px}.smsg{font-size:14px;min-height:18px}.smsg.bad{color:var(--red)}.smsg.ok{color:var(--acc)}
+#sy{margin-right:8px;font-size:14px}#sy.on{color:var(--acc);font-weight:600}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="ov"><div class="bar"><button class="ghost" id="oc" style="color:#fff">Close</button><a id="oo" target="_blank" style="color:#fff;align-self:center">Open in new tab</a></div><div class="body" id="ob"></div></div>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 var STATES=["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","District of Columbia","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
 var BT=["Warehouse","Distribution center","Manufacturing plant","Cold storage","Industrial flex","Light industrial","Heavy industrial","Office building","Retail","School","Hospital","Parking garage","Other"];
@@ -119,9 +126,9 @@ function $(i){return document.getElementById(i)}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function opts(sel){return S.map(function(s){return "<option"+(s==sel?" selected":"")+">"+esc(s)+"</option>"}).join("")}
 function norm(x){var l=Object.assign({n:"",ti:"",c:"",p:"",e:"",ad:"",d:"",t:"",s:S[0],w:[],a:[],lt:{},pic:"",wt:"",sf:"",bt:"",uc:"",st:""},x);if(S.indexOf(l.s)<0)l.s=l.s=="Good lead"?S[1]:l.s=="In progress"?S[2]:S[0];if(!l.id)l.id="l"+Math.random().toString(36).slice(2);return l}
-function saveLT(){try{localStorage.setItem("sdm-lt-v2",JSON.stringify(LT))}catch(e){}}
+function saveLT(){try{localStorage.setItem("sdm-lt-v2",JSON.stringify(LT))}catch(e){}if(window.syncLT)syncLT()}
 function jget(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}}
-function save(){try{localStorage.setItem(KL,JSON.stringify(leads));localStorage.setItem(KW,JSON.stringify(workers))}catch(e){}}
+function save(){try{localStorage.setItem(KL,JSON.stringify(leads));localStorage.setItem(KW,JSON.stringify(workers))}catch(e){}if(window.syncSoon)syncSoon()}
 function load(){
  leads=jget(KL);workers=jget(KW)||[];
  if(!leads){var old=jget("leads-v1")||[];workers=(jget("workers-v1")||[]).concat(SEED_W);leads=old.concat(SEED_L).map(norm);save()}
@@ -141,7 +148,7 @@ function fillAv(){Array.prototype.forEach.call(document.querySelectorAll("[data-
 
 function list(){
  var act=leads.filter(function(l){return [2,3,4].indexOf(S.indexOf(l.s))>=0}).length,done=leads.filter(function(l){return l.s==S[5]}).length,lights=0;leads.forEach(function(l){lights+=tot(l)});
- var h='<div class="hdr"><h1>Sales</h1><span style="flex:1"></span><button class="hb" id="vb">Board</button><button class="plus" id="ab">'+(addOpen?'\u00d7':'+')+'</button></div>';
+ var h='<div class="hdr"><h1>Sales</h1><span style="flex:1"></span>'+syncChip()+'<button class="hb" id="vb">Board</button><button class="plus" id="ab">'+(addOpen?'\u00d7':'+')+'</button></div>';
  h+='<div class="stats">'+[[leads.length,"Leads"],[act,"Active jobs"],[done,"Completed"],[leads.filter(due).length,"Follow-ups"]].map(function(x){return '<div class="card st"><b>'+x[0]+'</b><span>'+x[1]+'</span></div>'}).join("")+'</div>';
  if(addOpen)h+='<div class="card g"><input id="nn" placeholder="Lead name or address"><input id="nc" placeholder="Company (optional)"><input id="np" type="tel" placeholder="Phone (optional)"><button id="add" class="big">Add lead</button></div>';
  h+='<input id="q" placeholder="Search leads..." value="'+esc(q)+'" style="margin:12px 0 8px"><div class="tabs">';
@@ -197,7 +204,7 @@ function detail(l){
  '<div class="card" data-s="f"><div class="row"><b>Files &amp; pictures</b></div><input id="fi" type="file" multiple accept="image/*,application/pdf,.pdf" style="margin-top:8px"></div><div class="files" id="fl"></div><p class="sub" id="fm"></p></div>';
  fillAv();
  $("bk").onclick=function(){openId=null;dtab="i";ltEdit=false;render()};
- $("dl").onclick=function(){ask(this,function(){l.a.forEach(function(a){delF(a.id)});delF(l.pic);leads=leads.filter(function(x){return x!==l});save();openId=null;render()})};
+ $("dl").onclick=function(){ask(this,function(){l.a.forEach(function(a){delF(a.id)});delF(l.pic);leads=leads.filter(function(x){return x!==l});tomb(l.id);save();openId=null;render()})};
  [["dn","n"],["dti","ti"],["dc","c"],["dp","p"],["de","e"],["da","ad"],["dd","d"],["dst","st"],["dsf","sf"],["dbt","bt"],["duc","uc"],["dt","t"]].forEach(function(p){$(p[0]).oninput=function(){l[p[1]]=this.value;save();links(l)}});
  $("ds").onchange=function(){l.s=this.value;save();detail(l)};
  if($("mv"))$("mv").onclick=function(){l.s=S[Math.min(5,S.indexOf(l.s)+1)];save();detail(l)};
@@ -236,7 +243,7 @@ function files(l){
    d.onclick=function(){$("ob").innerHTML=isImg?'<img src="'+u+'">':'<iframe src="'+u+'"></iframe>';$("oo").href=u;$("ov").className="on"}})})}
 $("oc").onclick=function(){$("ov").className="";$("ob").innerHTML=""};
 function boardView(){
- var h='<div class="hdr"><h1>Sales</h1><span style="flex:1"></span><button class="hb" id="vb">List</button></div><div class="card row" style="margin-top:0"><input id="nn" placeholder="New lead name" style="flex:1"><button id="add">Add</button></div><div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;align-items:flex-start">';
+ var h='<div class="hdr"><h1>Sales</h1><span style="flex:1"></span>'+syncChip()+'<button class="hb" id="vb">List</button></div><div class="card row" style="margin-top:0"><input id="nn" placeholder="New lead name" style="flex:1"><button id="add">Add</button></div><div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;align-items:flex-start">';
  S.forEach(function(s,si){var c=leads.filter(function(l){return l.s==s});
   h+='<div style="border:1px solid var(--line);border-radius:12px;padding:8px" class="bc"><b>'+esc(s)+' ('+c.length+')</b>'+c.map(function(l){return '<div class="card item" data-o="'+l.id+'" style="margin:8px 0;padding:10px"><b>'+esc(l.n)+'</b><div class="sub">'+esc(l.c)+'</div>'+(tot(l)?'<div class="sub">Lights: '+tot(l)+'</div>':'')+(l.d?'<div class="sub" style="'+(due(l)?'color:var(--red)':'')+'">Follow up: '+esc(l.d)+'</div>':'')+'<div class="row" style="margin-top:6px">'+(si>0?'<button class="ghost" data-bm="'+l.id+'" data-d="-1">&larr;</button>':'')+(si<5?'<button class="ghost" data-bm="'+l.id+'" data-d="1">&rarr;</button>':'')+'</div></div>'}).join("")+'</div>'});
  $("app").innerHTML=h+'</div>';
@@ -245,7 +252,75 @@ function boardView(){
  Array.prototype.forEach.call(document.querySelectorAll("[data-o]"),function(b){b.onclick=function(){openId=b.getAttribute("data-o");dtab="i";render()}});
  Array.prototype.forEach.call(document.querySelectorAll("[data-bm]"),function(b){b.onclick=function(e){e.stopPropagation();var l=find(b.getAttribute("data-bm"));l.s=S[Math.max(0,Math.min(5,S.indexOf(l.s)+(+b.getAttribute("data-d"))))];save();render()}});
 }
-function render(){var l=openId&&find(openId);document.body.setAttribute("data-v",l?"d":view);if(l)detail(l);else{openId=null;if(view=="board")boardView();else list()}}
+function render(){var l=openId&&find(openId);document.body.setAttribute("data-v",l?"d":view);if(l)detail(l);else{openId=null;if(view=="board")boardView();else list()}var sb=$("sy");if(sb)sb.onclick=syncOpen}
+
+/* ===== Sync (Firebase) ===== */
+var FBC={apiKey:"AIzaSyCpI_kDF49ptHO-cF-YuuF3UT18Ipqb-mU",authDomain:"sales-e90ee.firebaseapp.com",projectId:"sales-e90ee",storageBucket:"sales-e90ee.firebasestorage.app",messagingSenderId:"698099249426",appId:"1:698099249426:web:ac8882ec3add2a737a43cb"};
+var SY={ad:null,user:null,unsub:null,snap:{},ltu:0,sent:{},timer:null,first:true,ready:false,err:"",why:""},DEAD=jget("sdm-dead")||{};
+function strip(l){var o=Object.assign({},l);delete o.u;return JSON.stringify(o)}
+function tomb(id){DEAD[id]=Date.now();try{localStorage.setItem("sdm-dead",JSON.stringify(DEAD))}catch(e){}}
+function localSave(){try{localStorage.setItem(KL,JSON.stringify(leads))}catch(e){}}
+function syncChip(){var t=!SY.ad?(SY.why||"Sync off"):!SY.user?"Sync off":SY.err?"Sync problem":SY.ready?"Synced ✓":"Syncing…";return '<button class="hb'+(SY.user&&SY.ready&&!SY.err?' on':'')+'" id="sy">'+t+'</button>'}
+function syncStatus(){var b=$("sy");if(b){b.outerHTML=syncChip();var n=$("sy");if(n)n.onclick=syncOpen}if($("sm"))syncOpen(true)}
+function syncSoon(){if(!SY.user||!SY.ad)return;clearTimeout(SY.timer);SY.timer=setTimeout(syncPush,700)}
+function syncErr(e){SY.err=(e&&e.code)?e.code.replace("firestore/","").replace(/-/g," "):"error";syncStatus()}
+function syncPush(){
+ if(!SY.user||!SY.ad)return;var now=Date.now();
+ leads.forEach(function(l){var j=strip(l);if(SY.snap[l.id]!==j){l.u=Math.max(now,(l.u||0)+1);SY.snap[l.id]=j;SY.ad.put(SY.user.uid,l.id,{id:l.id,j:JSON.stringify(l),u:l.u,del:false}).catch(syncErr)}});
+ localSave();
+ Object.keys(DEAD).forEach(function(id){if((SY.sent[id]||0)<DEAD[id]){SY.sent[id]=DEAD[id];SY.ad.put(SY.user.uid,id,{id:id,j:"",u:DEAD[id],del:true}).catch(syncErr)}})}
+function syncLT(){if(!SY.user||!SY.ad)return;SY.ltu=Math.max(Date.now(),SY.ltu+1);SY.ad.put(SY.user.uid,"_lt",{id:"_lt",j:JSON.stringify(LT),u:SY.ltu,del:false}).catch(syncErr)}
+function syncApply(docs){
+ var ch=false;
+ docs.forEach(function(d){
+  var id=d.id;
+  if(id=="_lt"){if(d.u>SY.ltu){try{var r=JSON.parse(d.j);if(r&&r.length){SY.ltu=d.u;LT=r;try{localStorage.setItem("sdm-lt-v2",JSON.stringify(LT))}catch(e){}ch=true}}catch(e){}}return}
+  if(DEAD[id]&&DEAD[id]>=d.u)return;
+  var loc=find(id),lu=loc?(loc.u||0):0;
+  if(loc&&d.u<=lu){if(d.u==lu)SY.snap[id]=strip(loc);return}
+  if(d.del){if(loc){leads=leads.filter(function(x){return x!==loc});if(openId==id)openId=null;delete SY.snap[id];ch=true}return}
+  var r;try{r=norm(JSON.parse(d.j))}catch(e){return}
+  r.u=d.u;
+  if(loc){Object.keys(loc).forEach(function(k){delete loc[k]});Object.assign(loc,r)}else leads.push(r);
+  SY.snap[id]=strip(r);ch=true});
+ if(ch){localSave();var a=document.activeElement,typing=a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);if(!typing)render()}}
+function syncStart(u){
+ SY.user=u;SY.snap={};SY.ltu=0;SY.sent={};SY.first=true;SY.ready=false;SY.err="";
+ if(!u){if(SY.unsub)SY.unsub();SY.unsub=null;syncStatus();return}
+ SY.unsub=SY.ad.listen(u.uid,function(docs){
+  syncApply(docs);
+  if(SY.first){SY.first=false;if(!SY.ltu)syncLT();SY.ready=true;SY.err=""}
+  syncPush();syncStatus()},syncErr);
+ syncStatus()}
+function realAdapter(){
+ if(typeof firebase==="undefined")return null;
+ try{firebase.initializeApp(FBC);var au=firebase.auth(),fs=firebase.firestore();try{fs.settings({experimentalAutoDetectLongPolling:true,merge:true})}catch(e){}
+ var col=function(uid){return fs.collection("users").doc(uid).collection("leads")};
+ return{onAuth:function(cb){au.onAuthStateChanged(function(u){cb(u?{uid:u.uid,email:u.email}:null)})},
+  signIn:function(e,p){return au.signInWithEmailAndPassword(e,p)},signUp:function(e,p){return au.createUserWithEmailAndPassword(e,p)},signOut:function(){return au.signOut()},
+  listen:function(uid,cb,eb){return col(uid).onSnapshot(function(s){cb(s.docChanges().map(function(c){return c.doc.data()}))},eb)},
+  put:function(uid,id,d){return col(uid).doc(id).set(d)}}}catch(e){return null}}
+function syncInit(){
+ SY.ad=window.__ad||realAdapter();
+ if(!SY.ad){SY.why="Sync off";syncStatus();return}
+ SY.ad.onAuth(syncStart)}
+function authMsg(e){var c=(e&&e.code)||"";return c=="auth/invalid-credential"||c=="auth/wrong-password"||c=="auth/user-not-found"?"Wrong email or password.":c=="auth/email-already-in-use"?"That email already has an account. Tap Sign in.":c=="auth/weak-password"?"Password needs 6 or more characters.":c=="auth/invalid-email"?"That email doesn't look right.":c=="auth/network-request-failed"?"No internet. Try again.":"Couldn't do that ("+(c||"error")+")."}
+function syncOpen(keep){
+ var m=$("sm");if(!m){m=document.createElement("div");m.id="sm";document.body.appendChild(m)}
+ var msg=(m.querySelector(".smsg")||{}).textContent||"",cls=(m.querySelector(".smsg")||{}).className||"smsg";
+ if(keep===true&&!msg){}
+ var h='';
+ if(!SY.ad)h='<div class="card"><h2>Sync</h2><p class="sub">Sync needs internet the first time. Open the app with internet and try again.</p><button class="ghost" id="smx">Close</button></div>';
+ else if(SY.user)h='<div class="card"><h2>Sync is on</h2><p class="sub">Signed in as '+esc(SY.user.email)+'.<br>'+(SY.err?'Problem: '+esc(SY.err)+'. Photos and PDFs stay on the device where you add them.':SY.ready?'Your leads, notes and light counts are the same on every device you sign in on. Photos and PDFs stay on the device where you add them.':'Syncing…')+'</p><button class="ghost" id="smo">Sign out</button><button id="smx">Close</button></div>';
+ else h='<div class="card"><h2>Sign in to sync</h2><p class="sub">Use the same email and password on every device.</p><input id="sme" type="email" autocomplete="username" placeholder="Email"><input id="smp" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="'+cls+'" >'+esc(msg)+'</div><button class="big" id="smi">Sign in</button><button class="ghost" id="smc">First time? Create account</button><button class="ghost" id="smx">Close</button></div>';
+ m.innerHTML=h;
+ var set=function(t,ok){var e=m.querySelector(".smsg");if(e){e.textContent=t;e.className="smsg "+(ok?"ok":"bad")}};
+ var go=function(fn){var e=$("sme").value.trim(),p=$("smp").value;if(!e||!p){set("Type your email and password.");return}set("Working…",true);fn(e,p).then(function(){m.remove()}).catch(function(x){set(authMsg(x))})};
+ if($("smi"))$("smi").onclick=function(){go(SY.ad.signIn)};
+ if($("smc"))$("smc").onclick=function(){go(SY.ad.signUp)};
+ if($("smo"))$("smo").onclick=function(){SY.ad.signOut().then(function(){m.remove()})};
+ if($("smx"))$("smx").onclick=function(){m.remove()}}
+window.addEventListener("load",syncInit);
 load();openDB(render);
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
 </script>
