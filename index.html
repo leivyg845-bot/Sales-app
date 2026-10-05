@@ -506,9 +506,10 @@ function syncStart(u){
  function go(ws,role){
   if(SY.user!==u)return;SY.ws=ws;SY.role=role;
   SY.unsub=SY.ad.listen(ws,function(docs){
+   var wasFirst=SY.first;
    syncApply(docs);
    if(SY.first){SY.first=false;if(role!="view"&&!SY.ltu)syncLT();SY.ready=true;SY.err="";if(role!="view")migrateFiles()}
-   syncPush();flushFQ();syncStatus();render()},syncErr);
+   syncPush();flushFQ();syncStatus();var ae=document.activeElement;if(wasFirst&&!(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)))render()},syncErr);
   if(role=="owner"&&SY.ad.listMembers)SY.munsub=SY.ad.listMembers(ws,function(m){SY.members=m;if($("sm"))syncOpen(true)},function(){});
   syncStatus();applyRO()}}
 /* ===== File sync (chunks in Firestore) ===== */
