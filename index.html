@@ -105,6 +105,8 @@ body[data-v="board"] .bc .card{font-size:16px}
 #sm .card{width:100%;max-width:400px;margin:0;display:grid;gap:10px}
 #sm h2{margin:0;font-size:22px}.smsg{font-size:14px;min-height:18px}.smsg.bad{color:var(--red)}.smsg.ok{color:var(--acc)}
 #sy{margin-right:8px;font-size:14px}#sy.on{color:var(--acc);font-weight:600}
+body.ro #dl,body.ro #ab,body.ro .card.row:has(#nn),body.ro .big,body.ro .del,body.ro .plus,body.ro #add,body.ro #mv,body.ro label input[type=file]{display:none!important}body.ro label.sub{display:none}
+.inst{position:fixed;left:12px;right:12px;bottom:12px;background:#15803d;color:#fff;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;z-index:50;box-shadow:0 4px 16px #0003}.inst b{flex:1}.inst button{background:#fff;color:#15803d;border:0;border-radius:10px;padding:10px 14px;font-weight:700}
 </style>
 </head>
 <body>
@@ -258,7 +260,7 @@ function boardView(){
  Array.prototype.forEach.call(document.querySelectorAll("[data-o]"),function(b){b.onclick=function(){openId=b.getAttribute("data-o");dtab="i";render()}});
  Array.prototype.forEach.call(document.querySelectorAll("[data-bm]"),function(b){b.onclick=function(e){e.stopPropagation();var l=find(b.getAttribute("data-bm"));l.s=S[Math.max(0,Math.min(5,S.indexOf(l.s)+(+b.getAttribute("data-d"))))];save();render()}});
 }
-function render(){var l=openId&&find(openId);document.body.setAttribute("data-v",l?"d":view);if(l)detail(l);else{openId=null;if(view=="board")boardView();else list()}var sb=$("sy");if(sb)sb.onclick=syncOpen}
+function render(){var l=openId&&find(openId);document.body.setAttribute("data-v",l?"d":view);if(l)detail(l);else{openId=null;if(view=="board")boardView();else list()}var sb=$("sy");if(sb)sb.onclick=syncOpen;applyRO()}
 
 /* ===== Sync (Firebase) ===== */
 var FBC={apiKey:"AIzaSyCpI_kDF49ptHO-cF-YuuF3UT18Ipqb-mU",authDomain:"sales-e90ee.firebaseapp.com",projectId:"sales-e90ee",storageBucket:"sales-e90ee.firebasestorage.app",messagingSenderId:"698099249426",appId:"1:698099249426:web:ac8882ec3add2a737a43cb"};
@@ -268,14 +270,14 @@ function tomb(id){DEAD[id]=Date.now();try{localStorage.setItem("sdm-dead",JSON.s
 function localSave(){try{localStorage.setItem(KL,JSON.stringify(leads))}catch(e){}}
 function syncChip(){var t=!SY.ad?(SY.why||"Sync off"):!SY.user?"Sync off":SY.err?"Sync problem":SY.ready?"Synced ✓":"Syncing…";return '<button class="hb'+(SY.user&&SY.ready&&!SY.err?' on':'')+'" id="sy">'+t+'</button>'}
 function syncStatus(){var b=$("sy");if(b){b.outerHTML=syncChip();var n=$("sy");if(n)n.onclick=syncOpen}if($("sm"))syncOpen(true)}
-function syncSoon(){if(!SY.user||!SY.ad)return;clearTimeout(SY.timer);SY.timer=setTimeout(function(){syncPush();flushFQ()},700)}
+function syncSoon(){if(!SY.user||!SY.ad||SY.role=="view"||!SY.ws)return;clearTimeout(SY.timer);SY.timer=setTimeout(function(){syncPush();flushFQ()},700)}
 function syncErr(e){SY.err=(e&&e.code)?e.code.replace("firestore/","").replace(/-/g," "):"error";syncStatus()}
 function syncPush(){
- if(!SY.user||!SY.ad)return;var now=Date.now();
- leads.forEach(function(l){var j=strip(l);if(SY.snap[l.id]!==j){l.u=Math.max(now,(l.u||0)+1);SY.snap[l.id]=j;SY.ad.put(SY.user.uid,l.id,{id:l.id,j:JSON.stringify(l),u:l.u,del:false}).catch(syncErr)}});
+ if(!SY.user||!SY.ad||SY.role=="view"||!SY.ws)return;var now=Date.now();
+ leads.forEach(function(l){var j=strip(l);if(SY.snap[l.id]!==j){l.u=Math.max(now,(l.u||0)+1);SY.snap[l.id]=j;SY.ad.put(SY.ws,l.id,{id:l.id,j:JSON.stringify(l),u:l.u,del:false}).catch(syncErr)}});
  localSave();
- Object.keys(DEAD).forEach(function(id){if((SY.sent[id]||0)<DEAD[id]){SY.sent[id]=DEAD[id];SY.ad.put(SY.user.uid,id,{id:id,j:"",u:DEAD[id],del:true}).catch(syncErr)}})}
-function syncLT(){if(!SY.user||!SY.ad)return;SY.ltu=Math.max(Date.now(),SY.ltu+1);SY.ad.put(SY.user.uid,"_lt",{id:"_lt",j:JSON.stringify(LT),u:SY.ltu,del:false}).catch(syncErr)}
+ Object.keys(DEAD).forEach(function(id){if((SY.sent[id]||0)<DEAD[id]){SY.sent[id]=DEAD[id];SY.ad.put(SY.ws,id,{id:id,j:"",u:DEAD[id],del:true}).catch(syncErr)}})}
+function syncLT(){if(!SY.user||!SY.ad||SY.role=="view"||!SY.ws)return;SY.ltu=Math.max(Date.now(),SY.ltu+1);SY.ad.put(SY.ws,"_lt",{id:"_lt",j:JSON.stringify(LT),u:SY.ltu,del:false}).catch(syncErr)}
 function syncApply(docs){
  var ch=false;
  docs.forEach(function(d){
@@ -290,15 +292,31 @@ function syncApply(docs){
   if(loc){Object.keys(loc).forEach(function(k){delete loc[k]});Object.assign(loc,r)}else leads.push(r);
   SY.snap[id]=strip(r);ch=true});
  if(ch){localSave();var a=document.activeElement,typing=a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);if(!typing)render()}}
+function wsGet(){try{return localStorage.getItem("sdm-ws")||""}catch(e){return""}}
+function wsSet(v){try{if(v)localStorage.setItem("sdm-ws",v);else localStorage.removeItem("sdm-ws")}catch(e){}}
+function applyRO(){var ro=SY.role=="view";document.body.classList.toggle("ro",ro);
+ if(ro){document.querySelectorAll("#app input,#app textarea,#app select").forEach(function(e){if(e.id!="q")e.disabled=true});document.querySelectorAll("#app .card button:not(.tab)").forEach(function(b){b.disabled=true})}}
 function syncStart(u){
- SY.user=u;SY.snap={};SY.ltu=0;SY.sent={};SY.first=true;SY.ready=false;SY.err="";
- if(!u){if(SY.unsub)SY.unsub();SY.unsub=null;syncStatus();return}
- SY.unsub=SY.ad.listen(u.uid,function(docs){
-  syncApply(docs);
-  if(SY.first){SY.first=false;if(!SY.ltu)syncLT();SY.ready=true;SY.err="";migrateFiles()}
-  syncPush();flushFQ();syncStatus()},syncErr);
- syncStatus()}
-
+ if(SY.unsub)SY.unsub();SY.unsub=null;if(SY.munsub)SY.munsub();SY.munsub=null;SY.members=[];
+ SY.user=u;SY.snap={};SY.ltu=0;SY.sent={};SY.first=true;SY.ready=false;SY.err="";SY.role="owner";SY.ws=u?u.uid:"";
+ if(!u){syncStatus();applyRO();return}
+ var w=wsGet();
+ if(w&&w!=u.uid){
+  SY.ad.getRole(w,u.email).then(function(r){
+   if(r!="view"&&r!="edit"){wsSet("");SY.err="no access to that team";go(u.uid,"owner")}else{
+    var j="";try{j=localStorage.getItem("sdm-wsj")||""}catch(e){}
+    if(j!=w+"|"+u.uid){leads=[];Object.keys(DEAD).forEach(function(k){delete DEAD[k]});try{localStorage.setItem("sdm-wsj",w+"|"+u.uid)}catch(e){}localSave()}
+    go(w,r)}
+  }).catch(function(e){syncErr(e)})}
+ else go(u.uid,"owner");
+ function go(ws,role){
+  if(SY.user!==u)return;SY.ws=ws;SY.role=role;
+  SY.unsub=SY.ad.listen(ws,function(docs){
+   syncApply(docs);
+   if(SY.first){SY.first=false;if(role!="view"&&!SY.ltu)syncLT();SY.ready=true;SY.err="";if(role!="view")migrateFiles()}
+   syncPush();flushFQ();syncStatus();render()},syncErr);
+  if(role=="owner"&&SY.ad.listMembers)SY.munsub=SY.ad.listMembers(ws,function(m){SY.members=m;if($("sm"))syncOpen(true)},function(){});
+  syncStatus();applyRO()}}
 /* ===== File sync (chunks in Firestore) ===== */
 var CH=600000,MAXF=8000000,FQ=jget("sdm-fq")||[];
 function saveFQ(){try{localStorage.setItem("sdm-fq",JSON.stringify(FQ))}catch(e){}}
@@ -311,15 +329,15 @@ function flushFQ(){
  getF(it.id,function(r){if(!r)return done(true);
   b64(r.buf||r.blob,function(s){if(!s)return done(false);
    var parts=[];for(var i=0;i<s.length;i+=CH)parts.push(s.slice(i,i+CH));
-   Promise.all(parts.map(function(p,i){return SY.ad.putChunk(SY.user.uid,it.id+"_"+i,p)})).then(function(){done(true)}).catch(function(e){syncErr(e);SY.fb=false})})})}
+   Promise.all(parts.map(function(p,i){return SY.ad.putChunk(SY.ws,it.id+"_"+i,p)})).then(function(){done(true)}).catch(function(e){syncErr(e);SY.fb=false})})})}
 function fetchRemote(id,cb){
  if(!SY.user||!SY.ad)return;var a=null;leads.forEach(function(l){(l.a||[]).forEach(function(x){if(x.id==id)a=x})});if(!a||!a.n)return;
  if(SY.got[id])return;SY.got[id]=1;
- var ps=[];for(var i=0;i<a.n;i++)ps.push(SY.ad.getChunk(SY.user.uid,id+"_"+i));
+ var ps=[];for(var i=0;i<a.n;i++)ps.push(SY.ad.getChunk(SY.ws,id+"_"+i));
  Promise.all(ps).then(function(parts){if(parts.some(function(p){return p==null})){delete SY.got[id];return}
   var rec={id:id,name:a.name,type:a.type,buf:unb64(parts.join(""))};putF(rec,function(){cb(rec)})}).catch(function(){delete SY.got[id]})}
 function migrateFiles(){leads.forEach(function(l){(l.a||[]).forEach(function(a){if(a.n||a.big)return;getF(a.id,function(r){if(!r)return;var len=(r.buf&&r.buf.byteLength)||(r.blob&&r.blob.size)||0;if(!len)return;if(len>MAXF){a.big=1;save();return}a.n=Math.max(1,Math.ceil(Math.ceil(len/3)*4/CH));save();queueUp(a.id,a.n)})})})}
-function delRemote(id,n){FQ=FQ.filter(function(x){return x.id!=id});saveFQ();if(!SY.user||!SY.ad||!n)return;for(var i=0;i<n;i++)SY.ad.delChunk(SY.user.uid,id+"_"+i).catch(function(){})}
+function delRemote(id,n){FQ=FQ.filter(function(x){return x.id!=id});saveFQ();if(!SY.user||!SY.ad||!n)return;for(var i=0;i<n;i++)SY.ad.delChunk(SY.ws,id+"_"+i).catch(function(){})}
 function realAdapter(){
  if(typeof firebase==="undefined")return null;
  try{firebase.initializeApp(FBC);var au=firebase.auth(),fs=firebase.firestore();try{fs.settings({experimentalAutoDetectLongPolling:true,merge:true})}catch(e){}
@@ -327,6 +345,10 @@ function realAdapter(){
  return{onAuth:function(cb){au.onAuthStateChanged(function(u){cb(u?{uid:u.uid,email:u.email}:null)})},
   signIn:function(e,p){return au.signInWithEmailAndPassword(e,p)},signUp:function(e,p){return au.createUserWithEmailAndPassword(e,p)},signOut:function(){return au.signOut()},
   listen:function(uid,cb,eb){return col(uid).onSnapshot(function(s){cb(s.docChanges().map(function(c){return c.doc.data()}))},eb)},
+  getRole:function(ws,em){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).get().then(function(x){return x.exists?x.data().role:null})},
+  listMembers:function(ws,cb,eb){return fs.collection("users").doc(ws).collection("members").onSnapshot(function(s){cb(s.docs.map(function(d){return{email:d.id,role:d.data().role}}))},eb)},
+  setMember:function(ws,em,role){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).set({role:role})},
+  delMember:function(ws,em){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).delete()},
   put:function(uid,id,d){return col(uid).doc(id).set(d)},
   putChunk:function(uid,id,s){return fs.collection("users").doc(uid).collection("fchunks").doc(id).set({d:s})},
   getChunk:function(uid,id){return fs.collection("users").doc(uid).collection("fchunks").doc(id).get().then(function(x){return x.exists?x.data().d:null})},
@@ -342,7 +364,14 @@ function syncOpen(keep){
  if(keep===true&&!msg){}
  var h='';
  if(!SY.ad)h='<div class="card"><h2>Sync</h2><p class="sub">Sync needs internet the first time. Open the app with internet and try again.</p><button class="ghost" id="smx">Close</button></div>';
- else if(SY.user)h='<div class="card"><h2>Sync is on</h2><p class="sub">Signed in as '+esc(SY.user.email)+'.<br>'+(SY.err?'Problem: '+esc(SY.err)+'. Photos and PDFs stay on the device where you add them.':SY.ready?'Your leads, notes and light counts are the same on every device you sign in on. Photos and PDFs stay on the device where you add them.':'Syncing…')+'</p><button class="ghost" id="smo">Sign out</button><button id="smx">Close</button></div>';
+ else if(SY.user){
+  var own=SY.role=="owner",inv=location.origin+location.pathname+"?w="+SY.user.uid;
+  h='<div class="card"><h2>Sync is on</h2><p class="sub">Signed in as '+esc(SY.user.email)+'.<br>'+(SY.err?'Problem: '+esc(SY.err)+'.':SY.ready?(own?'Your leads, notes, light counts and files are the same on every device you sign in on.':'You are on a team ('+(SY.role=="view"?'view only':'can edit')+').'):'Syncing…')+'</p>';
+  if(own){h+='<h3 style="margin:14px 0 4px">Team</h3><p class="sub">Add a worker by their email. View = can only look. Edit = can change leads.</p>'
+   +(SY.members||[]).map(function(x,k){return '<div class="row" style="margin:6px 0"><span style="flex:1;overflow:hidden;text-overflow:ellipsis">'+esc(x.email)+'</span><select data-mr="'+k+'"><option value="view"'+(x.role=="view"?' selected':'')+'>View</option><option value="edit"'+(x.role=="edit"?' selected':'')+'>Edit</option></select><button class="ghost" data-md="'+k+'">Remove</button></div>'}).join('')
+   +'<input id="tme" type="email" placeholder="Worker email"><select id="tmr"><option value="view">View only</option><option value="edit">Can edit</option></select><button class="big" id="tma">Add worker</button><div class="smsg" id="tmm"></div><button class="ghost" id="tms">Send invite link</button>'}
+  else h+='<button class="ghost" id="tml">Leave team (go back to my own leads)</button>';
+  h+='<button class="ghost" id="smo">Sign out</button><button id="smx">Close</button></div>'}
  else h='<div class="card"><h2>Sign in to sync</h2><p class="sub">Use the same email and password on every device.</p><input id="sme" type="email" autocomplete="username" placeholder="Email"><input id="smp" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="'+cls+'" >'+esc(msg)+'</div><button class="big" id="smi">Sign in</button><button class="ghost" id="smc">First time? Create account</button><button class="ghost" id="smx">Close</button></div>';
  m.innerHTML=h;
  var set=function(t,ok){var e=m.querySelector(".smsg");if(e){e.textContent=t;e.className="smsg "+(ok?"ok":"bad")}};
@@ -350,7 +379,17 @@ function syncOpen(keep){
  if($("smi"))$("smi").onclick=function(){go(SY.ad.signIn)};
  if($("smc"))$("smc").onclick=function(){go(SY.ad.signUp)};
  if($("smo"))$("smo").onclick=function(){SY.ad.signOut().then(function(){m.remove()})};
- if($("smx"))$("smx").onclick=function(){m.remove()}}
+ if($("smx"))$("smx").onclick=function(){m.remove()};
+ if($("tma"))$("tma").onclick=function(){var e=$("tme").value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(e)){$("tmm").textContent="Type their email.";return}
+  SY.ad.setMember(SY.ws,e,$("tmr").value).then(function(){$("tme").value="";$("tmm").textContent="Added. Now tap Send invite link."}).catch(function(x){$("tmm").textContent="Could not add: "+((x&&x.code)||"error")})};
+ m.querySelectorAll("[data-mr]").forEach(function(el){el.onchange=function(){var x=SY.members[+el.dataset.mr];SY.ad.setMember(SY.ws,x.email,el.value)}});
+ m.querySelectorAll("[data-md]").forEach(function(el){el.onclick=function(){var x=SY.members[+el.dataset.md];if(confirm("Remove "+x.email+"?"))SY.ad.delMember(SY.ws,x.email)}});
+ if($("tms"))$("tms").onclick=function(){var t="Open this link, tap Install, then Create account with the email I added: "+inv;if(navigator.share)navigator.share({title:"Sales app",text:t}).catch(function(){});else if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){$("tmm").textContent="Link copied. Paste it in a text."});else prompt("Copy this:",t)};
+ if($("tml"))$("tml").onclick=function(){wsSet("");try{localStorage.removeItem("sdm-wsj")}catch(e){}leads=[];localSave();location.reload()}}
+function invCheck(){try{var w=new URLSearchParams(location.search).get("w");if(w){wsSet(w);history.replaceState(null,"",location.pathname);window.__inv=1}}catch(e){}}
+invCheck();
+var DIP=null;window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();DIP=e;if(window.matchMedia("(display-mode: standalone)").matches)return;var d=document.createElement("div");d.className="inst";d.innerHTML="<b>Install the Sales app</b><button id=\"ib\">Install</button><button id=\"ix\" style=\"background:transparent;color:#fff\">✕</button>";document.body.appendChild(d);$("ib").onclick=function(){DIP.prompt();d.remove()};$("ix").onclick=function(){d.remove()}});
+window.addEventListener("load",function(){if(window.__inv)setTimeout(function(){if(!SY.user)syncOpen()},800)});
 window.addEventListener("load",syncInit);
 load();openDB(render);
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
