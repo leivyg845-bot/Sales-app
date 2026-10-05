@@ -38,7 +38,7 @@ button.del{background:transparent;color:var(--red);border:1px solid var(--line)}
 .pick{position:relative;display:inline-block;overflow:hidden;border-radius:20px}.pick input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;font-size:0}
 .av{width:44px;height:44px;border-radius:50%;background:var(--line) center/cover;flex:none}
 .av.big{width:72px;height:72px}
-.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:8px}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:8px}.fw{min-width:0}.fw .f{aspect-ratio:1;font-weight:700;font-size:15px}.cap{font-size:12px;color:var(--mute);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .f{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;aspect-ratio:1;background:var(--bg);display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;padding:4px;cursor:pointer}
 .f img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
 .f .x{position:absolute;top:2px;right:2px;z-index:2;width:24px;height:24px;padding:0;border-radius:12px;background:rgba(0,0,0,.65);color:#fff;font-size:14px;line-height:24px}
@@ -125,7 +125,7 @@ var SEED_L=[{id:"7gad1ek4wz6vb4l3986t",n:"1470 jerzy ave",c:"Lol",p:"857",s:"New
 function $(i){return document.getElementById(i)}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function opts(sel){return S.map(function(s){return "<option"+(s==sel?" selected":"")+">"+esc(s)+"</option>"}).join("")}
-function norm(x){var l=Object.assign({n:"",ti:"",c:"",p:"",e:"",ad:"",d:"",t:"",s:S[0],w:[],a:[],lt:{},pic:"",wt:"",sf:"",bt:"",uc:"",st:""},x);if(S.indexOf(l.s)<0)l.s=l.s=="Good lead"?S[1]:l.s=="In progress"?S[2]:S[0];if(!l.id)l.id="l"+Math.random().toString(36).slice(2);return l}
+function norm(x){var l=Object.assign({n:"",ti:"",c:"",p:"",p2:"",e:"",ad:"",d:"",t:"",s:S[0],w:[],a:[],lt:{},pic:"",wt:"",sf:"",bt:"",uc:"",st:""},x);if(S.indexOf(l.s)<0)l.s=l.s=="Good lead"?S[1]:l.s=="In progress"?S[2]:S[0];if(!l.id)l.id="l"+Math.random().toString(36).slice(2);return l}
 function saveLT(){try{localStorage.setItem("sdm-lt-v2",JSON.stringify(LT))}catch(e){}if(window.syncLT)syncLT()}
 function jget(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}}
 function save(){try{localStorage.setItem(KL,JSON.stringify(leads));localStorage.setItem(KW,JSON.stringify(workers))}catch(e){}if(window.syncSoon)syncSoon()}
@@ -142,31 +142,33 @@ function openDB(cb){try{var r=indexedDB.open("leadfiles",1);r.onupgradeneeded=fu
 function tx(m){return db.transaction("f",m).objectStore("f")}
 function putF(rec,cb){if(!db){mem[rec.id]=rec;return cb(true)}try{var q=tx("readwrite").put(rec);q.onsuccess=function(){cb(true)};q.onerror=function(){mem[rec.id]=rec;cb(true)}}catch(e){mem[rec.id]=rec;cb(true)}}
 function getF(id,cb){if(mem[id])return cb(mem[id]);if(!db)return cb(null);var q=tx("readonly").get(id);q.onsuccess=function(){cb(q.result)};q.onerror=function(){cb(null)}}
-function delF(id){if(db&&id)try{tx("readwrite").delete(id)}catch(e){};delete urls[id]}
-function urlFor(id,cb){if(urls[id])return cb(urls[id]);getF(id,function(r){if(r){urls[id]=URL.createObjectURL(r.blob||new Blob([r.buf],{type:r.type}));cb(urls[id])}})}
+function delF(id,n){if(db&&id)try{tx("readwrite").delete(id)}catch(e){};delete urls[id];if(id&&window.delRemote)delRemote(id,n)}
+function urlFor(id,cb){if(urls[id])return cb(urls[id]);getF(id,function(r){
+ var use=function(r){if(r){urls[id]=URL.createObjectURL(r.blob||new Blob([r.buf],{type:r.type}));cb(urls[id])}};
+ if(r)return use(r);if(window.fetchRemote)fetchRemote(id,use)})}
 function fillAv(){Array.prototype.forEach.call(document.querySelectorAll("[data-pic]"),function(e){var id=e.getAttribute("data-pic");if(id)urlFor(id,function(u){e.style.backgroundImage="url("+u+")"})})}
 
 function list(){
  var act=leads.filter(function(l){return [2,3,4].indexOf(S.indexOf(l.s))>=0}).length,done=leads.filter(function(l){return l.s==S[5]}).length,lights=0;leads.forEach(function(l){lights+=tot(l)});
  var h='<div class="hdr"><h1>Sales</h1><span style="flex:1"></span>'+syncChip()+'<button class="hb" id="vb">Board</button><button class="plus" id="ab">'+(addOpen?'\u00d7':'+')+'</button></div>';
  h+='<div class="stats">'+[[leads.length,"Leads"],[act,"Active jobs"],[done,"Completed"],[leads.filter(due).length,"Follow-ups"]].map(function(x){return '<div class="card st"><b>'+x[0]+'</b><span>'+x[1]+'</span></div>'}).join("")+'</div>';
- if(addOpen)h+='<div class="card g"><input id="nn" placeholder="Lead name or address"><input id="nc" placeholder="Company (optional)"><input id="np" type="tel" placeholder="Phone (optional)"><button id="add" class="big">Add lead</button></div>';
+ if(addOpen)h+='<div class="card g"><input id="nn" placeholder="Lead name or address"><input id="nc" placeholder="Company (optional)"><input id="np" type="tel" placeholder="Mobile / cell (optional)"><input id="np2" type="tel" placeholder="Landline (optional)"><button id="add" class="big">Add lead</button></div>';
  h+='<input id="q" placeholder="Search leads..." value="'+esc(q)+'" style="margin:12px 0 8px"><div class="tabs">';
  ["All","Due"].concat(S).forEach(function(s){var n=s=="All"?leads.length:s=="Due"?leads.filter(due).length:leads.filter(function(l){return l.s==s}).length;h+='<button class="tab'+(s==filter?' on':'')+'" data-f="'+esc(s)+'">'+esc(s)+' ('+n+')</button>'});
  $("app").innerHTML=h+'</div><div id="items"></div>';
  $("vb").onclick=function(){view="board";render()};
  $("ab").onclick=function(){addOpen=!addOpen;render();if($("nn"))$("nn").focus()};
  $("q").oninput=function(){q=this.value;drawItems()};
- if(addOpen)$("add").onclick=function(){var n=$("nn").value.trim();if(!n)return;var l=norm({n:n,c:$("nc").value.trim(),p:$("np").value.trim()});leads.unshift(l);save();addOpen=false;openId=l.id;dtab="i";render()};
+ if(addOpen)$("add").onclick=function(){var n=$("nn").value.trim();if(!n)return;var l=norm({n:n,c:$("nc").value.trim(),p:$("np").value.trim(),p2:$("np2").value.trim()});leads.unshift(l);save();addOpen=false;openId=l.id;dtab="i";render()};
  Array.prototype.forEach.call(document.querySelectorAll("[data-f]"),function(b){b.onclick=function(){filter=b.getAttribute("data-f");render()}});
  drawItems();
 }
 function drawItems(){
  var qq=q.toLowerCase(),h="";
- var it=leads.filter(function(l){var m=filter=="All"||(filter=="Due"?due(l):l.s==filter);return m&&(!qq||[l.n,l.c,l.p,l.ad,l.ti,l.e,l.st,l.uc,l.bt].join(" ").toLowerCase().indexOf(qq)>=0)});
+ var it=leads.filter(function(l){var m=filter=="All"||(filter=="Due"?due(l):l.s==filter);return m&&(!qq||[l.n,l.c,l.p,l.p2,l.ad,l.ti,l.e,l.st,l.uc,l.bt].join(" ").toLowerCase().indexOf(qq)>=0)});
  it.sort(function(a,b){return (a.d||"9").localeCompare(b.d||"9")});
  if(!it.length)h='<p class="sub">No leads here yet.</p>';else h='<div class="th"><span>Company / Building</span><span>Status</span><span>Next step</span><span>Follow-up</span><span>Phone</span></div>';
- it.forEach(function(l){var ph=(l.p||"").replace(/[^+\d]/g,"");h+='<div class="card item lead" data-o="'+l.id+'"><div class="dcols"><div><b>'+esc(l.n)+'</b><div class="sub">'+esc([l.c,l.ad].filter(Boolean).join(" \u00b7 "))+'</div></div><div>'+pill(l.s)+'</div><div>'+esc(NEXT[S.indexOf(l.s)])+'</div><div style="'+(due(l)?'color:var(--red);font-weight:600':'')+'">'+esc(l.d||"\u2014")+'</div><div>'+esc(l.p||"\u2014")+'</div></div><div class="mob row" style="flex-wrap:nowrap;align-items:flex-start"><div style="flex:1;min-width:0"><div class="row" style="flex-wrap:nowrap;justify-content:space-between;align-items:flex-start"><h3>'+esc(l.n)+'</h3>'+pill(l.s)+'</div><div class="sub">'+esc([l.c,l.ti].filter(Boolean).join(" \u00b7 "))+'</div><div class="sub">'+esc(l.p)+'</div>'+((l.ad||l.st)?'<div class="sub">'+esc([l.ad,l.st].filter(Boolean).join(", "))+'</div>':'')+(l.sf?'<div class="sub">'+Number(l.sf).toLocaleString()+' sq ft'+(l.bt?' \u00b7 '+esc(l.bt):'')+'</div>':'')+(tot(l)?'<div class="sub">Lights: '+tot(l)+'</div>':'')+(l.d?'<div class="sub" style="'+(due(l)?'color:var(--red);font-weight:600':'')+'">Follow up: '+esc(l.d)+'</div>':'')+(l.a.length?'<div class="sub">'+l.a.length+' file'+(l.a.length>1?'s':'')+'</div>':'')+'</div></div></div>'});
+ it.forEach(function(l){var ph=(l.p||"").replace(/[^+\d]/g,"");h+='<div class="card item lead" data-o="'+l.id+'"><div class="dcols"><div><b>'+esc(l.n)+'</b><div class="sub">'+esc([l.c,l.ad].filter(Boolean).join(" \u00b7 "))+'</div></div><div>'+pill(l.s)+'</div><div>'+esc(NEXT[S.indexOf(l.s)])+'</div><div style="'+(due(l)?'color:var(--red);font-weight:600':'')+'">'+esc(l.d||"\u2014")+'</div><div>'+(l.p||l.p2?(l.p?'<div>'+esc(l.p)+' <span class="sub">mobile</span></div>':'')+(l.p2?'<div>'+esc(l.p2)+' <span class="sub">landline</span></div>':''):'\u2014')+'</div></div><div class="mob row" style="flex-wrap:nowrap;align-items:flex-start"><div style="flex:1;min-width:0"><div class="row" style="flex-wrap:nowrap;justify-content:space-between;align-items:flex-start"><h3>'+esc(l.n)+'</h3>'+pill(l.s)+'</div><div class="sub">'+esc([l.c,l.ti].filter(Boolean).join(" \u00b7 "))+'</div><div class="sub">'+esc([l.p?l.p+' (mobile)':'',l.p2?l.p2+' (landline)':''].filter(Boolean).join(' \u00b7 '))+'</div>'+((l.ad||l.st)?'<div class="sub">'+esc([l.ad,l.st].filter(Boolean).join(", "))+'</div>':'')+(l.sf?'<div class="sub">'+Number(l.sf).toLocaleString()+' sq ft'+(l.bt?' \u00b7 '+esc(l.bt):'')+'</div>':'')+(tot(l)?'<div class="sub">Lights: '+tot(l)+'</div>':'')+(l.d?'<div class="sub" style="'+(due(l)?'color:var(--red);font-weight:600':'')+'">Follow up: '+esc(l.d)+'</div>':'')+(l.a.length?'<div class="sub">'+l.a.length+' file'+(l.a.length>1?'s':'')+'</div>':'')+'</div></div></div>'});
  $("items").innerHTML=h;fillAv();
  Array.prototype.forEach.call(document.querySelectorAll("[data-o]"),function(b){b.onclick=function(){openId=b.getAttribute("data-o");dtab="i";render()}});
  Array.prototype.forEach.call(document.querySelectorAll("[data-m],[data-n],.ic"),function(b){b.onclick=function(e){e.stopPropagation()}});
@@ -197,15 +199,15 @@ function detail(l){
  $("app").innerHTML='<div class="hdr"><button class="hb" id="bk">\u2190</button><h1>Lead Details</h1><span style="flex:1"></span><button class="hb" id="dl">Delete</button></div>'+
  '<div class="row" style="flex-wrap:nowrap;justify-content:space-between"><div style="min-width:0"><h2 style="margin:0;font-size:20px">'+esc(l.n)+'</h2><div class="sub">'+esc([l.c,l.ad].filter(Boolean).join(" \u00b7 "))+'</div></div>'+pill(l.s)+'</div>'+
  '<div class="seg" style="margin:12px 0 4px"><button class="tab on" data-t="i">Details</button><button class="tab" data-t="n">Notes</button><button class="tab" data-t="l">Lights</button><button class="tab" data-t="f">Files</button></div>'+
- '<div class="card" data-s="i">'+fld("","Name","dn",l.n)+fld("","Phone","dp",l.p,"tel")+fld("","Email","de",l.e,"email")+fld("","Title","dti",l.ti)+fld("","Company","dc",l.c)+fld("","Address","da",l.ad)+sel("State","dst",STATES,l.st,"Choose state")+fld("","Building size (sq ft)","dsf",l.sf,"number")+sel("Building type","dbt",BT,l.bt,"Choose type")+fld("","Utility company","duc",l.uc)+fld("","Follow-up","dd",l.d,"date")+'<label class="fld"><span>Stage</span><select id="ds">'+opts(l.s)+'</select></label><div class="row" id="ql" style="margin-top:8px"></div></div>'+
+ '<div class="card" data-s="i">'+fld("","Name","dn",l.n)+fld("","Mobile (cell)","dp",l.p,"tel")+fld("","Landline","dp2",l.p2,"tel")+fld("","Email","de",l.e,"email")+fld("","Title","dti",l.ti)+fld("","Company","dc",l.c)+fld("","Address","da",l.ad)+sel("State","dst",STATES,l.st,"Choose state")+fld("","Building size (sq ft)","dsf",l.sf,"number")+sel("Building type","dbt",BT,l.bt,"Choose type")+fld("","Utility company","duc",l.uc)+fld("","Follow-up","dd",l.d,"date")+'<label class="fld"><span>Stage</span><select id="ds">'+opts(l.s)+'</select></label><div class="row" id="ql" style="margin-top:8px"></div></div>'+
  (l.s!=S[5]?'<button class="big" id="mv" data-s="i">Move to: '+esc(S[S.indexOf(l.s)+1])+'</button>':'')+
   '<div class="card" data-s="n"><textarea id="dt" rows="10" placeholder="Notes about the job...">'+esc(l.t)+'</textarea></div>'+
  lightsHTML(l)+
- '<div class="card" data-s="f"><div class="row"><b>Files &amp; pictures</b></div><input id="fi" type="file" multiple accept="image/*,application/pdf,.pdf" style="margin-top:8px"></div><div class="files" id="fl"></div><p class="sub" id="fm"></p></div>';
+ '<div class="card" data-s="f"><div class="row"><b style="flex:1">Attachments</b></div><div class="g" style="margin-top:8px"><label class="sub">Take a photo<input id="fc" type="file" accept="image/*" capture="environment"></label><label class="sub">Add pictures or PDFs from your device<input id="fi" type="file" multiple accept="image/*,application/pdf,.pdf"></label></div></div><div class="files" id="fl"></div><p class="sub" id="fm"></p></div>';
  fillAv();
  $("bk").onclick=function(){openId=null;dtab="i";ltEdit=false;render()};
- $("dl").onclick=function(){ask(this,function(){l.a.forEach(function(a){delF(a.id)});delF(l.pic);leads=leads.filter(function(x){return x!==l});tomb(l.id);save();openId=null;render()})};
- [["dn","n"],["dti","ti"],["dc","c"],["dp","p"],["de","e"],["da","ad"],["dd","d"],["dst","st"],["dsf","sf"],["dbt","bt"],["duc","uc"],["dt","t"]].forEach(function(p){$(p[0]).oninput=function(){l[p[1]]=this.value;save();links(l)}});
+ $("dl").onclick=function(){ask(this,function(){l.a.forEach(function(a){delF(a.id,a.n)});delF(l.pic);leads=leads.filter(function(x){return x!==l});tomb(l.id);save();openId=null;render()})};
+ [["dn","n"],["dti","ti"],["dc","c"],["dp","p"],["dp2","p2"],["de","e"],["da","ad"],["dd","d"],["dst","st"],["dsf","sf"],["dbt","bt"],["duc","uc"],["dt","t"]].forEach(function(p){$(p[0]).oninput=function(){l[p[1]]=this.value;save();links(l)}});
  $("ds").onchange=function(){l.s=this.value;save();detail(l)};
  if($("mv"))$("mv").onclick=function(){l.s=S[Math.min(5,S.indexOf(l.s)+1)];save();detail(l)};
  Array.prototype.forEach.call(document.querySelectorAll("[data-lt]"),function(i){i.oninput=function(){l.lt=l.lt||{};if(i.value==="")delete l.lt[i.getAttribute("data-lt")];else l.lt[i.getAttribute("data-lt")]=i.value;save();$("ltot").textContent=tot(l)}});
@@ -215,30 +217,34 @@ function detail(l){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ln]"),function(e){e.onchange=function(){var i=+e.getAttribute("data-ln"),o=LT[i],n=e.value.trim();if(n&&n!=o&&LT.indexOf(n)<0){leads.forEach(function(x){if(x.lt&&o in x.lt){x.lt[n]=x.lt[o];delete x.lt[o]}});LT[i]=n;saveLT();save()}detail(l)}});
  Array.prototype.forEach.call(document.querySelectorAll("[data-lr]"),function(e){e.onclick=function(){var i=+e.getAttribute("data-lr"),o=LT[i];ask(e,function(){leads.forEach(function(x){if(x.lt)delete x.lt[o]});LT.splice(i,1);saveLT();save();detail(l)},"Tap again: deletes counts")}});
  Array.prototype.forEach.call(document.querySelectorAll("[data-t]"),function(b){b.onclick=function(){showT(b.getAttribute("data-t"))}});
- $("fi").onclick=function(){$("fm").textContent="Choose a file..."};
- $("fi").onchange=function(){var fs=Array.prototype.slice.call(this.files),left=fs.length;if(!left){$("fm").textContent="No file chosen.";return}$("fm").textContent="Saving...";
+ var upl=function(inp){var fs=Array.prototype.slice.call(inp.files),left=fs.length;if(!left){$("fm").textContent="No file chosen.";return}$("fm").textContent="Saving...";
   fs.forEach(function(f){var id="f"+Date.now()+Math.random().toString(36).slice(2,6);
    prep(f,function(buf,type){if(!buf){$("fm").textContent="Couldn't read "+f.name;left--;return}
-    putF({id:id,name:f.name,type:type,buf:buf},function(ok){l.a.push({id:id,name:f.name,type:type});save();if(--left==0){$("fm").textContent="";files(l)}})})})};
+    var n=Math.max(1,Math.ceil(Math.ceil(buf.byteLength/3)*4/CH)),nm=f.name||("Photo "+new Date().toLocaleString());
+    putF({id:id,name:nm,type:type,buf:buf},function(ok){var a={id:id,name:nm,type:type,n:n};if(buf.byteLength>MAXF)a.big=1;l.a.push(a);save();if(!a.big)queueUp(id,n);if(--left==0){$("fm").textContent=a.big?"Saved here. Too big to sync (over 8 MB), it stays on this device.":"";inp.value="";files(l)}})})})};
+ $("fi").onchange=function(){upl(this)};$("fc").onchange=function(){upl(this)};
  links(l);files(l);showT(dtab);
 }
 function links(l){
- var h="",ph=(l.p||"").replace(/[^+\d]/g,"");
- if(ph)h+='<a class="tab on" href="tel:'+esc(ph)+'">Call</a><a class="tab" href="sms:'+esc(ph)+'">Text</a>';
+ var h="",ph=(l.p||"").replace(/[^+\d]/g,""),ph2=(l.p2||"").replace(/[^+\d]/g,"");
+ if(ph)h+='<a class="tab on" href="tel:'+esc(ph)+'">Call mobile</a><a class="tab" href="sms:'+esc(ph)+'">Text</a>';
+ if(ph2)h+='<a class="tab'+(ph?'':' on')+'" href="tel:'+esc(ph2)+'">Call landline</a>';
  if(l.e)h+='<a class="tab" href="mailto:'+esc(l.e)+'">Email</a>';
  if(l.ad)h+='<a class="tab" target="_blank" href="https://maps.google.com/?q='+encodeURIComponent(l.ad)+'">Map</a>';
  $("ql").innerHTML=h}
 function files(l){
  var box=$("fl");box.innerHTML="";
- if(!db)$("fm").textContent="Heads up: this device blocks file storage, so files only stay until you close the page.";if(!l.a.length){if(db)$("fm").textContent="Nothing attached yet.";return}
- if(db&&$("fm").textContent.indexOf("Couldn")!=0)$("fm").textContent="";
+ var tb=document.querySelector('[data-t="f"]');if(tb)tb.textContent="Files"+(l.a.length?" ("+l.a.length+")":"");
+ if(!db)$("fm").textContent="Heads up: this device blocks file storage, so files only stay until you close the page.";if(!l.a.length){if(db&&!$("fm").textContent)$("fm").textContent="Nothing attached yet.";return}
+ if(db&&$("fm").textContent.indexOf("Couldn")!=0&&$("fm").textContent.indexOf("Too big")!=0)$("fm").textContent="";
  l.a.forEach(function(a){
   var isImg=(a.type||"").indexOf("image")==0;
+  var w=document.createElement("div");w.className="fw";
   var d=document.createElement("div");d.className="f";
-  if(!isImg)d.appendChild(document.createTextNode("PDF "+a.name));
+  if(!isImg)d.appendChild(document.createTextNode("PDF"));
   var x=document.createElement("button");x.className="x";x.textContent="\u00d7";
-  x.onclick=function(e){e.stopPropagation();ask(x,function(){delF(a.id);l.a=l.a.filter(function(y){return y!==a});save();files(l)},"Delete?")};
-  d.appendChild(x);box.appendChild(d);
+  x.onclick=function(e){e.stopPropagation();ask(x,function(){delF(a.id,a.n);l.a=l.a.filter(function(y){return y!==a});save();files(l)},"Delete?")};
+  d.appendChild(x);w.appendChild(d);var cap=document.createElement("div");cap.className="cap";cap.textContent=a.name||"";w.appendChild(cap);box.appendChild(w);
   urlFor(a.id,function(u){if(isImg){var im=document.createElement("img");im.src=u;d.appendChild(im)}
    d.onclick=function(){$("ob").innerHTML=isImg?'<img src="'+u+'">':'<iframe src="'+u+'"></iframe>';$("oo").href=u;$("ov").className="on"}})})}
 $("oc").onclick=function(){$("ov").className="";$("ob").innerHTML=""};
@@ -256,13 +262,13 @@ function render(){var l=openId&&find(openId);document.body.setAttribute("data-v"
 
 /* ===== Sync (Firebase) ===== */
 var FBC={apiKey:"AIzaSyCpI_kDF49ptHO-cF-YuuF3UT18Ipqb-mU",authDomain:"sales-e90ee.firebaseapp.com",projectId:"sales-e90ee",storageBucket:"sales-e90ee.firebasestorage.app",messagingSenderId:"698099249426",appId:"1:698099249426:web:ac8882ec3add2a737a43cb"};
-var SY={ad:null,user:null,unsub:null,snap:{},ltu:0,sent:{},timer:null,first:true,ready:false,err:"",why:""},DEAD=jget("sdm-dead")||{};
+var SY={got:{},fb:false,ad:null,user:null,unsub:null,snap:{},ltu:0,sent:{},timer:null,first:true,ready:false,err:"",why:""},DEAD=jget("sdm-dead")||{};
 function strip(l){var o=Object.assign({},l);delete o.u;return JSON.stringify(o)}
 function tomb(id){DEAD[id]=Date.now();try{localStorage.setItem("sdm-dead",JSON.stringify(DEAD))}catch(e){}}
 function localSave(){try{localStorage.setItem(KL,JSON.stringify(leads))}catch(e){}}
 function syncChip(){var t=!SY.ad?(SY.why||"Sync off"):!SY.user?"Sync off":SY.err?"Sync problem":SY.ready?"Synced ✓":"Syncing…";return '<button class="hb'+(SY.user&&SY.ready&&!SY.err?' on':'')+'" id="sy">'+t+'</button>'}
 function syncStatus(){var b=$("sy");if(b){b.outerHTML=syncChip();var n=$("sy");if(n)n.onclick=syncOpen}if($("sm"))syncOpen(true)}
-function syncSoon(){if(!SY.user||!SY.ad)return;clearTimeout(SY.timer);SY.timer=setTimeout(syncPush,700)}
+function syncSoon(){if(!SY.user||!SY.ad)return;clearTimeout(SY.timer);SY.timer=setTimeout(function(){syncPush();flushFQ()},700)}
 function syncErr(e){SY.err=(e&&e.code)?e.code.replace("firestore/","").replace(/-/g," "):"error";syncStatus()}
 function syncPush(){
  if(!SY.user||!SY.ad)return;var now=Date.now();
@@ -289,9 +295,31 @@ function syncStart(u){
  if(!u){if(SY.unsub)SY.unsub();SY.unsub=null;syncStatus();return}
  SY.unsub=SY.ad.listen(u.uid,function(docs){
   syncApply(docs);
-  if(SY.first){SY.first=false;if(!SY.ltu)syncLT();SY.ready=true;SY.err=""}
-  syncPush();syncStatus()},syncErr);
+  if(SY.first){SY.first=false;if(!SY.ltu)syncLT();SY.ready=true;SY.err="";migrateFiles()}
+  syncPush();flushFQ();syncStatus()},syncErr);
  syncStatus()}
+
+/* ===== File sync (chunks in Firestore) ===== */
+var CH=600000,MAXF=8000000,FQ=jget("sdm-fq")||[];
+function saveFQ(){try{localStorage.setItem("sdm-fq",JSON.stringify(FQ))}catch(e){}}
+function queueUp(id,n){FQ.push({id:id,n:n});saveFQ();syncSoon()}
+function b64(buf,cb){var r=new FileReader();r.onload=function(){var u=r.result;cb(u.slice(u.indexOf(",")+1))};r.onerror=function(){cb(null)};r.readAsDataURL(new Blob([buf]))}
+function unb64(s){var b=atob(s),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer}
+function flushFQ(){
+ if(!SY.user||!SY.ad||!SY.ready||SY.fb)return;var it=FQ[0];if(!it)return;SY.fb=true;
+ var done=function(ok){SY.fb=false;if(ok){FQ.shift();saveFQ();flushFQ()}};
+ getF(it.id,function(r){if(!r)return done(true);
+  b64(r.buf||r.blob,function(s){if(!s)return done(false);
+   var parts=[];for(var i=0;i<s.length;i+=CH)parts.push(s.slice(i,i+CH));
+   Promise.all(parts.map(function(p,i){return SY.ad.putChunk(SY.user.uid,it.id+"_"+i,p)})).then(function(){done(true)}).catch(function(e){syncErr(e);SY.fb=false})})})}
+function fetchRemote(id,cb){
+ if(!SY.user||!SY.ad)return;var a=null;leads.forEach(function(l){(l.a||[]).forEach(function(x){if(x.id==id)a=x})});if(!a||!a.n)return;
+ if(SY.got[id])return;SY.got[id]=1;
+ var ps=[];for(var i=0;i<a.n;i++)ps.push(SY.ad.getChunk(SY.user.uid,id+"_"+i));
+ Promise.all(ps).then(function(parts){if(parts.some(function(p){return p==null})){delete SY.got[id];return}
+  var rec={id:id,name:a.name,type:a.type,buf:unb64(parts.join(""))};putF(rec,function(){cb(rec)})}).catch(function(){delete SY.got[id]})}
+function migrateFiles(){leads.forEach(function(l){(l.a||[]).forEach(function(a){if(a.n||a.big)return;getF(a.id,function(r){if(!r)return;var len=(r.buf&&r.buf.byteLength)||(r.blob&&r.blob.size)||0;if(!len)return;if(len>MAXF){a.big=1;save();return}a.n=Math.max(1,Math.ceil(Math.ceil(len/3)*4/CH));save();queueUp(a.id,a.n)})})})}
+function delRemote(id,n){FQ=FQ.filter(function(x){return x.id!=id});saveFQ();if(!SY.user||!SY.ad||!n)return;for(var i=0;i<n;i++)SY.ad.delChunk(SY.user.uid,id+"_"+i).catch(function(){})}
 function realAdapter(){
  if(typeof firebase==="undefined")return null;
  try{firebase.initializeApp(FBC);var au=firebase.auth(),fs=firebase.firestore();try{fs.settings({experimentalAutoDetectLongPolling:true,merge:true})}catch(e){}
@@ -299,7 +327,10 @@ function realAdapter(){
  return{onAuth:function(cb){au.onAuthStateChanged(function(u){cb(u?{uid:u.uid,email:u.email}:null)})},
   signIn:function(e,p){return au.signInWithEmailAndPassword(e,p)},signUp:function(e,p){return au.createUserWithEmailAndPassword(e,p)},signOut:function(){return au.signOut()},
   listen:function(uid,cb,eb){return col(uid).onSnapshot(function(s){cb(s.docChanges().map(function(c){return c.doc.data()}))},eb)},
-  put:function(uid,id,d){return col(uid).doc(id).set(d)}}}catch(e){return null}}
+  put:function(uid,id,d){return col(uid).doc(id).set(d)},
+  putChunk:function(uid,id,s){return fs.collection("users").doc(uid).collection("fchunks").doc(id).set({d:s})},
+  getChunk:function(uid,id){return fs.collection("users").doc(uid).collection("fchunks").doc(id).get().then(function(x){return x.exists?x.data().d:null})},
+  delChunk:function(uid,id){return fs.collection("users").doc(uid).collection("fchunks").doc(id).delete()}}}catch(e){return null}}
 function syncInit(){
  SY.ad=window.__ad||realAdapter();
  if(!SY.ad){SY.why="Sync off";syncStatus();return}
