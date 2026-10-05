@@ -419,7 +419,7 @@ function bindContent(){
  if($("lad2"))$("lad2").onclick=function(){var n=$("lnew2").value.trim();if(n&&LT.indexOf(n)<0){LT.push(n);saveLT();drawContent()}};
  applyRO()}
 function drawContent(){var p=$("pl");if(p)PSL=p.scrollLeft;var c=$("content");if(!c)return;c.innerHTML=pageContent();p=$("pl");if(p)p.scrollLeft=PSL;bindContent()}
-var NAVS=[["dash","home","Dashboard"],["leads","users","Leads"],["pipe","pipe","Pipeline"],["fu","cal","Follow-Ups"],["bldg","bldg","Buildings"],["proj","bulb","Projects"],["prop","doc","Proposals"],["set","gear","Settings"]];
+var NAVS=[["dash","home","Dashboard"],["pipe","pipe","Pipeline"],["fu","cal","Follow-Ups"],["prop","doc","Proposals"]];
 function deskView(){
  var nm=(NAVS.filter(function(n){return n[0]==NAV})[0]||NAVS[0]),em=SY.user?SY.user.email:"",ini=(em||"S")[0].toUpperCase();
  $("app").innerHTML='<div class="shell"><aside class="side"><div class="brand"><i>'+ico("bulb")+'</i><span>Sales</span></div>'+NAVS.map(function(n){return '<button class="nv'+(n[0]==NAV?' on':'')+'" data-nav="'+n[0]+'" title="'+n[2]+'">'+ico(n[1])+'<span>'+n[2]+'</span></button>'}).join("")+'</aside>'+
