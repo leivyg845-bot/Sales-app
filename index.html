@@ -173,6 +173,12 @@ body.ro #ab2{display:none}
 #lg.off{display:none}.lgc{width:100%;max-width:400px;background:var(--card);border-radius:24px;padding:28px 24px;box-shadow:0 10px 40px rgba(20,35,27,.14);display:grid;gap:12px;text-align:center}
 .lgl{font-size:34px;font-weight:800;letter-spacing:-.5px;color:var(--acc)}.lgc input{font-size:17px;padding:14px;text-align:left}.lgc .big{margin:4px 0}.lgc h2{margin:0;font-size:22px}
 .tg{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;font-size:.72em;font-weight:700;vertical-align:middle}.tg-hot{background:#fee2e2;color:#b91c1c}.tg-warm{background:#fef3c7;color:#b45309}.tg-cold{background:#dbeafe;color:#1d4ed8}.lc.arch{opacity:.55}.ckr{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:1em}.ckr input{width:22px;height:22px;flex:none}.lgr{font-size:.88em;padding:3px 0;border-bottom:1px solid var(--line)}.lgr span{color:var(--mute);margin-right:6px}.rp{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))!important}.rbar{display:flex;align-items:center;gap:8px;margin:6px 0}.rbar span{width:150px;flex:none;font-size:.9em}.rbar i{height:14px;background:var(--acc);border-radius:7px;min-width:3px}@media print{.side,.top,.sech button{display:none!important}}
+.mnu{display:none}.sbd{display:none}
+@media (min-width:800px){.mnu{display:grid;place-items:center;flex:none;width:48px;height:48px;border-radius:14px;background:var(--card);color:var(--text);border:1px solid var(--line);font-size:24px;padding:0}
+.side{position:fixed!important;left:0;top:0;z-index:40;width:250px!important;align-items:stretch!important;transform:translateX(-105%);transition:transform .2s;box-shadow:none}
+.shell.so .side{transform:none;box-shadow:6px 0 30px rgba(0,0,0,.25)}
+.side .nv span,.side .brand span{display:inline!important}.side .nv{width:100%!important;padding:14px!important}
+.shell.so .sbd{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:39}}
 </style>
 </head>
 <body>
@@ -461,9 +467,10 @@ function drawContent(){var p=$("pl");if(p)PSL=p.scrollLeft;var c=$("content");if
 var NAVS=[["dash","home","Dashboard"],["pipe","pipe","Pipeline"],["fu","cal","Follow-Ups"],["prop","doc","Proposals"],["sch","jobs","Schedule"],["rep","bill","Reports"],["set","gear","Settings"]];
 function deskView(){
  var nm=(NAVS.filter(function(n){return n[0]==NAV})[0]||NAVS[0]),em=SY.user?SY.user.email:"",ini=(em||"S")[0].toUpperCase();
- $("app").innerHTML='<div class="shell"><aside class="side"><div class="brand"><i>'+ico("bulb")+'</i><span>Sales</span></div>'+NAVS.map(function(n){return '<button class="nv'+(n[0]==NAV?' on':'')+'" data-nav="'+n[0]+'" title="'+n[2]+'">'+ico(n[1])+'<span>'+n[2]+'</span></button>'}).join("")+'</aside>'+
- '<main class="main"><div class="top"><h1>'+(NAV=="dash"?"Sales Dashboard":nm[2])+'</h1><div class="sbox">'+ico("search")+'<input id="q" placeholder="Search leads, companies, buildings..." value="'+esc(q)+'"></div><button class="addb" id="ab2">'+ico("plus")+'<span>Add New Lead</span></button>'+syncChip()+'<button class="prof" id="pf" title="'+esc(em||"Sign in")+'">'+esc(ini)+'</button></div><div id="content"></div></main></div>';
+ $("app").innerHTML='<div class="shell"><div class="sbd" id="sbd"></div><aside class="side"><div class="brand"><i>'+ico("bulb")+'</i><span>Sales</span></div>'+NAVS.map(function(n){return '<button class="nv'+(n[0]==NAV?' on':'')+'" data-nav="'+n[0]+'" title="'+n[2]+'">'+ico(n[1])+'<span>'+n[2]+'</span></button>'}).join("")+'</aside>'+
+ '<main class="main"><div class="top"><button class="mnu" id="mnu" aria-label="Menu">\u2630</button><h1>'+(NAV=="dash"?"Sales Dashboard":nm[2])+'</h1><div class="sbox">'+ico("search")+'<input id="q" placeholder="Search leads, companies, buildings..." value="'+esc(q)+'"></div><button class="addb" id="ab2">'+ico("plus")+'<span>Add New Lead</span></button>'+syncChip()+'<button class="prof" id="pf" title="'+esc(em||"Sign in")+'">'+esc(ini)+'</button></div><div id="content"></div></main></div>';
  Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"),function(b){b.onclick=function(){NAV=b.getAttribute("data-nav");STG=null;render()}});
+ var sh=document.querySelector(".shell");if($("mnu"))$("mnu").onclick=function(){sh.classList.toggle("so")};if($("sbd"))$("sbd").onclick=function(){sh.classList.remove("so")};
  $("q").oninput=function(){q=this.value;drawContent()};
  $("ab2").onclick=openAdd;$("pf").onclick=syncOpen;
  drawContent()}
@@ -583,7 +590,7 @@ function settingsExtra(){var rm=lsg("sdm-rm")!="0",hm=lsg("sdm-home")||"dash";
  return '<h3>Options</h3><div class="row"><span style="flex:1">Follow-up pop-up when app opens</span><button class="keep" id="st_rm">'+onoff(rm)+'</button></div><div class="row"><span style="flex:1">Show archived leads</span><button class="keep" id="st_ar">'+onoff(ARCH)+'</button></div><div class="row"><span style="flex:1">Open app on</span><select class="keep" id="st_hm">'+NAVS.filter(function(n){return n[0]!="set"}).map(function(n){return '<option value="'+n[0]+'"'+(n[0]==hm?' selected':'')+'>'+n[2]+'</option>'}).join("")+'</select></div>'+
  '<h3>Backup & export</h3><div class="row"><button class="keep" id="st_bk">Download backup</button><button class="keep" id="st_xl">Export to Excel</button></div><label class="sub">Restore from backup file<input id="st_rs" type="file" accept=".json,application/json"></label><div class="sub" id="st_m">Backup saves lead info (not attached photos/PDFs).</div>'+
  '<h3>App</h3><div class="row"><button class="keep" id="st_rf">Refresh app (get latest version)</button><button class="keep" id="st_so">Sign out</button></div><div class="sub">Sales · version '+APPV+(SY.user?' · '+esc(SY.user.email):'')+'</div>'}
-var APPV="19";
+var APPV="20";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn};
  b("st_rm",function(){lss("sdm-rm",lsg("sdm-rm")=="0"?"1":"0");drawContent()});
