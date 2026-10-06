@@ -252,6 +252,10 @@ input,textarea,select{font-size:16px!important}
 .fab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 4px;border:1px solid var(--line);border-radius:14px;background:var(--card);font-size:13px;font-weight:600;text-align:center;cursor:pointer}.fab span{font-size:22px}.fab input{display:none}
 .cvb{display:block;width:100%;margin-top:4px;padding:4px 2px!important;min-height:0;border:0;background:transparent!important;color:var(--mute)!important;font-size:12px;font-weight:600;text-align:left}.cvb.on{color:#0d9488!important}
 .fadd{grid-template-columns:repeat(2,1fr)!important}.vpl{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;font-size:15px;pointer-events:none}
+.chk.done{background:#0d9488;border-color:#0d9488}.chk.done:after{content:"\2713";color:#fff;font-size:12px;font-weight:700;line-height:1}
+.lc.hck:has(.chk.done) .lt{color:var(--mute)}
+.fvs{margin:0 0 12px}.fvs .tab{font-size:13px;padding:8px 4px}
+.sech.up{margin-top:18px}
 </style>
 </head>
 <body>
@@ -447,7 +451,7 @@ function bindTheme(c){
 applyTheme();
 
 /* ===== Desktop / tablet CRM layout + Add Lead form ===== */
-var ARCH=lsg("sdm-arch")=="1",STG=null,NAV="dash",F={sp:"",s:"",st:"",fu:"",uc:"",sort:"fu"},PSL=0,COLT=["New leads","Interesting","Waiting for bills","Bills received","Proposal sent / signed","Follow-up","Approved / Active job","Completed"],
+var FUV="all",ARCH=lsg("sdm-arch")=="1",STG=null,NAV="dash",F={sp:"",s:"",st:"",fu:"",uc:"",sort:"fu"},PSL=0,COLT=["New leads","Interesting","Waiting for bills","Bills received","Proposal sent / signed","Follow-up","Approved / Active job","Completed"],
  PS=["Not started","Preparing","Sent","Approved","Declined"],
  IC={sms:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/>',eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',home:'<path d="M3 11l9-8 9 8M5 10v10h14V10"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 5a3 3 0 010 6M21 20c0-2.5-2-4.5-4-5"/>',pipe:'<rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="13" rx="1"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',bldg:'<path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5M8 9h2M14 9h2M8 13h2M14 13h2"/>',bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10c1 1 1 2 1 3h6c0-1 0-2 1-3a6 6 0 00-4-10z"/>',doc:'<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',pin:'<path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>',dollar:'<path d="M12 3v18M16 7.5C15 6.5 13.7 6 12 6c-2.5 0-4 1.2-4 3s1.5 2.6 4 3 4 1.2 4 3-1.5 3-4 3c-1.8 0-3.2-.6-4.2-1.7"/>',plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',check:'<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',bill:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/>',jobs:'<path d="M14 7l3-3 3 3-3 3M17 4L8 13l-1 4 4-1 9-9M4 20h8"/>'};
 function ico(n,c){return '<svg class="ic2 '+(c||"")+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+IC[n]+'</svg>'}
@@ -484,7 +488,7 @@ function mapUrl(a){var q=encodeURIComponent(a),u=navigator.userAgent||"";return 
 function mapT(){return /Android/i.test(navigator.userAgent||"")?"":' target="_blank" rel="noopener"'}
 function lcard(l,mode){
  var ph=(l.p||l.p2||"").replace(/[^+\d]/g,""),city=l.ad||l.st||"",fu=l.d?(over(l)?'<span class="bad">Overdue · '+fd(l.d)+'</span>':l.d==today()?'<span class="warn">Today</span>':'<span>'+fd(l.d)+'</span>'):'<span class="mut">—</span>';
- var h='<div class="lc'+(over(l)?' od':'')+(l.ar?' arch':'')+(l.d&&!l.ar&&SY.role!="view"?' hck':'')+'" data-o="'+l.id+'"'+(SY.role=="view"?'':' draggable="true"')+' data-id="'+l.id+'">'+(l.d&&!l.ar&&SY.role!="view"?'<button type="button" class="chk keep'+(l.d<=today()?' due':'')+'" data-fd="'+l.id+'" title="Follow-up done" aria-label="Follow-up done"></button>':'')+'<b class="lt">'+esc(ttl(l))+'</b>'+tagB(l);var cv=coverId(l);if(cv)h=h.replace('<b class="lt">','<div class="cov" data-cv="'+esc(cv)+'"></div><b class="lt">');
+ var h='<div class="lc'+(over(l)?' od':'')+(l.ar?' arch':'')+((l.d||l.fdn==today())&&!l.ar&&SY.role!="view"?' hck':'')+'" data-o="'+l.id+'"'+(SY.role=="view"?'':' draggable="true"')+' data-id="'+l.id+'">'+((l.d||l.fdn==today())&&!l.ar&&SY.role!="view"?'<button type="button" class="chk keep'+(l.fdn==today()?' done':l.d<=today()?' due':'')+'" data-fd="'+l.id+'" title="Follow-up done" aria-label="Follow-up done"></button>':'')+'<b class="lt">'+esc(ttl(l))+'</b>'+tagB(l);var cv=coverId(l);if(cv)h=h.replace('<b class="lt">','<div class="cov" data-cv="'+esc(cv)+'"></div><b class="lt">');
  if(mode=="b"){
   if(city)h+='<div class="ln">'+ico("pin")+(l.ad?'<a class="adl" href="'+mapUrl(l.ad+(l.st?", "+l.st:""))+'"'+mapT()+' data-x>'+esc(city)+'</a>':esc(city))+'</div>';
   h+='<div class="ln">'+ico("bldg")+esc([l.nb?l.nb+" bldg"+(l.nb>1?"s":""):"",l.bt,l.sf?(+l.sf).toLocaleString()+" sq ft":""].filter(Boolean).join(" · ")||"No building info yet")+'</div>';
@@ -524,9 +528,17 @@ function pageContent(){
  if(NAV=="dash")h=statsHTML()+filtersHTML()+'<div class="sech"><b>Sales pipeline</b><span class="sub">Drag a card to move it to another stage</span><button id="qnb" class="ghost">\u270e Quick note</button></div>'+pipeHTML(a);
  else if(NAV=="pipe")h=filtersHTML()+pipeHTML(a);
  else if(NAV=="leads")h=filtersHTML()+tableHTML(a);
- else if(NAV=="fu"){var t=today(),od=a.filter(over),td=a.filter(function(l){return l.d==t&&l.s!=S[7]}),up=a.filter(function(l){return l.d>t&&l.s!=S[7]}),no=a.filter(function(l){return!l.d&&l.s!=S[7]});
+ else if(NAV=="fu"){var t=today(),isD=function(l){return l.fdn==t},nf=function(l){return l.s!=S[7]},
+   od=a.filter(function(l){return over(l)&&!isD(l)}),td=a.filter(function(l){return nf(l)&&(l.d==t||isD(l))}).sort(function(x,y){return (isD(x)?1:0)-(isD(y)?1:0)}),
+   up=a.filter(function(l){return l.d>t&&nf(l)&&!isD(l)}),no=a.filter(function(l){return !l.d&&nf(l)&&!isD(l)}),dn=a.filter(isD);
   var sec=function(tt,arr,cls){return arr.length?'<div class="sech '+cls+'"><b>'+tt+' ('+arr.length+')</b></div>'+gridHTML(arr,"x"):""};
-  h=routeBtn()+filtersHTML()+(sec("Overdue — contact these first",od,"bad")+sec("Due today",td,"warn")+sec("Coming up",up,"")+sec("No follow-up date",no,"")||'<p class="sub">No follow-ups to show.</p>')}
+  var dl=function(d){var x=new Date(d+"T00:00:00"),n=Math.round((x-new Date(t+"T00:00:00"))/864e5);return x.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})+(n==1?" · Tomorrow":"")};
+  var byDate=function(arr){var m={},o=[];arr.forEach(function(l){if(!m[l.d]){m[l.d]=[];o.push(l.d)}m[l.d].push(l)});o.sort();return o.map(function(d){return '<div class="sech"><b>'+dl(d)+' ('+m[d].length+')</b></div>'+gridHTML(m[d],"x")}).join("")};
+  var seg=[["all","All"],["due","Due ("+(od.length+td.length)+")"],["up","Upcoming ("+up.length+")"],["done","Done ("+dn.length+")"]];
+  var sg='<div class="seg fvs">'+seg.map(function(x){return '<button class="tab'+(FUV==x[0]?' on':'')+'" data-fv="'+x[0]+'">'+x[1]+'</button>'}).join("")+'</div>';
+  var body=FUV=="due"?sec("Overdue \u2014 contact these first",od,"bad")+sec("Due today",td,"warn"):FUV=="up"?byDate(up):FUV=="done"?sec("Done today \u2713",dn,""):
+   sec("Overdue \u2014 contact these first",od,"bad")+sec("Due today",td,"warn")+(up.length?'<div class="sech up"><b>Coming up \u2014 by date</b></div>'+byDate(up):"")+sec("No follow-up date",no,"");
+  h=routeBtn()+sg+filtersHTML()+(body||'<p class="sub">No follow-ups to show.</p>')}
  else if(NAV=="bldg")h=filtersHTML()+gridHTML(a,"b","No leads yet.");
  else if(NAV=="proj"){var pj=a.filter(function(l){return l.s==S[6]||l.s==S[7]}),av=0,dv=0;pj.forEach(function(l){if(l.s==S[7])dv+=mval(l);else av+=mval(l)});
   h=filtersHTML()+'<div class="sech"><b>Active value '+(money(av)||"$0")+' · Completed value '+(money(dv)||"$0")+'</b></div>'+gridHTML(pj,"x","No active or completed jobs yet.")}
@@ -539,6 +551,7 @@ function bindContent(){
  var c=$("content");
  Array.prototype.forEach.call(c.querySelectorAll("[data-fl]"),function(s){s.onchange=function(){F[s.getAttribute("data-fl")]=s.value;drawContent()}});
  if($("stgb"))$("stgb").onclick=function(){STG=null;NAV="dash";render()};
+ Array.prototype.forEach.call(c.querySelectorAll("[data-fv]"),function(b){b.onclick=function(){FUV=b.getAttribute("data-fv");drawContent()}});
  Array.prototype.forEach.call(c.querySelectorAll("[data-go]"),function(b){b.onclick=function(){var g=b.getAttribute("data-go");if(g=="fu"){STG=null;NAV="fu"}else{STG=+g;F.s="";}render();var cc=$("content");if(cc)cc.scrollTop=0}});
  if($("fclr"))$("fclr").onclick=function(){F.sp=F.s=F.st=F.fu=F.uc=F.tg="";drawContent()};
  Array.prototype.forEach.call(c.querySelectorAll("[data-x]"),function(a){a.onclick=function(e){e.stopPropagation()}});
@@ -718,7 +731,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="54";
+var APPV="55";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
@@ -933,9 +946,9 @@ function fuDone(l,after){if(!l||SY.role=="view")return;var old=document.getEleme
  var opt=[["Tomorrow",1],["In 3 days",3],["Next week",7],["In 2 weeks",14],["In a month",30]];
  m.innerHTML='<div class="card g" style="max-width:440px;width:100%;margin:0 0 8px;padding:18px;max-height:92dvh;overflow:auto"><h2 style="margin:0">✅ Follow-up done</h2><div class="sub" style="margin:2px 0 14px">'+esc(ttl(l))+' · what happened?</div><textarea id="fu_n" class="keep" rows="2" placeholder="Quick note: update on this job?" style="width:100%"></textarea><input id="fu_t" class="keep" placeholder="Next time: what to bring up (optional)" value="'+esc(l.fn||"")+'" style="width:100%;margin:8px 0 12px"><div class="sub" style="margin:0 0 8px;font-weight:600">When is the next follow-up?</div><div class="fug">'+opt.map(function(o){return '<button class="ghost keep" data-fn="'+o[1]+'">'+o[0]+'</button>'}).join("")+'<button class="ghost keep" data-fn="none">No next follow-up</button></div><div class="row" style="margin-top:10px;flex-wrap:nowrap"><input type="date" id="fu_d" class="keep" style="flex:1" min="'+today()+'"><button class="keep" id="fu_s">Set date</button></div><button class="ghost keep" id="fu_x" style="width:100%;margin-top:10px">Cancel</button></div>';
  document.body.appendChild(m);var close=function(){m.remove()};$("fu_x").onclick=close;m.onclick=function(e){if(e.target==m)close()};
- var fin=function(nd){var od=l.d,ol=l.lc,ofn=l.fn,nt=($("fu_n").value||"").trim(),nx=($("fu_t").value||"").trim();l.lc=today();l.d=nd||"";if(nx!=(l.fn||""))l.fn=nx;logAdd(l,"Follow-up done"+(nd?", next "+fd(nd):"")+(nt?": "+nt:""));save();close();if(after)after();else render();
+ var fin=function(nd){var od=l.d,ol=l.lc,ofn=l.fn,ofd=l.fdn,nt=($("fu_n").value||"").trim(),nx=($("fu_t").value||"").trim();l.lc=today();l.fdn=today();l.d=nd||"";if(nx!=(l.fn||""))l.fn=nx;logAdd(l,"Follow-up done"+(nd?", next "+fd(nd):"")+(nt?": "+nt:""));save();close();if(after)after();else render();
   var t=document.createElement("div");t.id="fut";t.style.cssText="position:fixed;left:12px;right:12px;bottom:90px;z-index:99997;background:#111;color:#fff;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(0,0,0,.35)";t.innerHTML='<span style="flex:1">Done'+(nd?" · next "+esc(fd(nd)):"")+'</span><button class="keep" style="background:transparent;color:#7ee2a8;border:0;font-weight:700;padding:4px 8px">Undo</button>';document.body.appendChild(t);
-  t.querySelector("button").onclick=function(){l.d=od;l.lc=ol;l.fn=ofn;logAdd(l,"Undo follow-up done");save();t.remove();if(after)after();else render()};setTimeout(function(){t.remove()},5000)};
+  t.querySelector("button").onclick=function(){l.d=od;l.lc=ol;l.fn=ofn;l.fdn=ofd;logAdd(l,"Undo follow-up done");save();t.remove();if(after)after();else render()};setTimeout(function(){t.remove()},5000)};
  Array.prototype.forEach.call(m.querySelectorAll("[data-fn]"),function(b){b.onclick=function(){var v=b.getAttribute("data-fn");fin(v=="none"?"":plusDays(+v))}});
  $("fu_s").onclick=function(){var v=$("fu_d").value;if(!v){toast("Pick a date");return}fin(v)}}
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".chk");if(!b)return;e.preventDefault();e.stopPropagation();var l=find(b.getAttribute("data-fd"));if(l)fuDone(l)},true);
