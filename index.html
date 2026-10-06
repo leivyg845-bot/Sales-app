@@ -528,13 +528,13 @@ function applyRO(){var ro=SY.role=="view";document.body.classList.toggle("ro",ro
 function gate(){var g=$("lg");if(!g)return;
  if(SY.user&&!SY.denied){var was=g.className!="off";g.className="off";g.innerHTML="";if(was)render();return}
  g.className="";var inv=window.__inv||wsGet();
- if(SY.user&&SY.denied){g.innerHTML='<div class="lgc"><div class="lgl">Sales</div><h2>No access yet</h2><p class="sub">'+esc(SY.user.email)+' was not added to this team. Ask the owner to add this email, then sign in again.</p><button class="big" id="lgo">Sign out</button></div>';$("lgo").onclick=function(){SY.ad.signOut()};return}
+ if(SY.user&&SY.denied){g.innerHTML='<div class="lgc"><div class="lgl">Sales</div><h2>No access yet</h2><p class="sub">'+(SY.why2?esc(SY.why2):esc(SY.user.email)+' was not added to this team. Ask the owner to add this email, then sign in again.')+'</p><button class="big" id="lgo">Sign out</button></div>';$("lgo").onclick=function(){SY.ad.signOut()};return}
  if(!SY.ad){g.innerHTML='<div class="lgc"><div class="lgl">Sales</div><p class="sub">Can\'t connect. Check your internet and try again.</p><button class="big" id="lgr">Try again</button></div>';$("lgr").onclick=function(){location.reload()};return}
  g.innerHTML='<div class="lgc"><div class="lgl">Sales</div><p class="sub">'+(inv?'You were invited. Create your account with the email you were invited with, or sign in.':'Sign in to open your leads.')+'</p><input id="lge" type="email" autocomplete="username" placeholder="Email"><input id="lgp" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="smsg" id="lgm"></div><button class="big" id="lgi">Sign in</button><button class="ghost" id="lgc">First time? Create account</button></div>';
  var go=function(fn){var e=$("lge").value.trim(),p=$("lgp").value,m=$("lgm");if(!e||!p){m.className="smsg bad";m.textContent="Type your email and password.";return}m.className="smsg ok";m.textContent="Working…";fn(e,p).catch(function(x){m.className="smsg bad";m.textContent=authMsg(x)})};
  $("lgi").onclick=function(){go(SY.ad.signIn)};$("lgc").onclick=function(){go(SY.ad.signUp)};
  $("lgp").onkeydown=function(e){if(e.key=="Enter")go(SY.ad.signIn)}}
-function syncStart(u){SY.authed=true;SY.denied=false;
+function syncStart(u){SY.authed=true;SY.denied=false;SY.why2="";
  if(SY.unsub)SY.unsub();SY.unsub=null;if(SY.munsub)SY.munsub();SY.munsub=null;SY.members=[];
  SY.user=u;SY.snap={};SY.ltu=0;SY.sent={};SY.first=true;SY.ready=false;SY.err="";SY.role="owner";SY.ws=u?u.uid:"";
  if(!u){syncStatus();applyRO();gate();return}
@@ -545,7 +545,7 @@ function syncStart(u){SY.authed=true;SY.denied=false;
     var j="";try{j=localStorage.getItem("sdm-wsj")||""}catch(e){}
     if(j!=w+"|"+u.uid){leads=[];Object.keys(DEAD).forEach(function(k){delete DEAD[k]});try{localStorage.setItem("sdm-wsj",w+"|"+u.uid)}catch(e){}localSave()}
     go(w,r);gate()}
-  }).catch(function(e){syncErr(e);SY.err="could not check team access"})}
+  }).catch(function(e){syncErr(e);SY.denied=true;SY.why2="The owner has not finished setting up team access yet. Tell the owner, then try again.";gate()})}
  else{go(u.uid,"owner");gate()}
  function go(ws,role){
   if(SY.user!==u)return;SY.ws=ws;SY.role=role;
