@@ -187,6 +187,7 @@ body.ro #ab2{display:none}
 .seg2{display:inline-flex;background:var(--tint);border-radius:99px;padding:3px;gap:2px}.seg2 button{background:transparent!important;color:var(--text)!important;border:0;border-radius:99px;padding:6px 14px;font-size:.85em;font-weight:700;min-height:0}.seg2 button.on{background:var(--acc)!important;color:#fff!important}.seg2.wide{display:flex}.seg2.wide button{flex:1;padding:10px}
 .tmx{flex:none;background:#fee2e2!important;color:#b91c1c!important;border-radius:10px;padding:8px 10px;font-size:.8em;font-weight:700;border:0}.tmx.sure{background:#b91c1c!important;color:#fff!important}
 .tme0{padding:14px;text-align:center;color:var(--mute);background:var(--tint);border-radius:14px;margin-bottom:8px}.tma{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--tint);border-radius:14px;margin:6px 0 10px}.tmshare{width:100%;background:transparent!important;color:var(--acc)!important;border:2px solid var(--acc)!important;border-radius:14px;padding:12px;font-weight:700;margin-bottom:6px}
+.pw{position:relative;display:block}.pw input{width:100%;padding-right:74px!important;box-sizing:border-box}.pwb{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--tint)!important;color:var(--acc)!important;border:0;border-radius:10px;padding:8px 12px;font-size:.85em;font-weight:700;min-height:0}
 </style>
 </head>
 <body>
@@ -601,7 +602,7 @@ function settingsExtra(){var rm=lsg("sdm-rm")!="0",hm=lsg("sdm-home")||"dash";
  return '<h3>Options</h3><div class="row"><span style="flex:1">Follow-up pop-up when app opens</span><button class="keep" id="st_rm">'+onoff(rm)+'</button></div><div class="row"><span style="flex:1">Show archived leads</span><button class="keep" id="st_ar">'+onoff(ARCH)+'</button></div><div class="row"><span style="flex:1">Open app on</span><select class="keep" id="st_hm">'+NAVS.filter(function(n){return n[0]!="set"}).map(function(n){return '<option value="'+n[0]+'"'+(n[0]==hm?' selected':'')+'>'+n[2]+'</option>'}).join("")+'</select></div>'+
  '<h3>Backup & export</h3><div class="row"><button class="keep" id="st_bk">Download backup</button><button class="keep" id="st_xl">Export to Excel</button></div><label class="sub">Restore from backup file<input id="st_rs" type="file" accept=".json,application/json"></label><div class="sub" id="st_m">Backup saves lead info (not attached photos/PDFs).</div>'+
  '<h3>Start over</h3><div class="row"><span style="flex:1">Delete all my leads (cannot undo)</span><button class="keep tmx" id="st_da">Delete all</button></div><h3>App</h3><div class="row"><button class="keep" id="st_rf">Refresh app (get latest version)</button><button class="keep" id="st_so">Sign out</button></div><div class="sub">Sales · version '+APPV+(SY.user?' · '+esc(SY.user.email):'')+'</div>'}
-var APPV="32";
+var APPV="33";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn};
  b("st_rm",function(){lss("sdm-rm",lsg("sdm-rm")=="0"?"1":"0");drawContent()});
@@ -638,6 +639,14 @@ function bgNon(){return !!(openId||STG!=null||NAV!="dash"||bgModal())}
 function bgSync(){if(bgNon()&&!BG){try{history.pushState({g:1},"")}catch(e){return}BG=true}else if(!bgNon()&&BG){BG=false;BGI=1;try{history.back()}catch(e){BGI=0}}}
 window.addEventListener("popstate",function(){if(BGI){BGI=0;return}BG=false;if(!bgNon())return;var m=bgModal();if(m)m.remove();else if(openId){openId=null;dtab="i";ltEdit=false}else if(STG!=null)STG=null;else NAV="dash";render();bgSync()});
 setInterval(bgSync,250);
+/* ===== Show/hide password + iPhone/iPad install tip ===== */
+function addEye(i){if(!i||i.parentNode.classList.contains("pw"))return;var w=document.createElement("div");w.className="pw";i.parentNode.insertBefore(w,i);w.appendChild(i);var b=document.createElement("button");b.type="button";b.className="pwb";b.textContent="Show";b.onclick=function(e){e.preventDefault();var h=i.type=="password";i.type=h?"text":"password";b.textContent=h?"Hide":"Show"};w.appendChild(b)}
+(function(){var ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform=="MacIntel"&&navigator.maxTouchPoints>1);
+ var sa=window.navigator.standalone||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches);
+ if(!ios||sa)return;var z=+(lsg("sdm-iosx")||0);if(Date.now()-z<7*864e5)return;
+ setTimeout(function(){if(document.getElementById("iost"))return;var d=document.createElement("div");d.id="iost";d.style.cssText="position:fixed;left:12px;right:12px;bottom:14px;z-index:100000;background:#14532d;color:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.35);font-size:15px;line-height:1.35";
+ d.innerHTML='<b style="font-size:16px">Install the Sales app</b><div style="margin-top:6px">Tap <b>Share</b> <span style="display:inline-block;border:1.5px solid #fff;border-radius:5px;padding:0 5px;font-size:13px">\u2191</span> at the bottom (or top) of Safari, then <b>Add to Home Screen</b>.</div><button id="iosx" style="margin-top:10px;background:#fff;color:#14532d;border:0;border-radius:10px;padding:8px 16px;font-weight:700">Got it</button>';
+ document.body.appendChild(d);document.getElementById("iosx").onclick=function(){lss("sdm-iosx",String(Date.now()));d.remove()}},2500)})();
 function gate(){var g=$("lg");if(!g)return;
  if(SY.user&&!SY.denied){var was=g.className!="off";g.className="off";g.innerHTML="";if(was)render();return}
  g.className="";var inv=window.__inv||wsGet();
@@ -645,7 +654,7 @@ function gate(){var g=$("lg");if(!g)return;
  if(!SY.ad){g.innerHTML='<div class="lgc"><div class="lgl">Sales</div><p class="sub">Can\'t connect. Check your internet and try again.</p><button class="big" id="lgr">Try again</button></div>';$("lgr").onclick=function(){location.reload()};return}
  g.innerHTML='<div class="lgc"><div class="lgl">Sales</div><p class="sub">'+(inv?'You were invited. Create your account with the email you were invited with, or sign in.':'Sign in to open your leads.')+'</p><input id="lge" type="email" autocomplete="username" placeholder="Email"><input id="lgp" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="smsg" id="lgm"></div><button class="big" id="lgi">Sign in</button><button class="ghost" id="lgc">First time? Create account</button></div>';
  var go=function(fn){var e=$("lge").value.trim(),p=$("lgp").value,m=$("lgm");if(!e||!p){m.className="smsg bad";m.textContent="Type your email and password.";return}m.className="smsg ok";m.textContent="Working…";fn(e,p).catch(function(x){m.className="smsg bad";m.textContent=authMsg(x)})};
- var cm=!!window.__inv;
+ addEye($("lgp"));var cm=!!window.__inv;
  var setM=function(){$("lgi").textContent=cm?"Create account":"Sign in";$("lgc").textContent=cm?"Already have an account? Sign in":"First time? Create account";$("lgp").autocomplete=cm?"new-password":"current-password";var sb=g.querySelector(".sub");if(sb)sb.textContent=cm?"Choose an email and a password (6+ characters) to create your account.":"Sign in to open your leads."};
  setM();
  $("lgi").onclick=function(){go(cm?SY.ad.signUp:SY.ad.signIn)};$("lgc").onclick=function(){cm=!cm;$("lgm").textContent="";setM()};
@@ -737,7 +746,7 @@ function syncOpen(keep){
   h+='<button class="ghost" id="smo">Sign out</button><button id="smx">Close</button></div>'}
  else h='<div class="card"><h2>Sign in to sync</h2><p class="sub">Use the same email and password on every device.</p><input id="sme" type="email" autocomplete="username" placeholder="Email"><input id="smp" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="'+cls+'" >'+esc(msg)+'</div><button class="big" id="smi">Sign in</button><button class="ghost" id="smc">First time? Create account</button><button class="ghost" id="smx">Close</button></div>';
  if(SY.role!="view")h=h.replace(/<\/div>$/,'<label class="sub">Import leads from a file<input id="imf" type="file" accept=".json,application/json"></label><div class="smsg" id="imm"></div></div>');
- m.innerHTML=h;
+ m.innerHTML=h;if($("smp"))addEye($("smp"));
  if($("imf"))$("imf").onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result),a=o.leads||[],n=0;a.forEach(function(x){if(x&&x.id&&!find(x.id)){leads.push(norm(x));n++}});save();$("imm").className="smsg ok";$("imm").textContent=n?("Imported "+n+" leads."):"Already imported.";render()}catch(e){$("imm").className="smsg bad";$("imm").textContent="That file didn't work."}};r.readAsText(f)};
  var set=function(t,ok){var e=m.querySelector(".smsg");if(e){e.textContent=t;e.className="smsg "+(ok?"ok":"bad")}};
  var go=function(fn){var e=$("sme").value.trim(),p=$("smp").value;if(!e||!p){set("Type your email and password.");return}set("Working…",true);fn(e,p).then(function(){m.remove()}).catch(function(x){set(authMsg(x))})};
