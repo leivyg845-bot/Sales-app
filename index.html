@@ -169,9 +169,13 @@ body.desk{padding-bottom:78px}
 body.ro #ab2{display:none}
 
 #app{zoom:var(--z,1)}
+#lg{position:fixed;inset:0;z-index:100;background:var(--page,var(--bg));display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto}
+#lg.off{display:none}.lgc{width:100%;max-width:400px;background:var(--card);border-radius:24px;padding:28px 24px;box-shadow:0 10px 40px rgba(20,35,27,.14);display:grid;gap:12px;text-align:center}
+.lgl{font-size:34px;font-weight:800;letter-spacing:-.5px;color:var(--acc)}.lgc input{font-size:17px;padding:14px;text-align:left}.lgc .big{margin:4px 0}.lgc h2{margin:0;font-size:22px}
 </style>
 </head>
 <body>
+<div id="lg"><div class="lgc"><div class="lgl">Sales</div><p class="sub">Loading…</p></div></div>
 <div id="app"></div>
 <div id="ov"><div class="bar"><button class="ghost" id="oc" style="color:#fff">Close</button><a id="oo" target="_blank" style="color:#fff;align-self:center">Open in new tab</a></div><div class="body" id="ob"></div></div>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -322,7 +326,7 @@ function boardView(){
  Array.prototype.forEach.call(document.querySelectorAll("[data-o]"),function(b){b.onclick=function(){openId=b.getAttribute("data-o");dtab="i";render()}});
  Array.prototype.forEach.call(document.querySelectorAll("[data-bm]"),function(b){b.onclick=function(e){e.stopPropagation();var l=find(b.getAttribute("data-bm"));l.s=S[Math.max(0,Math.min(7,S.indexOf(l.s)+(+b.getAttribute("data-d"))))];save();render()}});
 }
-function render(){var l=openId&&find(openId);var dk=isDesk()&&!l;document.body.classList.toggle("desk",dk);document.body.setAttribute("data-v",l?"d":dk?"desk":view);if(l)detail(l);else{openId=null;if(dk)deskView();else if(view=="board")boardView();else list()}var sb=$("sy");if(sb)sb.onclick=syncOpen;applyRO()}
+function render(){if(!(window.SY&&SY.user&&!SY.denied)){var ap=$("app");if(ap)ap.innerHTML="";return}var l=openId&&find(openId);var dk=isDesk()&&!l;document.body.classList.toggle("desk",dk);document.body.setAttribute("data-v",l?"d":dk?"desk":view);if(l)detail(l);else{openId=null;if(dk)deskView();else if(view=="board")boardView();else list()}var sb=$("sy");if(sb)sb.onclick=syncOpen;applyRO()}
 
 
 /* ===== Appearance settings ===== */
@@ -521,19 +525,28 @@ function wsGet(){try{return localStorage.getItem("sdm-ws")||""}catch(e){return""
 function wsSet(v){try{if(v)localStorage.setItem("sdm-ws",v);else localStorage.removeItem("sdm-ws")}catch(e){}}
 function applyRO(){var ro=SY.role=="view";document.body.classList.toggle("ro",ro);
  if(ro){document.querySelectorAll("#app input,#app textarea,#app select").forEach(function(e){if(e.id!="q")e.disabled=true});document.querySelectorAll("#app .card button:not(.tab)").forEach(function(b){b.disabled=true})}}
-function syncStart(u){
+function gate(){var g=$("lg");if(!g)return;
+ if(SY.user&&!SY.denied){var was=g.className!="off";g.className="off";g.innerHTML="";if(was)render();return}
+ g.className="";var inv=window.__inv||wsGet();
+ if(SY.user&&SY.denied){g.innerHTML='<div class="lgc"><div class="lgl">Sales</div><h2>No access yet</h2><p class="sub">'+esc(SY.user.email)+' was not added to this team. Ask the owner to add this email, then sign in again.</p><button class="big" id="lgo">Sign out</button></div>';$("lgo").onclick=function(){SY.ad.signOut()};return}
+ if(!SY.ad){g.innerHTML='<div class="lgc"><div class="lgl">Sales</div><p class="sub">Can\'t connect. Check your internet and try again.</p><button class="big" id="lgr">Try again</button></div>';$("lgr").onclick=function(){location.reload()};return}
+ g.innerHTML='<div class="lgc"><div class="lgl">Sales</div><p class="sub">'+(inv?'You were invited. Create your account with the email you were invited with, or sign in.':'Sign in to open your leads.')+'</p><input id="lge" type="email" autocomplete="username" placeholder="Email"><input id="lgp" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="smsg" id="lgm"></div><button class="big" id="lgi">Sign in</button><button class="ghost" id="lgc">First time? Create account</button></div>';
+ var go=function(fn){var e=$("lge").value.trim(),p=$("lgp").value,m=$("lgm");if(!e||!p){m.className="smsg bad";m.textContent="Type your email and password.";return}m.className="smsg ok";m.textContent="Working…";fn(e,p).catch(function(x){m.className="smsg bad";m.textContent=authMsg(x)})};
+ $("lgi").onclick=function(){go(SY.ad.signIn)};$("lgc").onclick=function(){go(SY.ad.signUp)};
+ $("lgp").onkeydown=function(e){if(e.key=="Enter")go(SY.ad.signIn)}}
+function syncStart(u){SY.authed=true;SY.denied=false;
  if(SY.unsub)SY.unsub();SY.unsub=null;if(SY.munsub)SY.munsub();SY.munsub=null;SY.members=[];
  SY.user=u;SY.snap={};SY.ltu=0;SY.sent={};SY.first=true;SY.ready=false;SY.err="";SY.role="owner";SY.ws=u?u.uid:"";
- if(!u){syncStatus();applyRO();return}
+ if(!u){syncStatus();applyRO();gate();return}
  var w=wsGet();
  if(w&&w!=u.uid){
   SY.ad.getRole(w,u.email).then(function(r){
-   if(r!="view"&&r!="edit"){wsSet("");SY.err="no access to that team";go(u.uid,"owner")}else{
+   if(r!="view"&&r!="edit"){SY.denied=true;gate()}else{
     var j="";try{j=localStorage.getItem("sdm-wsj")||""}catch(e){}
     if(j!=w+"|"+u.uid){leads=[];Object.keys(DEAD).forEach(function(k){delete DEAD[k]});try{localStorage.setItem("sdm-wsj",w+"|"+u.uid)}catch(e){}localSave()}
-    go(w,r)}
-  }).catch(function(e){syncErr(e)})}
- else go(u.uid,"owner");
+    go(w,r);gate()}
+  }).catch(function(e){syncErr(e);SY.err="could not check team access"})}
+ else{go(u.uid,"owner");gate()}
  function go(ws,role){
   if(SY.user!==u)return;SY.ws=ws;SY.role=role;
   SY.unsub=SY.ad.listen(ws,function(docs){
@@ -581,8 +594,8 @@ function realAdapter(){
   delChunk:function(uid,id){return fs.collection("users").doc(uid).collection("fchunks").doc(id).delete()}}}catch(e){return null}}
 function syncInit(){
  SY.ad=window.__ad||realAdapter();
- if(!SY.ad){SY.why="Sync off";syncStatus();return}
- SY.ad.onAuth(syncStart)}
+ if(!SY.ad){SY.why="Sync off";syncStatus();gate();return}
+ SY.ad.onAuth(syncStart);setTimeout(function(){if(!SY.authed&&!SY.user&&$("lg")&&$("lg").className==""){gate()}},9000)}
 function authMsg(e){var c=(e&&e.code)||"";return c=="auth/invalid-credential"||c=="auth/wrong-password"||c=="auth/user-not-found"?"Wrong email or password.":c=="auth/email-already-in-use"?"That email already has an account. Tap Sign in.":c=="auth/weak-password"?"Password needs 6 or more characters.":c=="auth/invalid-email"?"That email doesn't look right.":c=="auth/network-request-failed"?"No internet. Try again.":"Couldn't do that ("+(c||"error")+")."}
 function syncOpen(keep){
  var m=$("sm");if(!m){m=document.createElement("div");m.id="sm";document.body.appendChild(m)}
@@ -617,7 +630,7 @@ function syncOpen(keep){
 function invCheck(){try{var w=new URLSearchParams(location.search).get("w");if(w){wsSet(w);history.replaceState(null,"",location.pathname);window.__inv=1}}catch(e){}}
 invCheck();
 var DIP=null;window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();DIP=e;if(window.matchMedia("(display-mode: standalone)").matches)return;var d=document.createElement("div");d.className="inst";d.innerHTML="<b>Install the Sales app</b><button id=\"ib\">Install</button><button id=\"ix\" style=\"background:transparent;color:#fff\">✕</button>";document.body.appendChild(d);$("ib").onclick=function(){DIP.prompt();d.remove()};$("ix").onclick=function(){d.remove()}});
-window.addEventListener("load",function(){if(window.__inv)setTimeout(function(){if(!SY.user)syncOpen()},800)});
+
 window.addEventListener("load",syncInit);
 load();openDB(render);
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
