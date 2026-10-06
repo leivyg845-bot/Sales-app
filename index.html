@@ -475,9 +475,10 @@ function qScore(l,qq){var toks=qn(qq).split(" ").filter(Boolean);if(!toks.length
  if(allPri){var s0=qn(l.c||l.n||l.bn);return (qn(l.c).indexOf(toks.join(" "))==0||qn(l.n).indexOf(toks.join(" "))==0)?0:1}
  if(!long)return -1;
  var ok=toks.every(function(w){return priW.indexOf(" "+w)>=0||sec.indexOf(" "+w)>=0});return ok?2:-1}
-function vis(){var qq=q.toLowerCase(),t=today(),sc={};
+function vis(gl){var qq=q.toLowerCase(),t=today(),sc={};
  var a=leads.filter(function(l){
   if(qq&&qn(qq)){var r=qScore(l,qq);if(r<0)return false;sc[l.id]=r}
+  if(gl)return true;
   if(STG!=null&&l.s!=S[STG])return false;if(F.sp&&(l.sp||"")!=F.sp)return false;if(STG==null&&F.s&&l.s!=F.s)return false;if(F.st&&l.st!=F.st)return false;if(F.uc&&l.uc!=F.uc)return false;if(F.tg&&l.tg!=F.tg)return false;if(l.ar&&!ARCH)return false;
   if(F.fu=="over"&&!over(l))return false;if(F.fu=="today"&&l.d!=t)return false;if(F.fu=="week"&&!(l.d&&l.d>=t&&l.d<=plusDays(7)))return false;if(F.fu=="none"&&l.d)return false;
   return true});
@@ -566,7 +567,7 @@ function bindContent(){
  Array.prototype.forEach.call(c.querySelectorAll(".pc"),function(col){
   col.ondragover=function(e){if(SY.role=="view")return;e.preventDefault();col.classList.add("ov")};
   col.ondragleave=function(){col.classList.remove("ov")};
-  col.ondrop=function(e){e.preventDefault();col.classList.remove("ov");if(SY.role=="view")return;var id=drag||(e.dataTransfer&&e.dataTransfer.getData("text/plain")),l=id&&find(id);if(!l)return;var s=S[+col.getAttribute("data-col")];if(l.s!=s){l.s=s;save();drawContent()}}});
+  col.ondrop=function(e){e.preventDefault();col.classList.remove("ov");if(SY.role=="view")return;var id=drag||(e.dataTransfer&&e.dataTransfer.getData("text/plain")),l=id&&find(id);if(!l)return;var s=S[+col.getAttribute("data-col")];if(l.s!=s){l.s=s;logAdd(l,"Moved to "+SN(s));save();drawContent()}}});
  if($("sset"))$("sset").onclick=syncOpen;bindExtra2(c);bindTheme(c);
  Array.prototype.forEach.call(c.querySelectorAll("[data-ln2]"),function(e){e.onchange=function(){var i=+e.getAttribute("data-ln2"),o=LT[i],n=e.value.trim();if(n&&n!=o&&LT.indexOf(n)<0){leads.forEach(function(x){if(x.lt&&o in x.lt){x.lt[n]=x.lt[o];delete x.lt[o]}});LT[i]=n;saveLT();save()}drawContent()}});
  Array.prototype.forEach.call(c.querySelectorAll("[data-lr2]"),function(e){e.onclick=function(){var i=+e.getAttribute("data-lr2"),o=LT[i];ask(e,function(){leads.forEach(function(x){if(x.lt)delete x.lt[o]});LT.splice(i,1);saveLT();save();drawContent()},"Tap again: deletes counts")}});
@@ -574,7 +575,9 @@ function bindContent(){
  applyRO()}
 function coverId(l){return l.pic&&(l.a||[]).some(function(x){return x.id==l.pic})?l.pic:""}
 function fillCovers(){Array.prototype.forEach.call(document.querySelectorAll("[data-cv]"),function(e){var id=e.getAttribute("data-cv");urlFor(id,function(u){e.style.backgroundImage="url("+u+")";e.classList.add("on")})})}
-function drawContent(){var p=$("pl");if(p)PSL=p.scrollLeft;var c=$("content");if(!c)return;c.innerHTML=pageContent();if(q&&q.trim()&&NAV!="set"&&NAV!="rep"){var n=vis().length;c.insertAdjacentHTML("afterbegin",'<div class="qinfo">'+n+(n==1?" result":" results")+' for \u201c'+esc(q.trim())+'\u201d</div>')}p=$("pl");if(p)p.scrollLeft=PSL;bindContent();fillCovers()}
+function searchHTML(){var a=vis(true),n=a.length;
+ return '<div class="qinfo">'+n+(n==1?" result":" results")+' for \u201c'+esc(q.trim())+'\u201d \u00b7 all leads</div>'+(n?gridHTML(a,"x"):'<p class="sub">No leads match \u201c'+esc(q.trim())+'\u201d.</p>')}
+function drawContent(){var p=$("pl");if(p)PSL=p.scrollLeft;var c=$("content");if(!c)return;c.innerHTML=(q&&q.trim())?searchHTML():pageContent();p=$("pl");if(p)p.scrollLeft=PSL;bindContent();fillCovers()}
 var NAVS=[["dash","home","Dashboard"],["pipe","pipe","Pipeline"],["fu","cal","Follow-Ups"],["rep","bill","Reports"],["set","gear","Settings"]];
 function deskView(){
  var nm=(NAVS.filter(function(n){return n[0]==NAV})[0]||NAVS[0]),em=SY.user?SY.user.email:"",ini=(em||"S")[0].toUpperCase();
@@ -733,7 +736,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="58";
+var APPV="59";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
