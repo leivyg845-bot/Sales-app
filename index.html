@@ -358,7 +358,7 @@ function detail(l){
  extrasHTML(l)+(nextI(l.s)!=S.indexOf(l.s)?'<button class="big" id="mv" data-s="i">Move to: '+esc(SN(S[nextI(l.s)]))+'</button>':'')+
   '<div class="card" data-s="n"><div class="row" style="margin-bottom:8px"><button type="button" class="ghost keep" id="cpn">Copy notes</button><button type="button" class="ghost keep" id="shn">Share</button></div><textarea id="dt" rows="10" placeholder="Notes about the job...">'+esc(l.t)+'</textarea></div>'+
  lightsHTML(l)+
- '<div class="card" data-s="f"><div class="row"><b style="flex:1">Attachments</b></div><div class="fadd"><label class="fab"><span>\uD83D\uDCF7</span>Take photo<input id="fc" type="file" accept="image/*" capture="environment"></label><label class="fab"><span>\uD83D\uDDBC</span>Add pictures<input id="fi" type="file" multiple accept="image/*"></label><label class="fab"><span>\uD83C\uDFA5</span>Add video<input id="fv" type="file" multiple accept="video/*"></label><label class="fab"><span>\uD83D\uDCC4</span>Add PDF<input id="fp" type="file" multiple accept="application/pdf,.pdf"></label></div><div class="sub" style="margin-top:6px">Pictures and videos stay in this list. Tap \u2606 under a picture if you want it as the card cover.</div></div><div class="files" id="fl"></div><p class="sub" id="fm"></p></div>';
+ '<div class="card" data-s="f"><div class="row"><b style="flex:1">Attachments</b></div><div class="fadd"><label class="fab"><span>\uD83D\uDCF7</span>Take photo<input id="fc" type="file" accept="image/*" capture="environment"></label><label class="fab"><span>\uD83D\uDDBC</span>Add pictures<input id="fi" type="file" multiple accept="image/*"></label><label class="fab"><span>\uD83C\uDFA5</span>Add video<input id="fv" type="file" multiple accept="video/*"></label><label class="fab"><span>\uD83D\uDCC4</span>Add PDF<input id="fp" type="file" multiple accept="application/pdf,.pdf"></label></div><div class="sub" style="margin-top:6px">Pictures and videos stay in this list. Tap \u2606 under a picture if you want it as the card cover.</div></div><div class="files" id="fl" data-s="f"></div><p class="sub" id="fm" data-s="f"></p></div>';
  fillAv();
  $("bk").onclick=function(){openId=null;dtab="i";ltEdit=false;render()};
  $("dl").onclick=function(){ask(this,function(){l.a.forEach(function(a){delF(a.id,a.n)});delF(l.pic);leads=leads.filter(function(x){return x!==l});tomb(l.id);save();openId=null;render()})};
@@ -718,7 +718,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="53";
+var APPV="54";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
