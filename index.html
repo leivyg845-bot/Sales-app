@@ -198,6 +198,7 @@ button.srow.lnk,label.srow.lnk{background:transparent!important;color:var(--text
 .sthm{padding:8px 16px 14px}.sthm h3{font-size:.8em;text-transform:uppercase;letter-spacing:.5px;color:var(--mute);margin:12px 0 6px}
 .hq summary{cursor:pointer;font-weight:600;padding:13px 0;list-style:none}.hq summary::-webkit-details-marker{display:none}.hq{border-bottom:1px solid var(--line)}.hq:last-child{border:0}.hq p{margin:0 0 12px;color:var(--mute)}
 .sthm #tcol{width:44px!important;height:44px;padding:0;border:0;border-radius:50%;background:transparent;flex:none}.sthm .sw{align-items:center}.scard+.scard{margin-top:10px}
+.fld .cpy{flex:none;background:var(--tint)!important;color:var(--acc)!important;border:0;border-radius:8px;padding:5px 9px;font-size:.72em;font-weight:700;margin-left:6px;min-height:0}
 </style>
 </head>
 <body>
@@ -278,7 +279,7 @@ function pill(s){return '<span class="pill p'+S.indexOf(s)+'">'+esc(s)+'</span>'
 function sel(lb,id,arr,v,ph){return '<label class="fld"><span>'+lb+'</span><select id="'+id+'"><option value="">'+ph+'</option>'+arr.map(function(x){return '<option'+(x==v?' selected':'')+'>'+esc(x)+'</option>'}).join("")+'</select></label>'}
 var DO={c:1};
 function dsec(k,t,body){return '<details class="dsec" data-k="'+k+'"'+(DO[k]?' open':'')+'><summary>'+t+'</summary><div class="dgrid">'+body+'</div></details>'}
-function fld(ic,lb,id,v,t){return '<label class="fld"><span>'+lb+'</span><input id="'+id+'" type="'+(t||"text")+'" value="'+esc(v)+'"></label>'}
+function fld(ic,lb,id,v,t){var cp=(!t||t=="tel"||t=="email");return '<label class="fld"><span>'+lb+'</span><input id="'+id+'" type="'+(t||"text")+'" value="'+esc(v)+'">'+(cp?'<button type="button" class="cpy keep" data-cp="'+id+'" title="Copy">Copy</button>':'')+'</label>'}
 function prep(f,cb){
  function raw(){f.arrayBuffer().then(function(b){cb(b,f.type||(/\.pdf$/i.test(f.name)?"application/pdf":""))}).catch(function(){cb(null)})}
  if((f.type||"").indexOf("image")!=0&&!/\.(jpe?g|png|heic|webp|gif)$/i.test(f.name))return raw();
@@ -301,7 +302,7 @@ function detail(l){
  dsec("j","Project",fld("","Estimated lights","del",l.el,"number")+fld("","Project value ($)","dpv",l.pv,"number")+sel("Proposal status","dps",PS,l.ps,"Choose")+fld("","Install date","dins",l.ins,"date"))+
  dsec("f","Follow-up & source",fld("","Last contact","dlc",l.lc,"date")+fld("","Salesperson","dsp",l.sp)+fld("","Lead source","dls",l.ls)+fld("","Follow-up notes","dfn",l.fn))+'</div>'+
  extrasHTML(l)+(l.s!=S[7]?'<button class="big" id="mv" data-s="i">Move to: '+esc(S[S.indexOf(l.s)+1])+'</button>':'')+
-  '<div class="card" data-s="n"><textarea id="dt" rows="10" placeholder="Notes about the job...">'+esc(l.t)+'</textarea></div>'+
+  '<div class="card" data-s="n"><div class="row" style="margin-bottom:8px"><button type="button" class="ghost keep" id="cpn">Copy notes</button><button type="button" class="ghost keep" id="shn">Share</button></div><textarea id="dt" rows="10" placeholder="Notes about the job...">'+esc(l.t)+'</textarea></div>'+
  lightsHTML(l)+
  '<div class="card" data-s="f"><div class="row"><b style="flex:1">Attachments</b></div><div class="g" style="margin-top:8px"><label class="sub">Take a photo<input id="fc" type="file" accept="image/*" capture="environment"></label><label class="sub">Add pictures or PDFs from your device<input id="fi" type="file" multiple accept="image/*,application/pdf,.pdf"></label></div></div><div class="files" id="fl"></div><p class="sub" id="fm"></p></div>';
  fillAv();
@@ -584,10 +585,12 @@ function fdt(t){var d=new Date(t);return d.toLocaleDateString("en-US",{month:"sh
 function logHTML(l){var a=(l.lg||[]).slice(0,15);return a.length?a.map(function(e){return '<div class="lgr"><span>'+esc(fdt(e.t))+'</span> '+esc(e.x)+'</div>'}).join(""):'<p class="sub">No activity yet.</p>'}
 function extrasHTML(l){var ck=l.ck||{};
  return '<div class="card" data-s="i"><h3 style="margin:0 0 6px">Job checklist</h3>'+CKL.map(function(n,i){return '<label class="ckr"><input type="checkbox" data-ck="'+i+'"'+(ck[i]?' checked':'')+'> <span>'+esc(n)+'</span></label>'}).join("")+
- '<div class="row" style="margin-top:10px"><button class="ghost" id="xdup">Duplicate lead</button><button class="ghost" id="xarc">'+(l.ar?'Unarchive':'Archive lead')+'</button></div>'+(l.ar?'<p class="sub">This lead is archived (hidden from the dashboard).</p>':'')+
+ '<div class="row" style="margin-top:10px"><button class="ghost" id="xdup">Duplicate lead</button><button class="ghost" id="xarc">'+(l.ar?'Unarchive':'Archive lead')+'</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xcp">Copy lead info</button><button class="ghost keep" id="xsh">Share lead</button></div>'+(l.ar?'<p class="sub">This lead is archived (hidden from the dashboard).</p>':'')+
  '<h3 style="margin:14px 0 4px">Activity</h3><div id="lgl">'+logHTML(l)+'</div></div>'}
 function bindExtras(l){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ck]"),function(c){c.onchange=function(){l.ck=l.ck||{};var i=+c.getAttribute("data-ck");l.ck[i]=c.checked;logAdd(l,(c.checked?"Done: ":"Unchecked: ")+CKL[i]);save();var g=$("lgl");if(g)g.innerHTML=logHTML(l)}});
+ if($("xcp"))$("xcp").onclick=function(){copyText(leadText(l),"Lead info copied")};if($("xsh"))$("xsh").onclick=function(){shareText(leadText(l),ttl(l))};
+ if($("cpn"))$("cpn").onclick=function(){var v=$("dt").value;if(v)copyText(v,"Notes copied");else toast("No notes yet")};if($("shn"))$("shn").onclick=function(){var v=$("dt").value;if(v)shareText(v,ttl(l));else toast("No notes yet")};
  if($("xdup"))$("xdup").onclick=function(){var c=JSON.parse(JSON.stringify(l));c.id="";c.a=[];c.pic="";c.lg=[];c.ar=0;c.n=(c.n||"")+" (copy)";c.cr=Date.now();var n=norm(c);logAdd(n,"Duplicated from "+ttl(l));leads.unshift(n);save();openId=n.id;dtab="i";render()};
  if($("xarc"))$("xarc").onclick=function(){l.ar=l.ar?0:1;logAdd(l,l.ar?"Archived":"Unarchived");save();if(l.ar&&!ARCH){openId=null}render()}}
 function schedHTML(a){
@@ -630,7 +633,7 @@ function settingsPage(){
  '<div class="sh">Help</div><div class="scard"><details class="hq"><summary>How do I add a worker?</summary><p>Sync & team → type their email → pick View or Edit → Add. They sign in with that email and see your leads.</p></details><details class="hq"><summary>How do I remove a worker?</summary><p>Sync & team → tap Remove next to their name, then tap again. They lose access right away.</p></details><details class="hq"><summary>The app looks old or something is missing</summary><p>Tap Refresh app above, then close the app completely and open it again.</p></details><details class="hq"><summary>Install on iPhone or iPad</summary><p>Open in Safari → tap Share → Add to Home Screen.</p></details></div>'+
  '</div>'}
 function bindSet(c){}
-var APPV="36";
+var APPV="37";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn},flip=function(id,k,invert){b(id,function(){var off=invert?lsg(k)!="1":lsg(k)=="0";lss(k,off?(invert?"1":"1"):"0");if(k=="sdm-arch")ARCH=lsg(k)=="1";drawContent()})};
  flip("st_rm","sdm-rm");flip("st_bd","sdm-bd");flip("st_bkr","sdm-bkr");
@@ -678,6 +681,14 @@ function addEye(i){if(!i||i.parentNode.classList.contains("pw"))return;var w=doc
  setTimeout(function(){if(document.getElementById("iost"))return;var d=document.createElement("div");d.id="iost";d.style.cssText="position:fixed;left:12px;right:12px;bottom:14px;z-index:100000;background:#14532d;color:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.35);font-size:15px;line-height:1.35";
  d.innerHTML='<b style="font-size:16px">Install the Sales app</b><div style="margin-top:6px">Tap <b>Share</b> <span style="display:inline-block;border:1.5px solid #fff;border-radius:5px;padding:0 5px;font-size:13px">\u2191</span> at the bottom (or top) of Safari, then <b>Add to Home Screen</b>.</div><button id="iosx" style="margin-top:10px;background:#fff;color:#14532d;border:0;border-radius:10px;padding:8px 16px;font-weight:700">Got it</button>';
  document.body.appendChild(d);document.getElementById("iosx").onclick=function(){lss("sdm-iosx",String(Date.now()));d.remove()}},2500)})();
+/* ===== Copy / share ===== */
+function copyText(t,msg){var done=function(){toast(msg||"Copied")};
+ try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(function(){fb()});return}}catch(e){}
+ fb();function fb(){var a=document.createElement("textarea");a.value=t;a.style.cssText="position:fixed;opacity:0;top:0";document.body.appendChild(a);a.focus();a.select();try{document.execCommand("copy");done()}catch(e){toast("Couldn't copy")}a.remove()}}
+function toast(m){var t=document.createElement("div");t.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#111;color:#fff;border-radius:99px;padding:10px 18px;z-index:999999;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,.35)";t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},1500)}
+function leadText(l){var L=[ttl(l)];if(l.n&&l.n!=ttl(l))L.push("Contact: "+l.n+(l.ti?" ("+l.ti+")":""));if(l.p)L.push("Mobile: "+l.p);if(l.p2)L.push("Landline: "+l.p2);if(l.e)L.push("Email: "+l.e);if(l.ad)L.push("Address: "+l.ad+(l.st?", "+l.st:""));L.push("Stage: "+l.s);if(l.d)L.push("Next follow-up: "+l.d);var li=tot(l)||l.el;if(li)L.push("Lights: "+li);if(l.pv)L.push("Project value: "+money(l.pv));if(l.t)L.push("Notes: "+l.t);return L.join("\n")}
+function shareText(t,title){if(navigator.share)navigator.share({title:title||"Sales",text:t}).catch(function(){});else copyText(t,"Copied (sharing not available here)")}
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".cpy");if(!b)return;e.preventDefault();e.stopPropagation();var i=document.getElementById(b.getAttribute("data-cp"));if(i&&i.value)copyText(i.value);else toast("Nothing to copy")},true);
 function gate(){var g=$("lg");if(!g)return;
  if(SY.user&&!SY.denied){var was=g.className!="off";g.className="off";g.innerHTML="";if(was)render();return}
  g.className="";var inv=window.__inv||wsGet();
