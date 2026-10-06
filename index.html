@@ -224,6 +224,12 @@ body[data-v="d"] .xc .ckr{padding:10px 2px}
 body[data-v="d"] .xc h3+div,body[data-v="d"] #lgl{margin-top:4px}
 body[data-v="d"] .xc>h3:last-of-type{margin-top:22px!important;padding-top:16px;border-top:1px solid var(--line)}
 body[data-v="d"] #mv{margin:16px 0 8px}
+
+.smn{display:flex!important;align-items:center;gap:14px;padding:14px 16px!important;width:100%;text-align:left}
+.smn .sic{flex:none;width:42px;height:42px;border-radius:12px;background:var(--tint,#e8f5ee);display:grid;place-items:center;font-size:21px}
+.smn .stx{flex:1;display:flex;flex-direction:column;min-width:0}.smn .stx b{font-size:16px}.smn .stx small{color:var(--mute);font-size:13px;margin-top:2px}
+.smn i{font-style:normal;font-size:22px;color:var(--mute)}
+.sp .sh{margin:22px 4px 8px}
 </style>
 </head>
 <body>
@@ -523,7 +529,7 @@ function deskView(){
  var nm=(NAVS.filter(function(n){return n[0]==NAV})[0]||NAVS[0]),em=SY.user?SY.user.email:"",ini=(em||"S")[0].toUpperCase();
  $("app").innerHTML='<div class="shell"><div class="sbd" id="sbd"></div><aside class="side"><div class="brand"><i>'+ico("bulb")+'</i><span>Sales</span></div>'+NAVS.map(function(n){return '<button class="nv'+(n[0]==NAV?' on':'')+'" data-nav="'+n[0]+'" title="'+n[2]+'">'+ico(n[1])+'<span>'+n[2]+'</span></button>'}).join("")+'</aside>'+
  '<main class="main"><div class="top"><button class="mnu" id="mnu" aria-label="Menu">\u2630</button><h1>'+(NAV=="dash"?"Sales Dashboard":nm[2])+'</h1><div class="sbox">'+ico("search")+'<input id="q" placeholder="Search leads, companies, buildings..." value="'+esc(q)+'"></div><button class="addb" id="ab2">'+ico("plus")+'<span>Add New Lead</span></button>'+syncChip()+'<button class="prof" id="pf" title="'+esc(em||"Sign in")+'">'+esc(ini)+'</button></div><div id="content"></div></main></div>';
- Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"),function(b){b.onclick=function(){NAV=b.getAttribute("data-nav");STG=null;render()}});
+ Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"),function(b){b.onclick=function(){NAV=b.getAttribute("data-nav");STG=null;SETSUB=null;render()}});
  var sh=document.querySelector(".shell");if($("mnu"))$("mnu").onclick=function(){sh.classList.toggle("so")};if($("sbd"))$("sbd").onclick=function(){sh.classList.remove("so")};
  $("q").oninput=function(){q=this.value;drawContent()};
  $("ab2").onclick=openAdd;$("pf").onclick=syncOpen;
@@ -653,7 +659,7 @@ function doRestore(f,msg){var r=new FileReader();r.onload=function(){try{var d=J
 function onoff(v){return v?"On":"Off"}
 function tg(id,on){return '<button class="tgl keep'+(on?' on':'')+'" id="'+id+'" role="switch" aria-checked="'+(on?'true':'false')+'"></button>'}
 function srow(t,sub,ctl){return '<div class="srow"><div class="stx"><b>'+t+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</div>'+ctl+'</div>'}
-function settingsPage(){
+function settingsAll(){
  var em=SY.user?SY.user.email:"",rl=SY.role=="owner"?"Owner":SY.role=="edit"?"Team member · can edit":"Team member · view only",hm=lsg("sdm-home")||"dash",ds=lsg("sdm-ds")||S[0],sp=lsg("sdm-sp")||"",ro=SY.role=="view";
  var sel=function(id,arr,v){return '<select class="keep" id="'+id+'">'+arr.map(function(x){var o=Array.isArray(x)?x:[x,x];return '<option value="'+esc(o[0])+'"'+(o[0]==v?' selected':'')+'>'+esc(o[1])+'</option>'}).join("")+'</select>'};
  var inst=window.matchMedia&&matchMedia("(display-mode: standalone)").matches||window.navigator.standalone;
@@ -668,9 +674,15 @@ function settingsPage(){
  '<div class="sh">About</div><div class="scard">'+(inst?srow("Installed","This is running as an app",'<span class="ok2">✓</span>'):'<button class="srow lnk keep" id="st_in"><span>Install the app</span><i>›</i></button>')+'<button class="srow lnk keep" id="st_rf"><span>Refresh app (get latest version)</span><i>↻</i></button>'+srow("Version",APPV?"Sales":"",'<b>'+APPV+'</b>')+'</div>'+
  '<div class="sh">Help</div><div class="scard"><details class="hq"><summary>How do I add a worker?</summary><p>Sync & team → type their email → pick View or Edit → Add. They sign in with that email and see your leads.</p></details><details class="hq"><summary>How do I remove a worker?</summary><p>Sync & team → tap Remove next to their name, then tap again. They lose access right away.</p></details><details class="hq"><summary>The app looks old or something is missing</summary><p>Tap Refresh app above, then close the app completely and open it again.</p></details><details class="hq"><summary>Install on iPhone or iPad</summary><p>Open in Safari → tap Share → Add to Home Screen.</p></details></div>'+
  '</div>'}
-function bindSet(c){}
-var APPV="42";
+var SETSUB=null,SG=[["app","🎨","Appearance","Light, dark or auto",["Appearance"]],["rem","🔔","Reminders","Pop-up, icon number, backup",["Reminders"]],["led","📋","Leads & pipeline","Start page, stages, light types",["Leads","Light types","Pipeline stages"]],["co","🏢","Company & messages","Proposal details, message templates",["Company & proposals","Message templates"]],["dat","💾","Backup & data","Download, export, restore",["Data"]],["abt","ℹ️","App & help","Install, refresh, version, help",["About","Help"]]];
+function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split('<div class="sh">'),head=parts.shift().replace(/^<div class="sp">/,""),map={};
+ parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
+ if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
+ return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
+var APPV="43";
 function bindExtra2(c){
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
+ if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn},flip=function(id,k,invert){b(id,function(){var off=invert?lsg(k)!="1":lsg(k)=="0";lss(k,off?(invert?"1":"1"):"0");if(k=="sdm-arch")ARCH=lsg(k)=="1";drawContent()})};
  flip("st_rm","sdm-rm");flip("st_bd","sdm-bd");flip("st_bkr","sdm-bkr");
  bindStages();bindBrand();b("rt",routeGo);b("st_ar",function(){ARCH=!ARCH;lss("sdm-arch",ARCH?"1":"0");drawContent()});
@@ -706,9 +718,9 @@ fix();mics();new MutationObserver(function(){fix();mics()}).observe(document.doc
 /* ===== Phone back button: go back a step instead of leaving the app ===== */
 var BG=false,BGI=0;
 function bgModal(){return document.querySelector("#am,#sm,#qnm,#rmd")}
-function bgNon(){return !!(openId||STG!=null||NAV!="dash"||bgModal())}
+function bgNon(){return !!(openId||STG!=null||NAV!="dash"||SETSUB||bgModal())}
 function bgSync(){if(bgNon()&&!BG){try{history.pushState({g:1},"")}catch(e){return}BG=true}else if(!bgNon()&&BG){BG=false;BGI=1;try{history.back()}catch(e){BGI=0}}}
-window.addEventListener("popstate",function(){if(BGI){BGI=0;return}BG=false;if(!bgNon())return;var m=bgModal();if(m)m.remove();else if(openId){openId=null;dtab="i";ltEdit=false}else if(STG!=null)STG=null;else NAV="dash";render();bgSync()});
+window.addEventListener("popstate",function(){if(BGI){BGI=0;return}BG=false;if(!bgNon())return;var m=bgModal();if(m)m.remove();else if(openId){openId=null;dtab="i";ltEdit=false}else if(SETSUB)SETSUB=null;else if(STG!=null)STG=null;else NAV="dash";render();bgSync()});
 setInterval(bgSync,250);
 /* remember where you were (phone may reload the app after a call/switch) */
 (function(){var v=jget("sdm-vs");if(v&&Date.now()-v.t<4*36e5&&NAVS.some(function(n){return n[0]==v.n})){NAV=v.n;STG=v.g==null?null:+v.g;if(v.o){openId=v.o;dtab=v.d||"i"}}
