@@ -201,6 +201,29 @@ button.srow.lnk,label.srow.lnk{background:transparent!important;color:var(--text
 .fld .cpy{flex:none;background:var(--tint)!important;color:var(--acc)!important;border:0;border-radius:8px;padding:5px 9px;font-size:.72em;font-weight:700;margin-left:6px;min-height:0}
 .mic{display:block;margin:6px 0 0;padding:8px 14px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:14px}.mic.on{background:#dc2626;color:#fff;border-color:#dc2626}
 .scn{display:block;width:100%;margin:0 0 12px}
+
+/* ===== Roomier lead page ===== */
+body[data-v="d"] .card.dm{background:transparent;box-shadow:none;border:0;padding:0;margin-top:10px}
+body[data-v="d"] #ql{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 14px!important}
+body[data-v="d"] #ql a,body[data-v="d"] #ql button{display:grid;place-items:center;text-align:center;padding:12px 4px!important;border-radius:14px!important;font-size:14px;font-weight:600;min-height:46px;width:auto!important;flex:none!important}
+body[data-v="d"] .dtop{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px 16px 10px;margin:0 0 16px}
+body[data-v="d"] .dsec{margin:0 0 16px;padding:4px 16px 12px;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+body[data-v="d"] .dsec summary{font-size:17px;padding:14px 0 10px}
+body[data-v="d"] .dgrid{display:grid;grid-template-columns:1fr;gap:4px 28px}
+@media(min-width:760px){body[data-v="d"] .dgrid{grid-template-columns:1fr 1fr}}
+body[data-v="d"] .fld{display:flex;flex-wrap:wrap;align-items:center;gap:0;border-bottom:1px solid var(--line);padding:10px 0 6px}
+body[data-v="d"] .fld>span{flex:0 0 100%;font-size:12px;font-weight:600;letter-spacing:.3px;color:var(--mute);margin-bottom:2px}
+body[data-v="d"] .fld input,body[data-v="d"] .fld select{flex:1 1 60%;min-width:0;font-size:17px;padding:8px 0 8px 0;min-height:42px}
+body[data-v="d"] .fld .cpy{margin-left:8px}
+body[data-v="d"] .card.xc{margin-top:16px;padding:18px 16px}
+body[data-v="d"] .xc .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px!important}
+body[data-v="d"] .xc .row>:only-child{grid-column:1/-1}
+body[data-v="d"] .xc .row button,body[data-v="d"] .xc .row label{display:grid;place-items:center;text-align:center;min-height:46px;padding:10px!important;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);font-weight:600;font-size:14.5px;cursor:pointer;margin:0!important;width:auto!important}
+body[data-v="d"] .xc h3{font-size:17px}
+body[data-v="d"] .xc .ckr{padding:10px 2px}
+body[data-v="d"] .xc h3+div,body[data-v="d"] #lgl{margin-top:4px}
+body[data-v="d"] .xc>h3:last-of-type{margin-top:22px!important;padding-top:16px;border-top:1px solid var(--line)}
+body[data-v="d"] #mv{margin:16px 0 8px}
 </style>
 </head>
 <body>
@@ -280,7 +303,7 @@ var NEXT=["Call","Get bills","Follow up","Review bills","Send proposal","Follow 
 function nextI(s){var i=S.indexOf(s);if(i<0)return 0;if(i<7)return i+1;if(i>=8&&i+1<S.length)return i+1;return i}
 function pill(s){return '<span class="pill p'+(Math.max(0,S.indexOf(s))%8)+'">'+esc(SN(s))+'</span>'}
 function sel(lb,id,arr,v,ph){return '<label class="fld"><span>'+lb+'</span><select id="'+id+'"><option value="">'+ph+'</option>'+arr.map(function(x){return '<option'+(x==v?' selected':'')+'>'+esc(x)+'</option>'}).join("")+'</select></label>'}
-var DO={c:1};
+var DO={c:1,p:1,j:1,f:1};
 function dsec(k,t,body){return '<details class="dsec" data-k="'+k+'"'+(DO[k]?' open':'')+'><summary>'+t+'</summary><div class="dgrid">'+body+'</div></details>'}
 function fld(ic,lb,id,v,t){var cp=(!t||t=="tel"||t=="email");return '<label class="fld"><span>'+lb+'</span><input id="'+id+'" type="'+(t||"text")+'" value="'+esc(v)+'">'+(cp?'<button type="button" class="cpy keep" data-cp="'+id+'" title="Copy">Copy</button>':'')+'</label>'}
 function prep(f,cb){
@@ -299,7 +322,7 @@ function detail(l){
  $("app").innerHTML='<div class="hdr"><button class="hb" id="bk">\u2190</button><h1>Lead Details</h1><span style="flex:1"></span><button class="hb" id="dl">Delete</button></div>'+
  '<div class="row" style="flex-wrap:nowrap;justify-content:space-between"><div style="min-width:0"><h2 style="margin:0;font-size:20px">'+esc(l.n)+'</h2><div class="sub">'+esc([l.c,l.ad].filter(Boolean).join(" \u00b7 "))+'</div></div>'+pill(l.s)+'</div>'+
  '<div class="seg" style="margin:12px 0 4px"><button class="tab on" data-t="i">Details</button><button class="tab" data-t="n">Notes</button><button class="tab" data-t="l">Lights</button><button class="tab" data-t="f">Files</button></div>'+
- '<div class="card" data-s="i"><div class="row" id="ql" style="margin-bottom:8px"></div><div class="dtop"><label class="fld"><span>Stage</span><select id="ds">'+opts(l.s)+'</select></label>'+fld("","Next follow-up","dd",l.d,"date")+sel("Lead temperature","dtg",["Hot","Warm","Cold"],l.tg,"None")+'</div>'+
+ '<div class="card dm" data-s="i"><div class="row" id="ql" style="margin-bottom:8px"></div><div class="dtop"><label class="fld"><span>Stage</span><select id="ds">'+opts(l.s)+'</select></label>'+fld("","Next follow-up","dd",l.d,"date")+sel("Lead temperature","dtg",["Hot","Warm","Cold"],l.tg,"None")+'</div>'+
  dsec("c","Contact",fld("","Name","dn",l.n)+fld("","Company","dc",l.c)+fld("","Title","dti",l.ti)+fld("","Mobile (cell)","dp",l.p,"tel")+fld("","Landline","dp2",l.p2,"tel")+fld("","Email","de",l.e,"email"))+
  dsec("p","Property",fld("","Address","da",l.ad)+sel("State","dst",STATES,l.st,"Choose state")+sel("Building type","dbt",BT,l.bt,"Choose type")+fld("","Building size (sq ft)","dsf",l.sf,"number"))+
  dsec("j","Project",fld("","Estimated lights","del",l.el,"number")+fld("","Project value ($)","dpv",l.pv,"number")+sel("Proposal status","dps",PS,l.ps,"Choose")+fld("","Install date","dins",l.ins,"date"))+
@@ -594,7 +617,7 @@ function logAdd(l,x){l.lg=l.lg||[];l.lg.unshift({t:Date.now(),x:x});if(l.lg.leng
 function fdt(t){var d=new Date(t);return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}
 function logHTML(l){var a=(l.lg||[]).slice(0,15);return a.length?a.map(function(e){return '<div class="lgr"><span>'+esc(fdt(e.t))+'</span> '+esc(e.x)+'</div>'}).join(""):'<p class="sub">No activity yet.</p>'}
 function extrasHTML(l){var ck=l.ck||{};
- return '<div class="card" data-s="i"><h3 style="margin:0 0 6px">Job checklist</h3>'+CKL.map(function(n,i){return '<label class="ckr"><input type="checkbox" data-ck="'+i+'"'+(ck[i]?' checked':'')+'> <span>'+esc(n)+'</span></label>'}).join("")+
+ return '<div class="card xc" data-s="i"><h3 style="margin:0 0 6px">Job checklist</h3>'+CKL.map(function(n,i){return '<label class="ckr"><input type="checkbox" data-ck="'+i+'"'+(ck[i]?' checked':'')+'> <span>'+esc(n)+'</span></label>'}).join("")+
  '<div class="row" style="margin-top:10px"><button class="ghost" id="xdup">Duplicate lead</button><button class="ghost" id="xarc">'+(l.ar?'Unarchive':'Archive lead')+'</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xcp">Copy lead info</button><button class="ghost keep" id="xsh">Share lead</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xpdf">Lead PDF</button><button class="ghost keep" id="xqt">Proposal PDF</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xmsg">Send message</button><label class="ghost keep" style="text-align:center;cursor:pointer;display:grid;place-items:center">Scan electric bill<input type="file" accept="image/*" capture="environment" id="xbill" style="display:none"></label></div><div class="row" style="margin-top:8px">'+(l.d?'<button class="ghost keep" id="xcal">Add to calendar</button>':'')+'</div>'+(l.ar?'<p class="sub">This lead is archived (hidden from the dashboard).</p>':'')+
  '<h3 style="margin:14px 0 4px">Activity</h3><div id="lgl">'+logHTML(l)+'</div></div>'}
 function bindExtras(l){
@@ -646,7 +669,7 @@ function settingsPage(){
  '<div class="sh">Help</div><div class="scard"><details class="hq"><summary>How do I add a worker?</summary><p>Sync & team → type their email → pick View or Edit → Add. They sign in with that email and see your leads.</p></details><details class="hq"><summary>How do I remove a worker?</summary><p>Sync & team → tap Remove next to their name, then tap again. They lose access right away.</p></details><details class="hq"><summary>The app looks old or something is missing</summary><p>Tap Refresh app above, then close the app completely and open it again.</p></details><details class="hq"><summary>Install on iPhone or iPad</summary><p>Open in Safari → tap Share → Add to Home Screen.</p></details></div>'+
  '</div>'}
 function bindSet(c){}
-var APPV="40";
+var APPV="41";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn},flip=function(id,k,invert){b(id,function(){var off=invert?lsg(k)!="1":lsg(k)=="0";lss(k,off?(invert?"1":"1"):"0");if(k=="sdm-arch")ARCH=lsg(k)=="1";drawContent()})};
  flip("st_rm","sdm-rm");flip("st_bd","sdm-bd");flip("st_bkr","sdm-bkr");
