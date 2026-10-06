@@ -373,7 +373,7 @@ function uniq(k){var o={};leads.forEach(function(l){if(l[k])o[l[k]]=1});return O
 function hay(l){var r=[];for(var k in l){if(k=="a"||k=="id"||k=="pic")continue;var v=l[k];if(typeof v=="string"||typeof v=="number")r.push(v);else if(v&&typeof v=="object")try{r.push(JSON.stringify(v))}catch(e){}}return r.join(" ").toLowerCase()}
 function vis(){var qq=q.toLowerCase(),t=today();
  var a=leads.filter(function(l){
-  if(qq){var hh=hay(l),h2=hh.replace(/[\s\-\.]/g,"");if(qq.split(/\s+/).some(function(w){return w&&hh.indexOf(w)<0&&h2.indexOf(w)<0}))return false}
+  if(qq){var hh=" "+hay(l).replace(/[^a-z0-9]+/g," "),h2=hh.replace(/ /g,"");if(qq.split(/\s+/).some(function(w){w=w.replace(/[^a-z0-9]+/g,"");return w&&hh.indexOf(" "+w)<0&&(w.length<4||h2.indexOf(w)<0)}))return false}
   if(STG!=null&&l.s!=S[STG])return false;if(F.sp&&(l.sp||"")!=F.sp)return false;if(STG==null&&F.s&&l.s!=F.s)return false;if(F.st&&l.st!=F.st)return false;if(F.uc&&l.uc!=F.uc)return false;
   if(F.fu=="over"&&!over(l))return false;if(F.fu=="today"&&l.d!=t)return false;if(F.fu=="week"&&!(l.d&&l.d>=t&&l.d<=plusDays(7)))return false;if(F.fu=="none"&&l.d)return false;
   return true});
