@@ -539,7 +539,7 @@ function deskView(){
  var nm=(NAVS.filter(function(n){return n[0]==NAV})[0]||NAVS[0]),em=SY.user?SY.user.email:"",ini=(em||"S")[0].toUpperCase();
  $("app").innerHTML='<div class="shell"><div class="sbd" id="sbd"></div><aside class="side"><div class="brand"><i>'+ico("bulb")+'</i><span>Sales</span></div>'+NAVS.map(function(n){return '<button class="nv'+(n[0]==NAV?' on':'')+'" data-nav="'+n[0]+'" title="'+n[2]+'">'+ico(n[1])+'<span>'+n[2]+'</span></button>'}).join("")+'</aside>'+
  '<main class="main"><div class="top"><button class="mnu" id="mnu" aria-label="Menu">\u2630</button><h1>'+(NAV=="dash"?"Sales Dashboard":nm[2])+'</h1><div class="sbox">'+ico("search")+'<input id="q" placeholder="Search leads, companies, buildings..." value="'+esc(q)+'"></div><button class="addb" id="ab2">'+ico("plus")+'<span>Add New Lead</span></button>'+syncChip()+'<button class="prof" id="pf" title="'+esc(em||"Sign in")+'">'+esc(ini)+'</button></div><div id="content"></div></main></div>';
- Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"),function(b){b.onclick=function(){NAV=b.getAttribute("data-nav");STG=null;SETSUB=null;render()}});
+ Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"),function(b){b.onclick=function(){NAV=b.getAttribute("data-nav");STG=null;SETSUB=null;PSL2=0;PSL=0;SCT={};render()}});
  var sh=document.querySelector(".shell");if($("mnu"))$("mnu").onclick=function(){sh.classList.toggle("so")};if($("sbd"))$("sbd").onclick=function(){sh.classList.remove("so")};
  $("q").oninput=function(){q=this.value;drawContent()};
  $("ab2").onclick=openAdd;$("pf").onclick=syncOpen;
@@ -689,7 +689,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="46";
+var APPV="47";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
@@ -732,6 +732,16 @@ function bgNon(){return !!(openId||STG!=null||NAV!="dash"||SETSUB||bgModal())}
 function bgSync(){if(bgNon()&&!BG){try{history.pushState({g:1},"")}catch(e){return}BG=true}else if(!bgNon()&&BG){BG=false;BGI=1;try{history.back()}catch(e){BGI=0}}}
 window.addEventListener("popstate",function(){if(BGI){BGI=0;return}BG=false;if(!bgNon())return;var m=bgModal();if(m)m.remove();else if(openId){openId=null;dtab="i";ltEdit=false}else if(SETSUB)SETSUB=null;else if(STG!=null)STG=null;else NAV="dash";render();bgSync()});
 setInterval(bgSync,250);
+document.addEventListener("click",function(){bgSync()},false);
+document.addEventListener("touchend",function(){setTimeout(bgSync,0)},{passive:true});
+/* keep scroll position (pipeline columns + page) when you open a lead and come back */
+var SCT={},PSL2=0;
+function scKey(){return NAV+"|"+STG+"|"+(SETSUB||"")}
+document.addEventListener("scroll",function(e){var t=e.target;if(!t||openId)return;if(t.id=="pl")PSL2=PSL=t.scrollLeft;else if(t.id=="content")SCT[scKey()]=t.scrollTop;else if(t===document)SCT["w"+scKey()]=window.scrollY},true);
+function restoreScroll(){if(openId)return;var go=function(){var pl=$("pl");if(pl&&PSL2)pl.scrollLeft=PSL2;var c=$("content"),k=scKey();if(c&&SCT[k])c.scrollTop=SCT[k];if(SCT["w"+k])window.scrollTo(0,SCT["w"+k])};go();requestAnimationFrame(go);setTimeout(go,120)}
+var _render0=render;render=function(){var r=_render0.apply(this,arguments);try{restoreScroll()}catch(e){}return r};
+(function(){var h=document.addEventListener;})();
+
 /* remember where you were (phone may reload the app after a call/switch) */
 (function(){var v=jget("sdm-vs");if(v&&Date.now()-v.t<4*36e5&&NAVS.some(function(n){return n[0]==v.n})){NAV=v.n;STG=v.g==null?null:+v.g;if(v.o){openId=v.o;dtab=v.d||"i"}}
  var last="";setInterval(function(){var j=JSON.stringify({n:NAV,g:STG,o:openId,d:dtab});if(j!=last){last=j;try{localStorage.setItem("sdm-vs",JSON.stringify({n:NAV,g:STG,o:openId,d:dtab,t:Date.now()}))}catch(e){}}},500)})();
