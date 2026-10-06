@@ -230,6 +230,13 @@ body[data-v="d"] #mv{margin:16px 0 8px}
 .smn .stx{flex:1;display:flex;flex-direction:column;min-width:0}.smn .stx b{font-size:16px}.smn .stx small{color:var(--mute);font-size:13px;margin-top:2px}
 .smn i{font-style:normal;font-size:22px;color:var(--mute)}
 .sp .sh{margin:22px 4px 8px}
+
+/* ===== App feel ===== */
+html,body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none;-webkit-text-size-adjust:100%}
+button,a,.tab,.srow,.lc,.stc,[data-go],[data-nav]{touch-action:manipulation;-webkit-touch-callout:none}
+button,.hb,.tab,nav,.ph,.pill,.sh,.srow b{-webkit-user-select:none;user-select:none}
+input,textarea,select{font-size:16px!important}
+.tabbar,nav.bt,#tb{padding-bottom:env(safe-area-inset-bottom)}
 </style>
 </head>
 <body>
@@ -679,7 +686,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="44";
+var APPV="45";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
@@ -831,7 +838,7 @@ function printHTML(h){var w=null;try{w=window.open("","_blank")}catch(e){}
 function leadPrint(l,quote){var b=brGet(),rows=function(a){return a.filter(function(r){return r[1]}).map(function(r){return '<tr><td class="k">'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>'}).join("")},
  lt=Object.keys(l.lt||{}).filter(function(k){return +l.lt[k]}).map(function(k){return '<tr><td>'+esc(k)+'</td><td class="n">'+esc(l.lt[k])+'</td></tr>'}).join(""),
  dt=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}),pv=money(l.pv),
- h='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc((quote?"Proposal - ":"")+ttl(l))+'</title><style>body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:32px;max-width:720px}.bh{display:flex;align-items:center;gap:14px;border-bottom:3px solid #14532d;padding-bottom:12px;margin-bottom:20px;font-size:13px;color:#444;line-height:1.5}.bh img{max-height:64px;max-width:160px}.bh b{font-size:18px;color:#14532d}h1{margin:0 0 4px;font-size:26px}.sub{color:#555;margin-bottom:22px}h2{font-size:15px;text-transform:uppercase;letter-spacing:.6px;color:#14532d;border-bottom:2px solid #14532d;padding-bottom:4px;margin:24px 0 8px}table{width:100%;border-collapse:collapse}td{padding:7px 4px;border-bottom:1px solid #e5e7eb;font-size:15px}td.k{color:#555;width:38%}td.n{text-align:right;font-weight:700}.pv{font-size:22px;font-weight:700;color:#14532d}.tm{white-space:pre-wrap;font-size:13px;color:#444}.sg{display:flex;gap:30px;margin-top:46px}.sg div{flex:1;border-top:1px solid #111;padding-top:4px;font-size:12px;color:#555}.ft{margin-top:34px;color:#666;font-size:13px}@media print{body{margin:14mm}}</style></head><body>'+brHead()+'<h1>'+(quote?'Proposal for ':'')+esc(ttl(l))+'</h1><div class="sub">'+(quote?'Proposal':'Lead summary')+' · '+dt+'</div>'+
+ h='<!doctype html><html><head><meta charset="utf-8"><title>'+esc((quote?"Proposal - ":"")+ttl(l))+'</title><style>body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:32px;max-width:720px}.bh{display:flex;align-items:center;gap:14px;border-bottom:3px solid #14532d;padding-bottom:12px;margin-bottom:20px;font-size:13px;color:#444;line-height:1.5}.bh img{max-height:64px;max-width:160px}.bh b{font-size:18px;color:#14532d}h1{margin:0 0 4px;font-size:26px}.sub{color:#555;margin-bottom:22px}h2{font-size:15px;text-transform:uppercase;letter-spacing:.6px;color:#14532d;border-bottom:2px solid #14532d;padding-bottom:4px;margin:24px 0 8px}table{width:100%;border-collapse:collapse}td{padding:7px 4px;border-bottom:1px solid #e5e7eb;font-size:15px}td.k{color:#555;width:38%}td.n{text-align:right;font-weight:700}.pv{font-size:22px;font-weight:700;color:#14532d}.tm{white-space:pre-wrap;font-size:13px;color:#444}.sg{display:flex;gap:30px;margin-top:46px}.sg div{flex:1;border-top:1px solid #111;padding-top:4px;font-size:12px;color:#555}.ft{margin-top:34px;color:#666;font-size:13px}@media print{body{margin:14mm}}</style></head><body>'+brHead()+'<h1>'+(quote?'Proposal for ':'')+esc(ttl(l))+'</h1><div class="sub">'+(quote?'Proposal':'Lead summary')+' · '+dt+'</div>'+
  '<h2>Contact</h2><table>'+rows([["Name",l.n&&l.n!=ttl(l)?l.n:""],["Title",l.ti],["Company",l.c],["Mobile",l.p],["Landline",l.p2],["Email",l.e]])+'</table>'+
  '<h2>Property</h2><table>'+rows([["Address",[l.ad,l.st].filter(Boolean).join(", ")],["Building type",l.bt],["Building size",l.sf?(+l.sf).toLocaleString()+" sq ft":""],["Estimated lights",tot(l)||l.el||""]])+'</table>'+
  (lt?'<h2>Lights</h2><table>'+lt+'<tr><td><b>Total</b></td><td class="n">'+tot(l)+'</td></tr></table>':'')+
