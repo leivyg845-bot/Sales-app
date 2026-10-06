@@ -258,7 +258,7 @@ input,textarea,select{font-size:16px!important}
 .sech.up{margin-top:18px}
 .pill.pb{border:0;cursor:pointer;font:inherit;font-size:.78em;font-weight:700;padding:5px 11px;border-radius:99px}
 .spo{display:block;width:100%;text-align:left;margin-bottom:6px;min-height:44px;font-weight:600}.spo.on{background:var(--tint,#e8f5ee)!important;color:#14532d}
-</style>
+.fu2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fu2 .fld{min-width:0}.fu2 .cpy{display:none}</style>
 </head>
 <body>
 <div id="lg"><div class="lgc"><div class="lgl">Sales</div><p class="sub">Loading…</p></div></div>
@@ -356,11 +356,11 @@ function detail(l){
  $("app").innerHTML='<div class="hdr"><button class="hb" id="bk">\u2190</button><h1>Lead Details</h1><span style="flex:1"></span><button class="hb" id="dl">Delete</button></div>'+
  '<div class="row" style="flex-wrap:nowrap;justify-content:space-between"><div style="min-width:0"><h2 style="margin:0;font-size:20px">'+esc(l.n)+'</h2><div class="sub">'+esc([l.c,l.ad].filter(Boolean).join(" \u00b7 "))+'</div></div>'+pill(l.s)+'</div>'+
  '<div class="seg" style="margin:12px 0 4px"><button class="tab on" data-t="i">Details</button><button class="tab" data-t="n">Notes</button><button class="tab" data-t="l">Lights</button><button class="tab" data-t="f">Files</button></div>'+
- '<div class="card dm" data-s="i">'+(l.d&&SY.role!="view"?'<button class="big keep" id="fdn" style="width:100%;margin:0 0 10px;background:#0d9488">\u2713 Follow-up done</button>':'')+'<div class="row" id="ql" style="margin-bottom:8px"></div><div class="dtop"><label class="fld"><span>Stage</span><select id="ds">'+opts(l.s)+'</select></label>'+fld("","Next follow-up","dd",l.d,"date")+sel("Lead temperature","dtg",["Hot","Warm","Cold"],l.tg,"None")+'</div>'+
+ '<div class="card dm" data-s="i">'+(l.d&&SY.role!="view"?'<button class="big keep" id="fdn" style="width:100%;margin:0 0 10px;background:#0d9488">\u2713 Follow-up done</button>':'')+'<div class="row" id="ql" style="margin-bottom:8px"></div><div class="dtop"><label class="fld"><span>Stage</span><select id="ds">'+opts(l.s)+'</select></label>'+'<div class="fu2">'+fld("","Last contact","dlc",l.lc,"date")+fld("","Next follow-up","dd",l.d,"date")+'</div>'+sel("Lead temperature","dtg",["Hot","Warm","Cold"],l.tg,"None")+'</div>'+
  dsec("c","Contact",fld("","Name","dn",l.n)+fld("","Company","dc",l.c)+fld("","Title","dti",l.ti)+fld("","Mobile (cell)","dp",l.p,"tel")+fld("","Landline","dp2",l.p2,"tel")+fld("","Email","de",l.e,"email"))+
  dsec("p","Property",fld("","Address","da",l.ad)+sel("State","dst",STATES,l.st,"Choose state")+sel("Building type","dbt",BT,l.bt,"Choose type")+fld("","Building size (sq ft)","dsf",l.sf,"number"))+
- dsec("j","Project",fld("","Estimated lights","del",l.el,"number")+fld("","Project value ($)","dpv",l.pv,"number")+sel("Proposal status","dps",PS,l.ps,"Choose")+fld("","Install date","dins",l.ins,"date"))+
- dsec("f","Follow-up & source",fld("","Last contact","dlc",l.lc,"date")+fld("","Salesperson","dsp",l.sp)+fld("","Lead source","dls",l.ls)+fld("","Follow-up notes","dfn",l.fn))+'</div>'+
+ dsec("j","Project",sel("Proposal status","dps",PS,l.ps,"Choose")+fld("","Install date","dins",l.ins,"date"))+
+ dsec("f","Follow-up & source",fld("","Salesperson","dsp",l.sp)+fld("","Lead source","dls",l.ls)+fld("","Follow-up notes","dfn",l.fn))+'</div>'+
  extrasHTML(l)+(nextI(l.s)!=S.indexOf(l.s)?'<button class="big" id="mv" data-s="i">Move to: '+esc(SN(S[nextI(l.s)]))+'</button>':'')+
   '<div class="card" data-s="n"><div class="row" style="margin-bottom:8px"><button type="button" class="ghost keep" id="cpn">Copy notes</button><button type="button" class="ghost keep" id="shn">Share</button></div><textarea id="dt" rows="10" placeholder="Notes about the job...">'+esc(l.t)+'</textarea></div>'+
  lightsHTML(l)+
@@ -368,7 +368,7 @@ function detail(l){
  fillAv();
  $("bk").onclick=function(){openId=null;dtab="i";ltEdit=false;render()};
  $("dl").onclick=function(){ask(this,function(){l.a.forEach(function(a){delF(a.id,a.n)});delF(l.pic);leads=leads.filter(function(x){return x!==l});tomb(l.id);save();openId=null;render()})};
- [["dn","n"],["dti","ti"],["dc","c"],["dp","p"],["dp2","p2"],["de","e"],["da","ad"],["dd","d"],["dst","st"],["dsf","sf"],["dbt","bt"],["del","el"],["dpv","pv"],["dps","ps"],["dlc","lc"],["dsp","sp"],["dls","ls"],["dins","ins"],["dtg","tg"],["dfn","fn"],["dt","t"]].forEach(function(p){$(p[0]).oninput=function(){l[p[1]]=this.value;save();links(l)}});
+ [["dn","n"],["dti","ti"],["dc","c"],["dp","p"],["dp2","p2"],["de","e"],["da","ad"],["dd","d"],["dst","st"],["dsf","sf"],["dbt","bt"],["del","el"],["dpv","pv"],["dps","ps"],["dlc","lc"],["dsp","sp"],["dls","ls"],["dins","ins"],["dtg","tg"],["dfn","fn"],["dt","t"]].forEach(function(p){if($(p[0]))$(p[0]).oninput=function(){l[p[1]]=this.value;save();links(l)}});
  $("ds").onchange=function(){l.s=this.value;logAdd(l,"Moved to "+SN(l.s));save();detail(l)};
  if($("mv"))$("mv").onclick=function(){l.s=S[nextI(l.s)];logAdd(l,"Moved to "+SN(l.s));save();detail(l)};
  Array.prototype.forEach.call(document.querySelectorAll("[data-lt]"),function(i){i.oninput=function(){l.lt=l.lt||{};if(i.value==="")delete l.lt[i.getAttribute("data-lt")];else l.lt[i.getAttribute("data-lt")]=i.value;save();$("ltot").textContent=tot(l)}});
@@ -679,8 +679,8 @@ function logAdd(l,x){l.lg=l.lg||[];l.lg.unshift({t:Date.now(),x:x});if(l.lg.leng
 function fdt(t){var d=new Date(t);return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}
 function logHTML(l){var a=(l.lg||[]).slice(0,15);return a.length?a.map(function(e){return '<div class="lgr"><span>'+esc(fdt(e.t))+'</span> '+esc(e.x)+'</div>'}).join(""):'<p class="sub">No activity yet.</p>'}
 function extrasHTML(l){var ck=l.ck||{};
- return '<div class="card xc" data-s="i"><h3 style="margin:0 0 6px">Job checklist</h3>'+CKL.map(function(n,i){return '<label class="ckr"><input type="checkbox" data-ck="'+i+'"'+(ck[i]?' checked':'')+'> <span>'+esc(n)+'</span></label>'}).join("")+
- '<div class="row" style="margin-top:10px"><button class="ghost" id="xdup">Duplicate lead</button><button class="ghost" id="xarc">'+(l.ar?'Unarchive':'Archive lead')+'</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xcp">Copy lead info</button><button class="ghost keep" id="xsh">Share lead</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xpdf">Lead PDF</button><button class="ghost keep" id="xqt">Proposal PDF</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xmsg">Send message</button><label class="ghost keep" style="text-align:center;cursor:pointer;display:grid;place-items:center">Scan electric bill<input type="file" accept="image/*" capture="environment" id="xbill" style="display:none"></label></div><div class="row" style="margin-top:8px">'+(l.d?'<button class="ghost keep" id="xcal">Add to calendar</button>':'')+'</div>'+(l.ar?'<p class="sub">This lead is archived (hidden from the dashboard).</p>':'')+
+ return '<div class="card xc" data-s="i">'+
+ '<div class="row"><button class="ghost keep" id="xcp">Copy lead info</button><button class="ghost keep" id="xsh">Share lead</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xpdf">Lead PDF</button><button class="ghost keep" id="xqt">Proposal PDF</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xmsg">Send message</button><label class="ghost keep" style="text-align:center;cursor:pointer;display:grid;place-items:center">Scan electric bill<input type="file" accept="image/*" capture="environment" id="xbill" style="display:none"></label></div><div class="row" style="margin-top:8px">'+(l.d?'<button class="ghost keep" id="xcal">Add to calendar</button>':'')+'</div>'+(l.ar?'<p class="sub">This lead is archived (hidden from the dashboard).</p>':'')+
  '<h3 style="margin:14px 0 4px">Activity</h3><div id="lgl">'+logHTML(l)+'</div></div>'}
 function bindExtras(l){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ck]"),function(c){c.onchange=function(){l.ck=l.ck||{};var i=+c.getAttribute("data-ck");l.ck[i]=c.checked;logAdd(l,(c.checked?"Done: ":"Unchecked: ")+CKL[i]);save();var g=$("lgl");if(g)g.innerHTML=logHTML(l)}});
@@ -736,7 +736,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="59";
+var APPV="60";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
