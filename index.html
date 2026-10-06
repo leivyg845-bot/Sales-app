@@ -370,9 +370,10 @@ function mval(l){return +String(l.pv||"").replace(/[^0-9.]/g,"")||0}
 function ttl(l){return l.bn||l.c||l.n||"Untitled"}
 function reps(){var o={};leads.forEach(function(l){if(l.sp)o[l.sp]=1});return Object.keys(o).sort()}
 function uniq(k){var o={};leads.forEach(function(l){if(l[k])o[l[k]]=1});return Object.keys(o).sort()}
+function hay(l){var r=[];for(var k in l){if(k=="a"||k=="id"||k=="pic")continue;var v=l[k];if(typeof v=="string"||typeof v=="number")r.push(v);else if(v&&typeof v=="object")try{r.push(JSON.stringify(v))}catch(e){}}return r.join(" ").toLowerCase()}
 function vis(){var qq=q.toLowerCase(),t=today();
  var a=leads.filter(function(l){
-  if(qq&&[l.n,l.c,l.bn,l.ti,l.p,l.p2,l.ad,l.e,l.st,l.uc,l.bt,l.pm,l.mm,l.sp].join(" ").toLowerCase().indexOf(qq)<0)return false;
+  if(qq&&hay(l).indexOf(qq)<0)return false;
   if(STG!=null&&l.s!=S[STG])return false;if(F.sp&&(l.sp||"")!=F.sp)return false;if(STG==null&&F.s&&l.s!=F.s)return false;if(F.st&&l.st!=F.st)return false;if(F.uc&&l.uc!=F.uc)return false;
   if(F.fu=="over"&&!over(l))return false;if(F.fu=="today"&&l.d!=t)return false;if(F.fu=="week"&&!(l.d&&l.d>=t&&l.d<=plusDays(7)))return false;if(F.fu=="none"&&l.d)return false;
   return true});
