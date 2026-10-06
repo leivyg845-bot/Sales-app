@@ -491,7 +491,7 @@ function bindContent(){
 function coverId(l){if(l.pic)return l.pic;var a=(l.a||[]).filter(function(x){return (x.type||"").indexOf("image")==0})[0];return a?a.id:""}
 function fillCovers(){Array.prototype.forEach.call(document.querySelectorAll("[data-cv]"),function(e){var id=e.getAttribute("data-cv");urlFor(id,function(u){e.style.backgroundImage="url("+u+")";e.classList.add("on")})})}
 function drawContent(){var p=$("pl");if(p)PSL=p.scrollLeft;var c=$("content");if(!c)return;c.innerHTML=pageContent();p=$("pl");if(p)p.scrollLeft=PSL;bindContent();fillCovers()}
-var NAVS=[["dash","home","Dashboard"],["pipe","pipe","Pipeline"],["fu","cal","Follow-Ups"],["prop","doc","Proposals"],["sch","jobs","Schedule"],["rep","bill","Reports"],["set","gear","Settings"]];
+var NAVS=[["dash","home","Dashboard"],["pipe","pipe","Pipeline"],["fu","cal","Follow-Ups"],["rep","bill","Reports"],["set","gear","Settings"]];
 function deskView(){
  var nm=(NAVS.filter(function(n){return n[0]==NAV})[0]||NAVS[0]),em=SY.user?SY.user.email:"",ini=(em||"S")[0].toUpperCase();
  $("app").innerHTML='<div class="shell"><div class="sbd" id="sbd"></div><aside class="side"><div class="brand"><i>'+ico("bulb")+'</i><span>Sales</span></div>'+NAVS.map(function(n){return '<button class="nv'+(n[0]==NAV?' on':'')+'" data-nav="'+n[0]+'" title="'+n[2]+'">'+ico(n[1])+'<span>'+n[2]+'</span></button>'}).join("")+'</aside>'+
@@ -630,7 +630,7 @@ function settingsPage(){
  '<div class="sh">Help</div><div class="scard"><details class="hq"><summary>How do I add a worker?</summary><p>Sync & team → type their email → pick View or Edit → Add. They sign in with that email and see your leads.</p></details><details class="hq"><summary>How do I remove a worker?</summary><p>Sync & team → tap Remove next to their name, then tap again. They lose access right away.</p></details><details class="hq"><summary>The app looks old or something is missing</summary><p>Tap Refresh app above, then close the app completely and open it again.</p></details><details class="hq"><summary>Install on iPhone or iPad</summary><p>Open in Safari → tap Share → Add to Home Screen.</p></details></div>'+
  '</div>'}
 function bindSet(c){}
-var APPV="35";
+var APPV="36";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn},flip=function(id,k,invert){b(id,function(){var off=invert?lsg(k)!="1":lsg(k)=="0";lss(k,off?(invert?"1":"1"):"0");if(k=="sdm-arch")ARCH=lsg(k)=="1";drawContent()})};
  flip("st_rm","sdm-rm");flip("st_bd","sdm-bd");flip("st_bkr","sdm-bkr");
@@ -659,7 +659,7 @@ function bkNag(){if(lsg("sdm-bkr")=="0"){window.bkd=1;return}if(window.bkd||!(wi
  d.innerHTML='<span style="flex:1;min-width:150px">Back up your leads? Last backup '+Math.floor((now-last)/864e5)+' days ago.</span><button class="ghost" id="bk_l">Later</button><button id="bk_d">Download</button>';document.body.appendChild(d);
  $("bk_l").onclick=function(){lss("sdm-bks",String(Date.now()));d.remove()};$("bk_d").onclick=function(){doBackup();d.remove()}}
 var bkT=setInterval(function(){bkNag();if(window.bkd)clearInterval(bkT)},2500);setTimeout(function(){clearInterval(bkT)},60000);
-(function(){var h=lsg("sdm-home");if(h&&h!="set")NAV=h})();
+(function(){var h=lsg("sdm-home");if(h&&h!="set"&&NAVS.some(function(n){return n[0]==h}))NAV=h})();
 /* ===== Keep keyboard suggestions out of the app ===== */
 (function(){function fix(r){Array.prototype.forEach.call((r||document).querySelectorAll("input,textarea"),function(e){if(e.closest&&e.closest("#lg"))return;if(e.type=="file"||e.type=="checkbox"||e.type=="radio"||e.dataset.nf)return;e.dataset.nf=1;e.setAttribute("autocomplete","off");e.setAttribute("autocorrect","off");e.setAttribute("autocapitalize",e.type=="email"?"none":"words");e.setAttribute("data-lpignore","true");e.setAttribute("data-form-type","other");if(e.id=="q"){e.setAttribute("enterkeyhint","search");e.setAttribute("spellcheck","false")}})}
 fix();new MutationObserver(function(){fix()}).observe(document.documentElement,{childList:true,subtree:true})})();
