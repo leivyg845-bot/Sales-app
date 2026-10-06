@@ -543,7 +543,7 @@ function applyRO(){var ro=SY.role=="view";document.body.classList.toggle("ro",ro
  if(ro){document.querySelectorAll("#app input,#app textarea,#app select").forEach(function(e){if(e.id!="q"&&!e.classList.contains("keep"))e.disabled=true});document.querySelectorAll("#app .card button:not(.tab):not(.keep)").forEach(function(b){b.disabled=true})}}
 /* ===== Follow-up reminder on open ===== */
 var RM=0;
-function remind(){if(lsg("sdm-rm")=="0"){RM=1;return}if(RM||!(window.SY&&SY.user&&!SY.denied))return;var a=leads.filter(due);if(!leads.length)return;RM=1;
+function remind(){if(lsg("sdm-rm")=="0"){RM=1;return}if(RM||!(window.SY&&SY.user&&!SY.denied))return;var a=leads.filter(due);if(!leads.length){if(SY.ready)RM=1;return}RM=1;
 try{if(navigator.setAppBadge)a.length?navigator.setAppBadge(a.length):navigator.clearAppBadge()}catch(e){}
 if(!a.length)return;var t=today(),od=a.filter(over).length;
 a.sort(function(x,y){return x.d<y.d?-1:1});
