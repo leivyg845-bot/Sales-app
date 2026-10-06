@@ -241,6 +241,13 @@ input,textarea,select{font-size:16px!important}
 .sbox{position:relative}.sbox .qx{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;border:0;background:var(--line);color:var(--mute);font-size:12px;display:grid;place-items:center;padding:0;min-height:0}
 .sbox input[type=search]::-webkit-search-cancel-button{display:none}.sbox input{padding-right:40px!important}
 .qinfo{font-size:13px;color:var(--mute);margin:0 4px 10px;font-weight:600}
+
+.lc.hck .lt{padding-right:34px}
+.chk{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;border:2px solid #b8c2bc;background:var(--card);padding:0;min-height:0;z-index:2;display:grid;place-items:center;transition:all .15s}
+.chk.due{border-color:#0d9488}
+.chk:hover,.chk:active{background:#0d9488;border-color:#0d9488}
+.chk:hover:after,.chk:active:after{content:"\2713";color:#fff;font-size:15px;font-weight:700;line-height:1}
+.fug{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fug button{min-height:46px;font-weight:600}.fug button:last-child{grid-column:1/-1}
 </style>
 </head>
 <body>
@@ -339,7 +346,7 @@ function detail(l){
  $("app").innerHTML='<div class="hdr"><button class="hb" id="bk">\u2190</button><h1>Lead Details</h1><span style="flex:1"></span><button class="hb" id="dl">Delete</button></div>'+
  '<div class="row" style="flex-wrap:nowrap;justify-content:space-between"><div style="min-width:0"><h2 style="margin:0;font-size:20px">'+esc(l.n)+'</h2><div class="sub">'+esc([l.c,l.ad].filter(Boolean).join(" \u00b7 "))+'</div></div>'+pill(l.s)+'</div>'+
  '<div class="seg" style="margin:12px 0 4px"><button class="tab on" data-t="i">Details</button><button class="tab" data-t="n">Notes</button><button class="tab" data-t="l">Lights</button><button class="tab" data-t="f">Files</button></div>'+
- '<div class="card dm" data-s="i"><div class="row" id="ql" style="margin-bottom:8px"></div><div class="dtop"><label class="fld"><span>Stage</span><select id="ds">'+opts(l.s)+'</select></label>'+fld("","Next follow-up","dd",l.d,"date")+sel("Lead temperature","dtg",["Hot","Warm","Cold"],l.tg,"None")+'</div>'+
+ '<div class="card dm" data-s="i">'+(l.d&&SY.role!="view"?'<button class="big keep" id="fdn" style="width:100%;margin:0 0 10px;background:#0d9488">\u2713 Follow-up done</button>':'')+'<div class="row" id="ql" style="margin-bottom:8px"></div><div class="dtop"><label class="fld"><span>Stage</span><select id="ds">'+opts(l.s)+'</select></label>'+fld("","Next follow-up","dd",l.d,"date")+sel("Lead temperature","dtg",["Hot","Warm","Cold"],l.tg,"None")+'</div>'+
  dsec("c","Contact",fld("","Name","dn",l.n)+fld("","Company","dc",l.c)+fld("","Title","dti",l.ti)+fld("","Mobile (cell)","dp",l.p,"tel")+fld("","Landline","dp2",l.p2,"tel")+fld("","Email","de",l.e,"email"))+
  dsec("p","Property",fld("","Address","da",l.ad)+sel("State","dst",STATES,l.st,"Choose state")+sel("Building type","dbt",BT,l.bt,"Choose type")+fld("","Building size (sq ft)","dsf",l.sf,"number"))+
  dsec("j","Project",fld("","Estimated lights","del",l.el,"number")+fld("","Project value ($)","dpv",l.pv,"number")+sel("Proposal status","dps",PS,l.ps,"Choose")+fld("","Install date","dins",l.ins,"date"))+
@@ -438,7 +445,7 @@ var ARCH=lsg("sdm-arch")=="1",STG=null,NAV="dash",F={sp:"",s:"",st:"",fu:"",uc:"
 function ico(n,c){return '<svg class="ic2 '+(c||"")+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+IC[n]+'</svg>'}
 function isDesk(){return true}
 function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-function plusDays(n){var d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function plusDays(n){var d=new Date();d.setDate(d.getDate()+n);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function fd(s){if(!s)return"";var d=new Date(s+"T00:00:00");return isNaN(d)?s:d.toLocaleDateString("en-US",{month:"short",day:"numeric"})}
 function over(l){return !l.ar&&l.d&&l.s!=S[7]&&l.d<today()}
 function money(v){var n=+String(v||"").replace(/[^0-9.]/g,"");return n?"$"+n.toLocaleString("en-US"):""}
@@ -469,7 +476,7 @@ function mapUrl(a){var q=encodeURIComponent(a),u=navigator.userAgent||"";return 
 function mapT(){return /Android/i.test(navigator.userAgent||"")?"":' target="_blank" rel="noopener"'}
 function lcard(l,mode){
  var ph=(l.p||l.p2||"").replace(/[^+\d]/g,""),city=l.ad||l.st||"",fu=l.d?(over(l)?'<span class="bad">Overdue · '+fd(l.d)+'</span>':l.d==today()?'<span class="warn">Today</span>':'<span>'+fd(l.d)+'</span>'):'<span class="mut">—</span>';
- var h='<div class="lc'+(over(l)?' od':'')+(l.ar?' arch':'')+'" data-o="'+l.id+'"'+(SY.role=="view"?'':' draggable="true"')+' data-id="'+l.id+'"><b class="lt">'+esc(ttl(l))+'</b>'+tagB(l);var cv=coverId(l);if(cv)h=h.replace('<b class="lt">','<div class="cov" data-cv="'+esc(cv)+'"></div><b class="lt">');
+ var h='<div class="lc'+(over(l)?' od':'')+(l.ar?' arch':'')+(l.d&&!l.ar&&SY.role!="view"?' hck':'')+'" data-o="'+l.id+'"'+(SY.role=="view"?'':' draggable="true"')+' data-id="'+l.id+'">'+(l.d&&!l.ar&&SY.role!="view"?'<button type="button" class="chk keep'+(l.d<=today()?' due':'')+'" data-fd="'+l.id+'" title="Follow-up done" aria-label="Follow-up done"></button>':'')+'<b class="lt">'+esc(ttl(l))+'</b>'+tagB(l);var cv=coverId(l);if(cv)h=h.replace('<b class="lt">','<div class="cov" data-cv="'+esc(cv)+'"></div><b class="lt">');
  if(mode=="b"){
   if(city)h+='<div class="ln">'+ico("pin")+(l.ad?'<a class="adl" href="'+mapUrl(l.ad+(l.st?", "+l.st:""))+'"'+mapT()+' data-x>'+esc(city)+'</a>':esc(city))+'</div>';
   h+='<div class="ln">'+ico("bldg")+esc([l.nb?l.nb+" bldg"+(l.nb>1?"s":""):"",l.bt,l.sf?(+l.sf).toLocaleString()+" sq ft":""].filter(Boolean).join(" · ")||"No building info yet")+'</div>';
@@ -651,6 +658,7 @@ function extrasHTML(l){var ck=l.ck||{};
  '<h3 style="margin:14px 0 4px">Activity</h3><div id="lgl">'+logHTML(l)+'</div></div>'}
 function bindExtras(l){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ck]"),function(c){c.onchange=function(){l.ck=l.ck||{};var i=+c.getAttribute("data-ck");l.ck[i]=c.checked;logAdd(l,(c.checked?"Done: ":"Unchecked: ")+CKL[i]);save();var g=$("lgl");if(g)g.innerHTML=logHTML(l)}});
+ if($("fdn"))$("fdn").onclick=function(){fuDone(l,function(){detail(l)})};
  if($("xpdf"))$("xpdf").onclick=function(){leadPrint(l)};
  if($("xcal"))$("xcal").onclick=function(){calOpen(l)};
  if($("xqt"))$("xqt").onclick=function(){leadPrint(l,true)};if($("xmsg"))$("xmsg").onclick=function(){msgOpen(l)};if($("xbill"))$("xbill").onchange=function(){billScan(l,this.files[0])};
@@ -702,7 +710,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="48";
+var APPV="49";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
@@ -740,7 +748,7 @@ function mics(){["dt","a_t"].forEach(function(i){var e=document.getElementById(i
 fix();mics();new MutationObserver(function(){fix();mics()}).observe(document.documentElement,{childList:true,subtree:true})})();
 /* ===== Phone back button: go back a step instead of leaving the app ===== */
 var BG=false,BGI=0;
-function bgModal(){return document.querySelector("#am,#sm,#qnm,#rmd")}
+function bgModal(){return document.querySelector("#am,#sm,#qnm,#rmd,#fum,#msgm")}
 function bgNon(){return !!(openId||STG!=null||NAV!="dash"||SETSUB||bgModal())}
 function bgSync(){if(bgNon()&&!BG){try{history.pushState({g:1},"")}catch(e){return}BG=true}else if(!bgNon()&&BG){BG=false;BGI=1;try{history.back()}catch(e){BGI=0}}}
 window.addEventListener("popstate",function(){if(BGI){BGI=0;return}BG=false;if(!bgNon())return;var m=bgModal();if(m)m.remove();else if(openId){openId=null;dtab="i";ltEdit=false}else if(SETSUB)SETSUB=null;else if(STG!=null)STG=null;else NAV="dash";render();bgSync()});
@@ -910,6 +918,19 @@ function billScan(l,f){if(!f)return;toast("Reading the bill… (needs internet t
     var id="f"+Date.now()+Math.random().toString(36).slice(2,6);
     prep(f,function(buf,type){var fin=function(){var tx="Electric bill "+fd(today())+": "+(ln||"couldn't read numbers, see photo");l.t=(l.t?l.t+"\n\n":"")+tx;if(o.u&&!l.uc)l.uc=o.u;logAdd(l,"Scanned electric bill");save();toast(ln?"Bill added to notes":"Photo saved, numbers not clear");detail(l)};
      if(buf){var n=Math.max(1,Math.ceil(Math.ceil(buf.byteLength/3)*4/CH)),nm=f.name||"Electric bill";putF({id:id,name:nm,type:type,buf:buf},function(){var a={id:id,name:nm,type:type,n:n};if(buf.byteLength>MAXF)a.big=1;l.a.push(a);if(!a.big)queueUp(id,n);fin()})}else fin()})}).catch(function(){toast("Couldn't read the bill. Try a clearer photo.")})},function(){toast("Needs internet the first time. Try again online.")})})}
+
+/* ===== Follow-up done ===== */
+function fuDone(l,after){if(!l||SY.role=="view")return;var old=document.getElementById("fum");if(old)old.remove();var ot=document.getElementById("fut");if(ot)ot.remove();
+ var m=document.createElement("div");m.id="fum";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:flex-end;justify-content:center;padding:12px";
+ var opt=[["Tomorrow",1],["In 3 days",3],["Next week",7],["In 2 weeks",14],["In a month",30]];
+ m.innerHTML='<div class="card g" style="max-width:440px;width:100%;margin:0 0 8px;padding:18px"><h2 style="margin:0">✅ Follow-up done</h2><div class="sub" style="margin:2px 0 14px">'+esc(ttl(l))+' · when is the next one?</div><div class="fug">'+opt.map(function(o){return '<button class="ghost keep" data-fn="'+o[1]+'">'+o[0]+'</button>'}).join("")+'<button class="ghost keep" data-fn="none">No next follow-up</button></div><div class="row" style="margin-top:10px;flex-wrap:nowrap"><input type="date" id="fu_d" class="keep" style="flex:1" min="'+today()+'"><button class="keep" id="fu_s">Set date</button></div><button class="ghost keep" id="fu_x" style="width:100%;margin-top:10px">Cancel</button></div>';
+ document.body.appendChild(m);var close=function(){m.remove()};$("fu_x").onclick=close;m.onclick=function(e){if(e.target==m)close()};
+ var fin=function(nd){var od=l.d,ol=l.lc;l.lc=today();l.d=nd||"";logAdd(l,"Follow-up done"+(nd?", next "+fd(nd):""));save();close();if(after)after();else render();
+  var t=document.createElement("div");t.id="fut";t.style.cssText="position:fixed;left:12px;right:12px;bottom:90px;z-index:99997;background:#111;color:#fff;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(0,0,0,.35)";t.innerHTML='<span style="flex:1">Done'+(nd?" · next "+esc(fd(nd)):"")+'</span><button class="keep" style="background:transparent;color:#7ee2a8;border:0;font-weight:700;padding:4px 8px">Undo</button>';document.body.appendChild(t);
+  t.querySelector("button").onclick=function(){l.d=od;l.lc=ol;logAdd(l,"Undo follow-up done");save();t.remove();if(after)after();else render()};setTimeout(function(){t.remove()},5000)};
+ Array.prototype.forEach.call(m.querySelectorAll("[data-fn]"),function(b){b.onclick=function(){var v=b.getAttribute("data-fn");fin(v=="none"?"":plusDays(+v))}});
+ $("fu_s").onclick=function(){var v=$("fu_d").value;if(!v){toast("Pick a date");return}fin(v)}}
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".chk");if(!b)return;e.preventDefault();e.stopPropagation();var l=find(b.getAttribute("data-fd"));if(l)fuDone(l)},true);
 
 function gate(){var g=$("lg");if(!g)return;
  if(SY.user&&!SY.denied){var was=g.className!="off";g.className="off";g.innerHTML="";if(was)render();return}
