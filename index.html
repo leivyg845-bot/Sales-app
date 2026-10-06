@@ -525,6 +525,17 @@ function wsGet(){try{return localStorage.getItem("sdm-ws")||""}catch(e){return""
 function wsSet(v){try{if(v)localStorage.setItem("sdm-ws",v);else localStorage.removeItem("sdm-ws")}catch(e){}}
 function applyRO(){var ro=SY.role=="view";document.body.classList.toggle("ro",ro);
  if(ro){document.querySelectorAll("#app input,#app textarea,#app select").forEach(function(e){if(e.id!="q")e.disabled=true});document.querySelectorAll("#app .card button:not(.tab)").forEach(function(b){b.disabled=true})}}
+/* ===== Follow-up reminder on open ===== */
+var RM=0;
+function remind(){if(RM||!(window.SY&&SY.user&&!SY.denied))return;var a=leads.filter(due);if(!leads.length)return;RM=1;
+try{if(navigator.setAppBadge)a.length?navigator.setAppBadge(a.length):navigator.clearAppBadge()}catch(e){}
+if(!a.length)return;var t=today(),od=a.filter(over).length;
+a.sort(function(x,y){return x.d<y.d?-1:1});
+var d=document.createElement("div");d.id="rmd";d.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px";
+d.innerHTML='<div style="background:var(--card,#fff);color:var(--tx,#111);border-radius:18px;max-width:420px;width:100%;max-height:80vh;overflow:auto;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.3)"><h2 style="margin:0 0 4px">\uD83D\uDD14 '+a.length+' follow-up'+(a.length>1?'s':'')+' due</h2><div style="opacity:.7;margin-bottom:12px">'+(od?od+' overdue':'Today')+'</div>'+a.map(function(l){return '<div data-r="'+esc(l.id)+'" style="padding:12px;border:1px solid rgba(128,128,128,.3);border-radius:12px;margin-bottom:8px;cursor:pointer"><b>'+esc(l.n||l.c||"Lead")+'</b>'+(l.c&&l.n?' \u00b7 '+esc(l.c):'')+'<div style="font-size:.85em;opacity:.75">'+(l.d<t?'Overdue \u00b7 ':'Today \u00b7 ')+fd(l.d)+'</div></div>'}).join("")+'<button class="big" id="rmx" style="width:100%;margin-top:6px">Close</button></div>';
+document.body.appendChild(d);d.onclick=function(e){if(e.target==d||e.target.id=="rmx")d.remove()};
+Array.prototype.forEach.call(d.querySelectorAll("[data-r]"),function(b){b.onclick=function(){d.remove();openId=b.getAttribute("data-r");dtab="i";render()}})}
+var rmT=setInterval(function(){remind();if(RM)clearInterval(rmT)},1500);setTimeout(function(){clearInterval(rmT)},60000);
 function gate(){var g=$("lg");if(!g)return;
  if(SY.user&&!SY.denied){var was=g.className!="off";g.className="off";g.innerHTML="";if(was)render();return}
  g.className="";var inv=window.__inv||wsGet();
