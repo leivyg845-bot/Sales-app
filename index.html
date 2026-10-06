@@ -209,7 +209,7 @@ function jget(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e)
 function save(){try{localStorage.setItem(KL,JSON.stringify(leads));localStorage.setItem(KW,JSON.stringify(workers))}catch(e){}if(window.syncSoon)syncSoon()}
 function load(){
  leads=jget(KL);workers=jget(KW)||[];
- if(!leads){var old=jget("leads-v1")||[];workers=(jget("workers-v1")||[]).concat(SEED_W);leads=old.concat(SEED_L).map(norm);save()}
+ if(!leads){var old=jget("leads-v1")||[];workers=jget("workers-v1")||[];leads=old.map(norm);save()}
  else leads=leads.map(norm)}
 function find(id){return leads.filter(function(l){return l.id==id})[0]}
 function wname(id){var w=workers.filter(function(x){return x.id==id})[0];return w?w.n:""}
@@ -595,7 +595,7 @@ function settingsExtra(){var rm=lsg("sdm-rm")!="0",hm=lsg("sdm-home")||"dash";
  return '<h3>Options</h3><div class="row"><span style="flex:1">Follow-up pop-up when app opens</span><button class="keep" id="st_rm">'+onoff(rm)+'</button></div><div class="row"><span style="flex:1">Show archived leads</span><button class="keep" id="st_ar">'+onoff(ARCH)+'</button></div><div class="row"><span style="flex:1">Open app on</span><select class="keep" id="st_hm">'+NAVS.filter(function(n){return n[0]!="set"}).map(function(n){return '<option value="'+n[0]+'"'+(n[0]==hm?' selected':'')+'>'+n[2]+'</option>'}).join("")+'</select></div>'+
  '<h3>Backup & export</h3><div class="row"><button class="keep" id="st_bk">Download backup</button><button class="keep" id="st_xl">Export to Excel</button></div><label class="sub">Restore from backup file<input id="st_rs" type="file" accept=".json,application/json"></label><div class="sub" id="st_m">Backup saves lead info (not attached photos/PDFs).</div>'+
  '<h3>App</h3><div class="row"><button class="keep" id="st_rf">Refresh app (get latest version)</button><button class="keep" id="st_so">Sign out</button></div><div class="sub">Sales · version '+APPV+(SY.user?' · '+esc(SY.user.email):'')+'</div>'}
-var APPV="22";
+var APPV="23";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn};
  b("st_rm",function(){lss("sdm-rm",lsg("sdm-rm")=="0"?"1":"0");drawContent()});
