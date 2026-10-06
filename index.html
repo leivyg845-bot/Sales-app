@@ -600,8 +600,8 @@ function onoff(v){return v?"On":"Off"}
 function settingsExtra(){var rm=lsg("sdm-rm")!="0",hm=lsg("sdm-home")||"dash";
  return '<h3>Options</h3><div class="row"><span style="flex:1">Follow-up pop-up when app opens</span><button class="keep" id="st_rm">'+onoff(rm)+'</button></div><div class="row"><span style="flex:1">Show archived leads</span><button class="keep" id="st_ar">'+onoff(ARCH)+'</button></div><div class="row"><span style="flex:1">Open app on</span><select class="keep" id="st_hm">'+NAVS.filter(function(n){return n[0]!="set"}).map(function(n){return '<option value="'+n[0]+'"'+(n[0]==hm?' selected':'')+'>'+n[2]+'</option>'}).join("")+'</select></div>'+
  '<h3>Backup & export</h3><div class="row"><button class="keep" id="st_bk">Download backup</button><button class="keep" id="st_xl">Export to Excel</button></div><label class="sub">Restore from backup file<input id="st_rs" type="file" accept=".json,application/json"></label><div class="sub" id="st_m">Backup saves lead info (not attached photos/PDFs).</div>'+
- '<h3>App</h3><div class="row"><button class="keep" id="st_rf">Refresh app (get latest version)</button><button class="keep" id="st_so">Sign out</button></div><div class="sub">Sales · version '+APPV+(SY.user?' · '+esc(SY.user.email):'')+'</div>'}
-var APPV="29";
+ '<h3>Start over</h3><div class="row"><span style="flex:1">Delete all my leads (cannot undo)</span><button class="keep tmx" id="st_da">Delete all</button></div><h3>App</h3><div class="row"><button class="keep" id="st_rf">Refresh app (get latest version)</button><button class="keep" id="st_so">Sign out</button></div><div class="sub">Sales · version '+APPV+(SY.user?' · '+esc(SY.user.email):'')+'</div>'}
+var APPV="30";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn};
  b("st_rm",function(){lss("sdm-rm",lsg("sdm-rm")=="0"?"1":"0");drawContent()});
@@ -611,6 +611,7 @@ function bindExtra2(c){
  b("st_xl",function(){doCSV();$("st_m").textContent="Downloaded. Open the file with Excel."});
  if($("st_rs"))$("st_rs").onchange=function(){if(this.files[0])doRestore(this.files[0],$("st_m"))};
  b("st_rf",function(){try{navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})}).then(function(){return window.caches?caches.keys().then(function(k){return Promise.all(k.map(function(x){return caches.delete(x)}))}):0}).then(function(){location.reload()})}catch(e){location.reload()}});
+ b("st_da",function(){var e=$("st_da");if(!e.classList.contains("sure")){e.classList.add("sure");e.textContent="Tap again to delete ALL";setTimeout(function(){if(e.isConnected){e.classList.remove("sure");e.textContent="Delete all"}},4000);return}leads.forEach(function(l){(l.a||[]).forEach(function(a){delF(a.id,a.n)});tomb(l.id)});leads=[];save();render()});
  b("st_so",function(){if(SY.ad)SY.ad.signOut()});
  b("qnb",quickNote)}
 function quickNote(){var m=$("qnm");if(m)m.remove();m=document.createElement("div");m.id="qnm";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:center;justify-content:center;padding:16px";
@@ -666,6 +667,7 @@ function syncStart(u){SY.authed=true;SY.denied=false;SY.why2="";
  function own(m,wipe){if(SY.user!==u)return;if(wipe)dropTeam();go(u.uid,"owner");gate();var t=document.createElement("div");t.style.cssText="position:fixed;left:12px;right:12px;bottom:84px;z-index:99999;background:#14532d;color:#fff;border-radius:14px;padding:14px;font-size:15px;text-align:center";t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},7000)}
  function go(ws,role){
   if(SY.user!==u)return;SY.ws=ws;SY.role=role;
+  try{var lw=localStorage.getItem("sdm-lw"),wj=localStorage.getItem("sdm-wsj")||"";if((lw&&lw!=ws)||(!lw&&ws==u.uid&&wj&&wj.split("|")[0]!=u.uid)){leads=[];Object.keys(DEAD).forEach(function(k){delete DEAD[k]});localStorage.setItem("sdm-dead","{}");localSave()}localStorage.setItem("sdm-lw",ws)}catch(e){}
   SY.unsub=SY.ad.listen(ws,function(docs){if(role!="owner"&&SY.denied)return;
    var wasFirst=SY.first;
    syncApply(docs);
