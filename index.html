@@ -182,6 +182,11 @@ body.ro #ab2{display:none}
 .lb{align-items:center;gap:8px!important;margin-top:8px!important}.lb a{flex:none!important;width:38px;height:38px;padding:0!important;border-radius:50%!important;display:grid;place-items:center;background:var(--tint)}.lb a .ic2{width:18px;height:18px}.lb a.c1{background:#dcfce7;color:#15803d}.lb a.c2{background:#dbeafe;color:#1d4ed8}.lb a.c3{background:#fef3c7;color:#b45309}.lb a.c4{background:#fee2e2;color:#b91c1c}
 .lb button{flex:1!important;margin-left:auto;display:flex;align-items:center;justify-content:center;gap:6px;padding:0!important;height:38px;border-radius:19px!important;font-size:12.5px!important;letter-spacing:.4px!important}.lb button .ic2{width:16px;height:16px}
 .cov{display:none;margin:-12px -13px 6px -9px;height:140px;border-radius:14px 14px 0 0;background:var(--tint) center/cover no-repeat}.cov.on{display:block}
+.tmh{display:flex;align-items:center;justify-content:space-between;margin-top:14px}.tmh h3{margin:0}.tmc{background:var(--tint);color:var(--acc);border-radius:99px;padding:3px 10px;font-size:.8em;font-weight:700}
+.tmr{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);border-radius:14px;margin-bottom:8px}.tav{flex:none;width:42px;height:42px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.1em}.tmi{flex:1;min-width:0}.tmi b{display:block;font-size:.95em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:6px}
+.seg2{display:inline-flex;background:var(--tint);border-radius:99px;padding:3px;gap:2px}.seg2 button{background:transparent!important;color:var(--text)!important;border:0;border-radius:99px;padding:6px 14px;font-size:.85em;font-weight:700;min-height:0}.seg2 button.on{background:var(--acc)!important;color:#fff!important}.seg2.wide{display:flex}.seg2.wide button{flex:1;padding:10px}
+.tmx{flex:none;background:#fee2e2!important;color:#b91c1c!important;border-radius:10px;padding:8px 10px;font-size:.8em;font-weight:700;border:0}.tmx.sure{background:#b91c1c!important;color:#fff!important}
+.tme0{padding:14px;text-align:center;color:var(--mute);background:var(--tint);border-radius:14px;margin-bottom:8px}.tma{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--tint);border-radius:14px;margin:6px 0 10px}.tmshare{width:100%;background:transparent!important;color:var(--acc)!important;border:2px solid var(--acc)!important;border-radius:14px;padding:12px;font-weight:700;margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -595,7 +600,7 @@ function settingsExtra(){var rm=lsg("sdm-rm")!="0",hm=lsg("sdm-home")||"dash";
  return '<h3>Options</h3><div class="row"><span style="flex:1">Follow-up pop-up when app opens</span><button class="keep" id="st_rm">'+onoff(rm)+'</button></div><div class="row"><span style="flex:1">Show archived leads</span><button class="keep" id="st_ar">'+onoff(ARCH)+'</button></div><div class="row"><span style="flex:1">Open app on</span><select class="keep" id="st_hm">'+NAVS.filter(function(n){return n[0]!="set"}).map(function(n){return '<option value="'+n[0]+'"'+(n[0]==hm?' selected':'')+'>'+n[2]+'</option>'}).join("")+'</select></div>'+
  '<h3>Backup & export</h3><div class="row"><button class="keep" id="st_bk">Download backup</button><button class="keep" id="st_xl">Export to Excel</button></div><label class="sub">Restore from backup file<input id="st_rs" type="file" accept=".json,application/json"></label><div class="sub" id="st_m">Backup saves lead info (not attached photos/PDFs).</div>'+
  '<h3>App</h3><div class="row"><button class="keep" id="st_rf">Refresh app (get latest version)</button><button class="keep" id="st_so">Sign out</button></div><div class="sub">Sales · version '+APPV+(SY.user?' · '+esc(SY.user.email):'')+'</div>'}
-var APPV="26";
+var APPV="27";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn};
  b("st_rm",function(){lss("sdm-rm",lsg("sdm-rm")=="0"?"1":"0");drawContent()});
@@ -709,9 +714,11 @@ function syncOpen(keep){
  else if(SY.user){
   var own=SY.role=="owner",inv=location.origin+location.pathname+"?w="+SY.user.uid;
   h='<div class="card"><h2>Sync is on</h2><p class="sub">Signed in as '+esc(SY.user.email)+'.<br>'+(SY.err?'Problem: '+esc(SY.err)+'.':SY.ready?(own?'Your leads, notes, light counts and files are the same on every device you sign in on.':'You are on a team ('+(SY.role=="view"?'view only':'can edit')+').'):'Syncing…')+'</p>';
-  if(own){h+='<h3 style="margin:14px 0 4px">Team</h3><p class="sub">Add a worker by their email. View = can only look. Edit = can change leads.</p>'
-   +(SY.members||[]).map(function(x,k){return '<div class="row" style="margin:6px 0"><span style="flex:1;overflow:hidden;text-overflow:ellipsis">'+esc(x.email)+'</span><select data-mr="'+k+'"><option value="view"'+(x.role=="view"?' selected':'')+'>View</option><option value="edit"'+(x.role=="edit"?' selected':'')+'>Edit</option></select><button class="ghost" data-md="'+k+'">Remove</button></div>'}).join('')
-   +'<input id="tme" type="email" placeholder="Worker email"><select id="tmr"><option value="view">View only</option><option value="edit">Can edit</option></select><button class="big" id="tma">Add worker</button><div class="smsg" id="tmm"></div><button class="ghost" id="tms">Send invite link</button>'}
+  if(own){var ms=SY.members||[];
+   h+='<div class="tmh"><h3>Team</h3><span class="tmc">'+ms.length+(ms.length==1?' member':' members')+'</span></div><p class="sub" style="margin:0 0 10px">People you add can open your leads from their own phone. <b>View</b> = only look. <b>Edit</b> = can change leads.</p>'
+   +(ms.length?ms.map(function(x,k){return '<div class="tmr"><div class="tav">'+esc((x.email||"?")[0].toUpperCase())+'</div><div class="tmi"><b>'+esc(x.email)+'</b><div class="seg2"><button data-mr="'+k+'" data-r="view" class="'+(x.role=="view"?'on':'')+'">View</button><button data-mr="'+k+'" data-r="edit" class="'+(x.role=="edit"?'on':'')+'">Edit</button></div></div><button class="tmx" data-md="'+k+'" title="Remove">Remove</button></div>'}).join(''):'<div class="tme0">No one yet. Add someone below.</div>')
+   +'<div class="tma"><b>Add a person</b><input id="tme" type="email" placeholder="their@email.com" autocapitalize="none"><div class="seg2 wide" id="tmrs"><button data-nr="view" class="on">View only</button><button data-nr="edit">Can edit</button></div><button class="big" id="tma">+ Add to team</button><div class="smsg" id="tmm"></div></div>'
+   +'<button class="tmshare" id="tms">\u2197 Send invite link</button>'}
   else h+='<button class="ghost" id="tml">Leave team (go back to my own leads)</button>';
   h+='<button class="ghost" id="smo">Sign out</button><button id="smx">Close</button></div>'}
  else h='<div class="card"><h2>Sign in to sync</h2><p class="sub">Use the same email and password on every device.</p><input id="sme" type="email" autocomplete="username" placeholder="Email"><input id="smp" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="'+cls+'" >'+esc(msg)+'</div><button class="big" id="smi">Sign in</button><button class="ghost" id="smc">First time? Create account</button><button class="ghost" id="smx">Close</button></div>';
@@ -724,10 +731,13 @@ function syncOpen(keep){
  if($("smc"))$("smc").onclick=function(){go(SY.ad.signUp)};
  if($("smo"))$("smo").onclick=function(){SY.ad.signOut().then(function(){m.remove()})};
  if($("smx"))$("smx").onclick=function(){m.remove()};
- if($("tma"))$("tma").onclick=function(){var e=$("tme").value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(e)){$("tmm").textContent="Type their email.";return}
-  SY.ad.setMember(SY.ws,e,$("tmr").value).then(function(){$("tme").value="";$("tmm").textContent="Added. Now tap Send invite link."}).catch(function(x){$("tmm").textContent="Could not add: "+((x&&x.code)||"error")})};
- m.querySelectorAll("[data-mr]").forEach(function(el){el.onchange=function(){var x=SY.members[+el.dataset.mr];SY.ad.setMember(SY.ws,x.email,el.value)}});
- m.querySelectorAll("[data-md]").forEach(function(el){el.onclick=function(){var x=SY.members[+el.dataset.md];if(confirm("Remove "+x.email+"?"))SY.ad.delMember(SY.ws,x.email)}});
+ var nr="view";m.querySelectorAll("[data-nr]").forEach(function(el){el.onclick=function(){nr=el.dataset.nr;m.querySelectorAll("[data-nr]").forEach(function(o){o.classList.toggle("on",o===el)})}});
+ if($("tma"))$("tma").onclick=function(){var e=$("tme").value.trim().toLowerCase(),tm=$("tmm");tm.className="smsg bad";if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){tm.textContent="That email doesn't look right. Check it.";return}
+  if(e==(SY.user.email||"").toLowerCase()){tm.textContent="That's your own email.";return}
+  SY.ad.setMember(SY.ws,e,nr).then(function(){$("tme").value="";tm.className="smsg ok";tm.textContent="Added \u2713 Now tap Send invite link and send it to them."}).catch(function(x){tm.textContent="Could not add: "+((x&&x.code)||"error")})};
+ m.querySelectorAll("[data-mr]").forEach(function(el){el.onclick=function(){var x=SY.members[+el.dataset.mr];if(x.role==el.dataset.r)return;SY.ad.setMember(SY.ws,x.email,el.dataset.r)}});
+ m.querySelectorAll("[data-md]").forEach(function(el){el.onclick=function(){var x=SY.members[+el.dataset.md];if(!el.classList.contains("sure")){el.classList.add("sure");el.textContent="Tap again to remove";setTimeout(function(){if(el.isConnected){el.classList.remove("sure");el.textContent="Remove"}},4000);return}
+   el.textContent="Removing\u2026";SY.ad.delMember(SY.ws,x.email).then(function(){el.closest(".tmr")&&el.closest(".tmr").remove()}).catch(function(){el.textContent="Failed, try again";el.classList.remove("sure")})}});
  if($("tms"))$("tms").onclick=function(){var t="Open this link, tap Install, then Create account with the email I added: "+inv;if(navigator.share)navigator.share({title:"Sales app",text:t}).catch(function(){});else if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){$("tmm").textContent="Link copied. Paste it in a text."});else prompt("Copy this:",t)};
  if($("tml"))$("tml").onclick=function(){wsSet("");try{localStorage.removeItem("sdm-wsj")}catch(e){}leads=[];localSave();location.reload()}}
 function invCheck(){try{var w=new URLSearchParams(location.search).get("w");if(w){wsSet(w);history.replaceState(null,"",location.pathname);window.__inv=1}}catch(e){}}
