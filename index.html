@@ -191,6 +191,13 @@ body.ro #ab2{display:none}
 .dsec{border:1px solid var(--line);border-radius:14px;margin:8px 0;padding:0 12px;background:var(--card)}.dsec summary{cursor:pointer;font-weight:700;padding:13px 0;list-style:none;display:flex;align-items:center;justify-content:space-between}.dsec summary::-webkit-details-marker{display:none}.dsec summary:after{content:"\25BE";color:var(--mute);transition:transform .15s}.dsec[open] summary:after{transform:rotate(180deg)}.dgrid{padding-bottom:10px}.dtop{display:block}.amore{margin:0 0 10px}
 @media (min-width:700px){.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 14px}}
 .amc .ag{grid-template-columns:1fr 1fr}.amc .ag .af:has(#a_c),.amc .ag .af:has(#a_e),.amc .ag .af:has(#a_ad),.amc .ag .af:has(#a_ph),.amc .ag .af:has(#a_lx),.amc .ag .af:has(#a_sp){grid-column:1/-1}.amc .af input,.amc .af select{min-width:0}
+.sp{max-width:640px;margin:0 auto;padding-bottom:30px}.sh{font-size:.78em;text-transform:uppercase;letter-spacing:.6px;color:var(--mute);font-weight:700;margin:20px 8px 7px}.scard{background:var(--card);border-radius:18px;padding:2px 16px;box-shadow:0 1px 3px rgba(20,35,27,.08)}.sacc{display:flex;align-items:center;gap:14px;padding:16px}.tav.big{width:56px;height:56px;font-size:1.5em}.stx{flex:1;min-width:0}.stx b{display:block;overflow:hidden;text-overflow:ellipsis}.stx small{display:block;color:var(--mute);font-size:.82em;margin-top:2px}
+.srow{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);width:100%;box-sizing:border-box;text-align:left}.scard>.srow:last-child,.scard>*:last-child.srow{border-bottom:0}.srow select,.srow input{max-width:180px;margin:0}
+button.srow.lnk,label.srow.lnk{background:transparent!important;color:var(--text)!important;border-radius:0;font-size:1em;cursor:pointer;border-left:0;border-right:0;border-top:0}.lnk span{flex:1}.lnk i{font-style:normal;color:var(--mute);font-size:1.3em}.srow.dng span{color:#b91c1c!important}.ok2{color:var(--acc);font-weight:800;font-size:1.3em}
+.tgl{flex:none;width:52px;height:32px;border-radius:99px;background:var(--line)!important;position:relative;border:0;padding:0;transition:background .15s}.tgl:after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}.tgl.on{background:var(--acc)!important}.tgl.on:after{transform:translateX(20px)}
+.sthm{padding:8px 16px 14px}.sthm h3{font-size:.8em;text-transform:uppercase;letter-spacing:.5px;color:var(--mute);margin:12px 0 6px}
+.hq summary{cursor:pointer;font-weight:600;padding:13px 0;list-style:none}.hq summary::-webkit-details-marker{display:none}.hq{border-bottom:1px solid var(--line)}.hq:last-child{border:0}.hq p{margin:0 0 12px;color:var(--mute)}
+.sthm #tcol{width:44px!important;height:44px;padding:0;border:0;border-radius:50%;background:transparent;flex:none}.sthm .sw{align-items:center}.scard+.scard{margin-top:10px}
 </style>
 </head>
 <body>
@@ -457,7 +464,7 @@ function pageContent(){
  else if(NAV=="prop"){var pp=a.filter(function(l){return l.s==S[4]||l.ps});h=filtersHTML()+gridHTML(pp,"p","No proposals yet. Set a lead's Proposal status or move it to Proposal sent.")}
  else if(NAV=="sch")h=schedHTML(a);
  else if(NAV=="rep")h=reportHTML();
- else if(NAV=="set"){h='<div class="card g set" style="max-width:560px"><h2 style="margin:0">Settings</h2>'+themeHTML()+settingsExtra()+'<h3>Account</h3><button id="sset">'+(SY.user?"Sync & team ("+esc(SY.user.email)+")":"Sign in to sync")+'</button><b>Light types</b>'+LT.map(function(t,i){return '<div class="row"><input data-ln2="'+i+'" value="'+esc(t)+'" style="flex:1"><button class="del" data-lr2="'+i+'">Remove</button></div>'}).join("")+'<div class="row"><input id="lnew2" placeholder="New kind of light" style="flex:1"><button id="lad2">Add</button></div></div>'}
+ else if(NAV=="set")h=settingsPage();
  return h}
 function bindContent(){
  var c=$("content");
@@ -500,7 +507,7 @@ function openAdd(){
   s=function(id,lb,arr,v){return '<label class="af"><span>'+lb+'</span><select id="a_'+id+'"><option value="">Choose...</option>'+arr.map(function(x){return '<option'+(x==v?' selected':'')+'>'+esc(x)+'</option>'}).join("")+'</select></label>'},
   last="";try{last=localStorage.getItem("sdm-sp")||""}catch(e){}
  m.innerHTML='<div class="amc"><div class="amh"><h2>Add New Lead</h2><button class="ghost" id="a_x">×</button></div><div class="ams">'+
- '<section><div class="ag">'+f("c","Company","text","ABC Industrial Properties")+f("n","Contact name","text","John Smith")+f("p","Mobile / cell","tel")+f("e","Email","email")+f("ad","Address")+'<label class="af"><span>Stage</span><select id="a_s">'+opts(S[0])+'</select></label>'+f("d","Next follow-up","date")+'<label class="af"><span>Photos</span><input id="a_ph" type="file" multiple accept="image/*"></label><label class="af wide"><span>Notes</span><textarea id="a_t" rows="2" placeholder="Anything to remember..."></textarea></label></div></section>'+
+ '<section><div class="ag">'+f("c","Company","text","ABC Industrial Properties")+f("n","Contact name","text","John Smith")+f("p","Mobile / cell","tel")+f("e","Email","email")+f("ad","Address")+'<label class="af"><span>Stage</span><select id="a_s">'+opts(lsg("sdm-ds")||S[0])+'</select></label>'+f("d","Next follow-up","date")+'<label class="af"><span>Photos</span><input id="a_ph" type="file" multiple accept="image/*"></label><label class="af wide"><span>Notes</span><textarea id="a_t" rows="2" placeholder="Anything to remember..."></textarea></label></div></section>'+
  '<details class="dsec amore"><summary>More details (optional)</summary><div class="ag" style="margin-top:10px">'+f("ti","Title","text","Property Manager")+f("p2","Landline","tel")+s("st","State",STATES)+s("bt","Building type",BT)+f("sf","Building size (sq ft)","number")+f("el","Estimated number of lights","number")+f("pv","Project value ($)","number")+s("ps","Proposal status",PS)+f("lx","Lighting information","text","Types, wattage, hours...")+f("lc","Last contact","date")+'<label class="af"><span>Assigned salesperson</span><input id="a_sp" list="spl" value="'+esc(last)+'"><datalist id="spl">'+reps().map(function(r){return '<option value="'+esc(r)+'">'}).join("")+'</datalist></label><label class="af wide"><span>Follow-up notes</span><textarea id="a_fn" rows="2"></textarea></label></div></details>'+
  '</div><div class="amf"><div class="smsg bad" id="a_m"></div><button class="ghost" id="a_c">Cancel</button><button id="a_s2">Save lead</button></div></div>';
  document.body.appendChild(m);
@@ -557,7 +564,7 @@ function applyRO(){var ro=SY.role=="view";document.body.classList.toggle("ro",ro
 /* ===== Follow-up reminder on open ===== */
 var RM=0;
 function remind(){if(lsg("sdm-rm")=="0"){RM=1;return}if(RM||!(window.SY&&SY.user&&!SY.denied))return;var a=leads.filter(due);if(!leads.length){if(SY.ready)RM=1;return}RM=1;
-try{if(navigator.setAppBadge)a.length?navigator.setAppBadge(a.length):navigator.clearAppBadge()}catch(e){}
+try{if(lsg("sdm-bd")!="0"&&navigator.setAppBadge)a.length?navigator.setAppBadge(a.length):navigator.clearAppBadge()}catch(e){}
 if(!a.length)return;var t=today(),od=a.filter(over).length;
 a.sort(function(x,y){return x.d<y.d?-1:1});
 var d=document.createElement("div");d.id="rmd";d.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px";
@@ -605,21 +612,38 @@ function doCSV(){var H=["Company","Contact","Title","Mobile","Landline","Email",
  dl("sales-leads-"+stampName()+".csv","text/csv;charset=utf-8","﻿"+rows.map(function(r){return r.map(q).join(",")}).join("\r\n"))}
 function doRestore(f,msg){var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result),L=Array.isArray(d)?d:(d.leads||[]),n=0;L.forEach(function(x){if(x&&!find(x.id)){leads.push(norm(x));n++}});if(d.workers)d.workers.forEach(function(w){if(!workers.some(function(y){return y.id==w.id}))workers.push(w)});save();msg.textContent="Restored "+n+" new lead"+(n==1?"":"s")+".";render()}catch(e){msg.textContent="That file isn't a Sales backup."}};r.readAsText(f)}
 function onoff(v){return v?"On":"Off"}
-function settingsExtra(){var rm=lsg("sdm-rm")!="0",hm=lsg("sdm-home")||"dash";
- return '<h3>Options</h3><div class="row"><span style="flex:1">Follow-up pop-up when app opens</span><button class="keep" id="st_rm">'+onoff(rm)+'</button></div><div class="row"><span style="flex:1">Show archived leads</span><button class="keep" id="st_ar">'+onoff(ARCH)+'</button></div><div class="row"><span style="flex:1">Open app on</span><select class="keep" id="st_hm">'+NAVS.filter(function(n){return n[0]!="set"}).map(function(n){return '<option value="'+n[0]+'"'+(n[0]==hm?' selected':'')+'>'+n[2]+'</option>'}).join("")+'</select></div>'+
- '<h3>Backup & export</h3><div class="row"><button class="keep" id="st_bk">Download backup</button><button class="keep" id="st_xl">Export to Excel</button></div><label class="sub">Restore from backup file<input id="st_rs" type="file" accept=".json,application/json"></label><div class="sub" id="st_m">Backup saves lead info (not attached photos/PDFs).</div>'+
- '<h3>Start over</h3><div class="row"><span style="flex:1">Delete all my leads (cannot undo)</span><button class="keep tmx" id="st_da">Delete all</button></div><h3>App</h3><div class="row"><button class="keep" id="st_rf">Refresh app (get latest version)</button><button class="keep" id="st_so">Sign out</button></div><div class="sub">Sales · version '+APPV+(SY.user?' · '+esc(SY.user.email):'')+'</div>'}
-var APPV="34";
+function tg(id,on){return '<button class="tgl keep'+(on?' on':'')+'" id="'+id+'" role="switch" aria-checked="'+(on?'true':'false')+'"></button>'}
+function srow(t,sub,ctl){return '<div class="srow"><div class="stx"><b>'+t+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</div>'+ctl+'</div>'}
+function settingsPage(){
+ var em=SY.user?SY.user.email:"",rl=SY.role=="owner"?"Owner":SY.role=="edit"?"Team member · can edit":"Team member · view only",hm=lsg("sdm-home")||"dash",ds=lsg("sdm-ds")||S[0],sp=lsg("sdm-sp")||"",ro=SY.role=="view";
+ var sel=function(id,arr,v){return '<select class="keep" id="'+id+'">'+arr.map(function(x){var o=Array.isArray(x)?x:[x,x];return '<option value="'+esc(o[0])+'"'+(o[0]==v?' selected':'')+'>'+esc(o[1])+'</option>'}).join("")+'</select>'};
+ var inst=window.matchMedia&&matchMedia("(display-mode: standalone)").matches||window.navigator.standalone;
+ return '<div class="sp">'+
+ '<div class="scard sacc"><div class="tav big">'+esc((em||"?")[0].toUpperCase())+'</div><div class="stx"><b>'+esc(em||"Not signed in")+'</b><small>'+rl+'</small></div></div>'+
+ '<div class="scard"><button class="srow lnk keep" id="sset"><span>Sync & team</span><i>›</i></button><button class="srow lnk keep" id="st_so"><span>Sign out</span><i>›</i></button></div>'+
+ '<div class="sh">Appearance</div><div class="scard sthm">'+themeHTML()+'</div>'+
+ '<div class="sh">Reminders</div><div class="scard">'+srow("Follow-up pop-up","Shows who to call when you open the app",tg("st_rm",lsg("sdm-rm")!="0"))+srow("Number on app icon","Count of follow-ups due",tg("st_bd",lsg("sdm-bd")!="0"))+srow("Backup reminder","Reminds you every 7 days",tg("st_bkr",lsg("sdm-bkr")!="0"))+'</div>'+
+ '<div class="sh">Leads</div><div class="scard">'+srow("Open app on","",sel("st_hm",NAVS.filter(function(n){return n[0]!="set"}).map(function(n){return[n[0],n[2]]}),hm))+srow("New leads start in","",sel("st_ds",S.map(function(x,i){return[x,COLT[i]]}),ds))+srow("My name (salesperson)","Filled in on new leads",'<input class="keep" id="st_sp" value="'+esc(sp)+'" placeholder="Your name" style="max-width:150px">')+srow("Show archived leads","",tg("st_ar",ARCH))+'</div>'+
+ (ro?'':'<div class="sh">Light types</div><div class="scard">'+LT.map(function(t,i){return '<div class="srow"><input data-ln2="'+i+'" value="'+esc(t)+'" style="flex:1"><button class="tmx" data-lr2="'+i+'">Remove</button></div>'}).join("")+'<div class="srow"><input id="lnew2" placeholder="New kind of light" style="flex:1"><button id="lad2">Add</button></div></div>')+
+ '<div class="sh">Data</div><div class="scard"><button class="srow lnk keep" id="st_bk"><span>Download backup</span><i>↓</i></button><button class="srow lnk keep" id="st_xl"><span>Export to Excel</span><i>↓</i></button>'+(ro?'':'<label class="srow lnk"><span>Restore from backup file</span><i>↑</i><input id="st_rs" type="file" accept=".json,application/json" style="display:none"></label><button class="srow lnk dng" id="st_da"><span>Delete all my leads</span><i>›</i></button>')+'<div class="sub" id="st_m" style="padding:8px 0">Backup saves lead info (not attached photos/PDFs).</div></div>'+
+ '<div class="sh">About</div><div class="scard">'+(inst?srow("Installed","This is running as an app",'<span class="ok2">✓</span>'):'<button class="srow lnk keep" id="st_in"><span>Install the app</span><i>›</i></button>')+'<button class="srow lnk keep" id="st_rf"><span>Refresh app (get latest version)</span><i>↻</i></button>'+srow("Version",APPV?"Sales":"",'<b>'+APPV+'</b>')+'</div>'+
+ '<div class="sh">Help</div><div class="scard"><details class="hq"><summary>How do I add a worker?</summary><p>Sync & team → type their email → pick View or Edit → Add. They sign in with that email and see your leads.</p></details><details class="hq"><summary>How do I remove a worker?</summary><p>Sync & team → tap Remove next to their name, then tap again. They lose access right away.</p></details><details class="hq"><summary>The app looks old or something is missing</summary><p>Tap Refresh app above, then close the app completely and open it again.</p></details><details class="hq"><summary>Install on iPhone or iPad</summary><p>Open in Safari → tap Share → Add to Home Screen.</p></details></div>'+
+ '</div>'}
+function bindSet(c){}
+var APPV="35";
 function bindExtra2(c){
- var b=function(id,fn){var e=$(id);if(e)e.onclick=fn};
- b("st_rm",function(){lss("sdm-rm",lsg("sdm-rm")=="0"?"1":"0");drawContent()});
+ var b=function(id,fn){var e=$(id);if(e)e.onclick=fn},flip=function(id,k,invert){b(id,function(){var off=invert?lsg(k)!="1":lsg(k)=="0";lss(k,off?(invert?"1":"1"):"0");if(k=="sdm-arch")ARCH=lsg(k)=="1";drawContent()})};
+ flip("st_rm","sdm-rm");flip("st_bd","sdm-bd");flip("st_bkr","sdm-bkr");
  b("st_ar",function(){ARCH=!ARCH;lss("sdm-arch",ARCH?"1":"0");drawContent()});
  if($("st_hm"))$("st_hm").onchange=function(){lss("sdm-home",this.value)};
+ if($("st_ds"))$("st_ds").onchange=function(){lss("sdm-ds",this.value)};
+ if($("st_sp"))$("st_sp").onchange=function(){lss("sdm-sp",this.value.trim())};
  b("st_bk",function(){doBackup();$("st_m").textContent="Backup downloaded."});
  b("st_xl",function(){doCSV();$("st_m").textContent="Downloaded. Open the file with Excel."});
  if($("st_rs"))$("st_rs").onchange=function(){if(this.files[0])doRestore(this.files[0],$("st_m"))};
+ b("st_in",function(){if(window.DIP){DIP.prompt()}else if(/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform=="MacIntel"&&navigator.maxTouchPoints>1)){alert("In Safari: tap the Share button, then Add to Home Screen.")}else alert("In your browser menu (⋮), tap Install app or Add to Home screen.")});
  b("st_rf",function(){try{navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})}).then(function(){return window.caches?caches.keys().then(function(k){return Promise.all(k.map(function(x){return caches.delete(x)}))}):0}).then(function(){location.reload()})}catch(e){location.reload()}});
- b("st_da",function(){var e=$("st_da");if(!e.classList.contains("sure")){e.classList.add("sure");e.textContent="Tap again to delete ALL";setTimeout(function(){if(e.isConnected){e.classList.remove("sure");e.textContent="Delete all"}},4000);return}leads.forEach(function(l){(l.a||[]).forEach(function(a){delF(a.id,a.n)});tomb(l.id)});leads=[];save();render()});
+ b("st_da",function(){var e=$("st_da");if(!e.classList.contains("sure")){e.classList.add("sure");e.querySelector("span").textContent="Tap again to delete ALL";setTimeout(function(){if(e.isConnected){e.classList.remove("sure");e.querySelector("span").textContent="Delete all my leads"}},4000);return}leads.forEach(function(l){(l.a||[]).forEach(function(a){delF(a.id,a.n)});tomb(l.id)});leads=[];save();render()});
  b("st_so",function(){if(SY.ad)SY.ad.signOut()});
  b("qnb",quickNote)}
 function quickNote(){var m=$("qnm");if(m)m.remove();m=document.createElement("div");m.id="qnm";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:center;justify-content:center;padding:16px";
@@ -628,7 +652,7 @@ function quickNote(){var m=$("qnm");if(m)m.remove();m=document.createElement("di
  document.body.appendChild(m);$("qn_t").focus();
  $("qn_c").onclick=function(){m.remove()};
  $("qn_s").onclick=function(){var l=find($("qn_l").value),x=$("qn_t").value.trim();if(!l||!x)return;l.t="["+new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"})+"] "+x+(l.t?"\n\n"+l.t:"");l.lc=today();logAdd(l,"Note added");save();m.remove();drawContent()}}
-function bkNag(){if(window.bkd||!(window.SY&&SY.user&&!SY.denied)||!leads.length||SY.role=="view")return;window.bkd=1;
+function bkNag(){if(lsg("sdm-bkr")=="0"){window.bkd=1;return}if(window.bkd||!(window.SY&&SY.user&&!SY.denied)||!leads.length||SY.role=="view")return;window.bkd=1;
  var now=Date.now(),last=+lsg("sdm-bk")||0;if(!last){lss("sdm-bk",String(now));return}
  if(now-last<7*864e5||now-(+lsg("sdm-bks")||0)<3*864e5)return;
  var d=document.createElement("div");d.style.cssText="position:fixed;left:12px;right:12px;bottom:84px;z-index:9999;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 6px 24px rgba(0,0,0,.25);display:flex;gap:8px;align-items:center;flex-wrap:wrap";
