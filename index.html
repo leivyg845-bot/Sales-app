@@ -285,7 +285,7 @@ function list(){
 }
 function drawItems(){
  var qq=q.toLowerCase(),h="";
- var it=leads.filter(function(l){var m=filter=="All"||(filter=="Due"?due(l):l.s==filter);return m&&(!qq||[l.n,l.c,l.p,l.p2,l.ad,l.ti,l.e,l.st,l.uc,l.bt].join(" ").toLowerCase().indexOf(qq)>=0)});
+ var it=leads.filter(function(l){var m=filter=="All"||(filter=="Due"?due(l):l.s==filter);return m&&(!qq||qq.split(/\s+/).every(function(w){w=w.replace(/[^a-z0-9]+/g,"");return !w||(" "+hay(l).replace(/[^a-z0-9]+/g," ")).indexOf(" "+w)>=0}))});
  it.sort(function(a,b){return (a.d||"9").localeCompare(b.d||"9")});
  if(!it.length)h='<p class="sub">No leads here yet.</p>';else h='<div class="th"><span>Company / Building</span><span>Status</span><span>Next step</span><span>Follow-up</span><span>Phone</span></div>';
  it.forEach(function(l){var ph=(l.p||"").replace(/[^+\d]/g,"");h+='<div class="card item lead" data-o="'+l.id+'"><div class="dcols"><div><b>'+esc(l.n)+'</b><div class="sub">'+esc([l.c,l.ad].filter(Boolean).join(" \u00b7 "))+'</div></div><div>'+pill(l.s)+'</div><div>'+esc(NEXT[S.indexOf(l.s)])+'</div><div style="'+(due(l)?'color:var(--red);font-weight:600':'')+'">'+esc(l.d||"\u2014")+'</div><div>'+(l.p||l.p2?(l.p?'<div>'+esc(l.p)+' <span class="sub">mobile</span></div>':'')+(l.p2?'<div>'+esc(l.p2)+' <span class="sub">landline</span></div>':''):'\u2014')+'</div></div><div class="mob row" style="flex-wrap:nowrap;align-items:flex-start"><div style="flex:1;min-width:0"><div class="row" style="flex-wrap:nowrap;justify-content:space-between;align-items:flex-start"><h3>'+esc(l.n)+'</h3>'+pill(l.s)+'</div><div class="sub">'+esc([l.c,l.ti].filter(Boolean).join(" \u00b7 "))+'</div><div class="sub">'+esc([l.p?l.p+' (mobile)':'',l.p2?l.p2+' (landline)':''].filter(Boolean).join(' \u00b7 '))+'</div>'+((l.ad||l.st)?'<div class="sub">'+esc([l.ad,l.st].filter(Boolean).join(", "))+'</div>':'')+(l.sf?'<div class="sub">'+Number(l.sf).toLocaleString()+' sq ft'+(l.bt?' \u00b7 '+esc(l.bt):'')+'</div>':'')+(tot(l)?'<div class="sub">Lights: '+tot(l)+'</div>':'')+(l.d?'<div class="sub" style="'+(due(l)?'color:var(--red);font-weight:600':'')+'">Follow up: '+esc(l.d)+'</div>':'')+(l.a.length?'<div class="sub">'+l.a.length+' file'+(l.a.length>1?'s':'')+'</div>':'')+'</div></div></div>'});
@@ -429,10 +429,10 @@ function mval(l){return +String(l.pv||"").replace(/[^0-9.]/g,"")||0}
 function ttl(l){return l.c||l.n||l.bn||"Untitled"}
 function reps(){var o={};leads.forEach(function(l){if(l.sp)o[l.sp]=1});return Object.keys(o).sort()}
 function uniq(k){var o={};leads.forEach(function(l){if(l[k])o[l[k]]=1});return Object.keys(o).sort()}
-function hay(l){var r=[];for(var k in l){if(k=="a"||k=="id"||k=="pic")continue;var v=l[k];if(typeof v=="string"||typeof v=="number")r.push(v);else if(v&&typeof v=="object")try{r.push(JSON.stringify(v))}catch(e){}}return r.join(" ").toLowerCase()}
+function hay(l){var r=[];["n","c","ti","p","p2","e","ad","st","bt","uc","t","fn","ls","sp","tg","bn"].forEach(function(k){var v=l[k];if(typeof v=="string"||typeof v=="number")r.push(v)});var d=[l.p,l.p2].join(" ").replace(/\D/g,"");return r.join(" ").toLowerCase()+" "+d}
 function vis(){var qq=q.toLowerCase(),t=today();
  var a=leads.filter(function(l){
-  if(qq){var hh=" "+hay(l).replace(/[^a-z0-9]+/g," "),h2=hh.replace(/ /g,"");if(qq.split(/\s+/).some(function(w){w=w.replace(/[^a-z0-9]+/g,"");return w&&hh.indexOf(" "+w)<0&&(w.length<4||h2.indexOf(w)<0)}))return false}
+  if(qq){var hh=" "+hay(l).replace(/[^a-z0-9]+/g," "),h2=hh.replace(/ /g,"");if(qq.split(/\s+/).some(function(w){w=w.replace(/[^a-z0-9]+/g,"");return w&&hh.indexOf(" "+w)<0}))return false}
   if(STG!=null&&l.s!=S[STG])return false;if(F.sp&&(l.sp||"")!=F.sp)return false;if(STG==null&&F.s&&l.s!=F.s)return false;if(F.st&&l.st!=F.st)return false;if(F.uc&&l.uc!=F.uc)return false;if(F.tg&&l.tg!=F.tg)return false;if(l.ar&&!ARCH)return false;
   if(F.fu=="over"&&!over(l))return false;if(F.fu=="today"&&l.d!=t)return false;if(F.fu=="week"&&!(l.d&&l.d>=t&&l.d<=plusDays(7)))return false;if(F.fu=="none"&&l.d)return false;
   return true});
@@ -669,7 +669,7 @@ function settingsPage(){
  '<div class="sh">Help</div><div class="scard"><details class="hq"><summary>How do I add a worker?</summary><p>Sync & team → type their email → pick View or Edit → Add. They sign in with that email and see your leads.</p></details><details class="hq"><summary>How do I remove a worker?</summary><p>Sync & team → tap Remove next to their name, then tap again. They lose access right away.</p></details><details class="hq"><summary>The app looks old or something is missing</summary><p>Tap Refresh app above, then close the app completely and open it again.</p></details><details class="hq"><summary>Install on iPhone or iPad</summary><p>Open in Safari → tap Share → Add to Home Screen.</p></details></div>'+
  '</div>'}
 function bindSet(c){}
-var APPV="41";
+var APPV="42";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn},flip=function(id,k,invert){b(id,function(){var off=invert?lsg(k)!="1":lsg(k)=="0";lss(k,off?(invert?"1":"1"):"0");if(k=="sdm-arch")ARCH=lsg(k)=="1";drawContent()})};
  flip("st_rm","sdm-rm");flip("st_bd","sdm-bd");flip("st_bkr","sdm-bkr");
