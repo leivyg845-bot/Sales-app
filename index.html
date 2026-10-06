@@ -188,6 +188,9 @@ body.ro #ab2{display:none}
 .tmx{flex:none;background:#fee2e2!important;color:#b91c1c!important;border-radius:10px;padding:8px 10px;font-size:.8em;font-weight:700;border:0}.tmx.sure{background:#b91c1c!important;color:#fff!important}
 .tme0{padding:14px;text-align:center;color:var(--mute);background:var(--tint);border-radius:14px;margin-bottom:8px}.tma{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--tint);border-radius:14px;margin:6px 0 10px}.tmshare{width:100%;background:transparent!important;color:var(--acc)!important;border:2px solid var(--acc)!important;border-radius:14px;padding:12px;font-weight:700;margin-bottom:6px}
 .pw{position:relative;display:block}.pw input{width:100%;padding-right:74px!important;box-sizing:border-box}.pwb{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--tint)!important;color:var(--acc)!important;border:0;border-radius:10px;padding:8px 12px;font-size:.85em;font-weight:700;min-height:0}
+.dsec{border:1px solid var(--line);border-radius:14px;margin:8px 0;padding:0 12px;background:var(--card)}.dsec summary{cursor:pointer;font-weight:700;padding:13px 0;list-style:none;display:flex;align-items:center;justify-content:space-between}.dsec summary::-webkit-details-marker{display:none}.dsec summary:after{content:"\25BE";color:var(--mute);transition:transform .15s}.dsec[open] summary:after{transform:rotate(180deg)}.dgrid{padding-bottom:10px}.dtop{display:block}.amore{margin:0 0 10px}
+@media (min-width:700px){.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 14px}}
+.amc .ag{grid-template-columns:1fr 1fr}.amc .ag .af:has(#a_c),.amc .ag .af:has(#a_e),.amc .ag .af:has(#a_ad),.amc .ag .af:has(#a_ph),.amc .ag .af:has(#a_lx),.amc .ag .af:has(#a_sp){grid-column:1/-1}.amc .af input,.amc .af select{min-width:0}
 </style>
 </head>
 <body>
@@ -266,6 +269,8 @@ function ask(b,fn,label){
 var NEXT=["Call","Get bills","Follow up","Review bills","Send proposal","Follow up","Start job","Done"];
 function pill(s){return '<span class="pill p'+S.indexOf(s)+'">'+esc(s)+'</span>'}
 function sel(lb,id,arr,v,ph){return '<label class="fld"><span>'+lb+'</span><select id="'+id+'"><option value="">'+ph+'</option>'+arr.map(function(x){return '<option'+(x==v?' selected':'')+'>'+esc(x)+'</option>'}).join("")+'</select></label>'}
+var DO={c:1};
+function dsec(k,t,body){return '<details class="dsec" data-k="'+k+'"'+(DO[k]?' open':'')+'><summary>'+t+'</summary><div class="dgrid">'+body+'</div></details>'}
 function fld(ic,lb,id,v,t){return '<label class="fld"><span>'+lb+'</span><input id="'+id+'" type="'+(t||"text")+'" value="'+esc(v)+'"></label>'}
 function prep(f,cb){
  function raw(){f.arrayBuffer().then(function(b){cb(b,f.type||(/\.pdf$/i.test(f.name)?"application/pdf":""))}).catch(function(){cb(null)})}
@@ -283,7 +288,11 @@ function detail(l){
  $("app").innerHTML='<div class="hdr"><button class="hb" id="bk">\u2190</button><h1>Lead Details</h1><span style="flex:1"></span><button class="hb" id="dl">Delete</button></div>'+
  '<div class="row" style="flex-wrap:nowrap;justify-content:space-between"><div style="min-width:0"><h2 style="margin:0;font-size:20px">'+esc(l.n)+'</h2><div class="sub">'+esc([l.c,l.ad].filter(Boolean).join(" \u00b7 "))+'</div></div>'+pill(l.s)+'</div>'+
  '<div class="seg" style="margin:12px 0 4px"><button class="tab on" data-t="i">Details</button><button class="tab" data-t="n">Notes</button><button class="tab" data-t="l">Lights</button><button class="tab" data-t="f">Files</button></div>'+
- '<div class="card" data-s="i">'+fld("","Name","dn",l.n)+fld("","Mobile (cell)","dp",l.p,"tel")+fld("","Landline","dp2",l.p2,"tel")+fld("","Email","de",l.e,"email")+fld("","Title","dti",l.ti)+fld("","Company","dc",l.c)+fld("","Address","da",l.ad)+sel("State","dst",STATES,l.st,"Choose state")+fld("","Building size (sq ft)","dsf",l.sf,"number")+sel("Building type","dbt",BT,l.bt,"Choose type")+fld("","Utility company","duc",l.uc)+fld("","Building name","dbn",l.bn)+fld("","Number of buildings","dnb",l.nb,"number")+fld("","Estimated lights","del",l.el,"number")+fld("","Last 12 months bills","dbl",l.bl)+fld("","Project value ($)","dpv",l.pv,"number")+sel("Proposal status","dps",PS,l.ps,"Choose")+fld("","Last contact","dlc",l.lc,"date")+fld("","Next follow-up","dd",l.d,"date")+fld("","Salesperson","dsp",l.sp)+fld("","Lead source","dls",l.ls)+fld("","Est. savings per year ($)","dsv",l.sv,"number")+fld("","Install date","dins",l.ins,"date")+sel("Lead temperature","dtg",["Hot","Warm","Cold"],l.tg,"None")+fld("","Follow-up notes","dfn",l.fn)+'<label class="fld"><span>Stage</span><select id="ds">'+opts(l.s)+'</select></label><div class="row" id="ql" style="margin-top:8px"></div></div>'+
+ '<div class="card" data-s="i"><div class="row" id="ql" style="margin-bottom:8px"></div><div class="dtop"><label class="fld"><span>Stage</span><select id="ds">'+opts(l.s)+'</select></label>'+fld("","Next follow-up","dd",l.d,"date")+sel("Lead temperature","dtg",["Hot","Warm","Cold"],l.tg,"None")+'</div>'+
+ dsec("c","Contact",fld("","Name","dn",l.n)+fld("","Company","dc",l.c)+fld("","Title","dti",l.ti)+fld("","Mobile (cell)","dp",l.p,"tel")+fld("","Landline","dp2",l.p2,"tel")+fld("","Email","de",l.e,"email"))+
+ dsec("p","Property",fld("","Address","da",l.ad)+sel("State","dst",STATES,l.st,"Choose state")+sel("Building type","dbt",BT,l.bt,"Choose type")+fld("","Building size (sq ft)","dsf",l.sf,"number"))+
+ dsec("j","Project",fld("","Estimated lights","del",l.el,"number")+fld("","Project value ($)","dpv",l.pv,"number")+sel("Proposal status","dps",PS,l.ps,"Choose")+fld("","Install date","dins",l.ins,"date"))+
+ dsec("f","Follow-up & source",fld("","Last contact","dlc",l.lc,"date")+fld("","Salesperson","dsp",l.sp)+fld("","Lead source","dls",l.ls)+fld("","Follow-up notes","dfn",l.fn))+'</div>'+
  extrasHTML(l)+(l.s!=S[7]?'<button class="big" id="mv" data-s="i">Move to: '+esc(S[S.indexOf(l.s)+1])+'</button>':'')+
   '<div class="card" data-s="n"><textarea id="dt" rows="10" placeholder="Notes about the job...">'+esc(l.t)+'</textarea></div>'+
  lightsHTML(l)+
@@ -291,7 +300,7 @@ function detail(l){
  fillAv();
  $("bk").onclick=function(){openId=null;dtab="i";ltEdit=false;render()};
  $("dl").onclick=function(){ask(this,function(){l.a.forEach(function(a){delF(a.id,a.n)});delF(l.pic);leads=leads.filter(function(x){return x!==l});tomb(l.id);save();openId=null;render()})};
- [["dn","n"],["dti","ti"],["dc","c"],["dp","p"],["dp2","p2"],["de","e"],["da","ad"],["dd","d"],["dst","st"],["dsf","sf"],["dbt","bt"],["duc","uc"],["dbn","bn"],["dnb","nb"],["del","el"],["dbl","bl"],["dpv","pv"],["dps","ps"],["dlc","lc"],["dsp","sp"],["dls","ls"],["dsv","sv"],["dins","ins"],["dtg","tg"],["dfn","fn"],["dt","t"]].forEach(function(p){$(p[0]).oninput=function(){l[p[1]]=this.value;save();links(l)}});
+ [["dn","n"],["dti","ti"],["dc","c"],["dp","p"],["dp2","p2"],["de","e"],["da","ad"],["dd","d"],["dst","st"],["dsf","sf"],["dbt","bt"],["del","el"],["dpv","pv"],["dps","ps"],["dlc","lc"],["dsp","sp"],["dls","ls"],["dins","ins"],["dtg","tg"],["dfn","fn"],["dt","t"]].forEach(function(p){$(p[0]).oninput=function(){l[p[1]]=this.value;save();links(l)}});
  $("ds").onchange=function(){l.s=this.value;logAdd(l,"Moved to "+l.s);save();detail(l)};
  if($("mv"))$("mv").onclick=function(){l.s=S[Math.min(7,S.indexOf(l.s)+1)];logAdd(l,"Moved to "+l.s);save();detail(l)};
  Array.prototype.forEach.call(document.querySelectorAll("[data-lt]"),function(i){i.oninput=function(){l.lt=l.lt||{};if(i.value==="")delete l.lt[i.getAttribute("data-lt")];else l.lt[i.getAttribute("data-lt")]=i.value;save();$("ltot").textContent=tot(l)}});
@@ -307,7 +316,7 @@ function detail(l){
     var n=Math.max(1,Math.ceil(Math.ceil(buf.byteLength/3)*4/CH)),nm=f.name||("Photo "+new Date().toLocaleString());
     putF({id:id,name:nm,type:type,buf:buf},function(ok){var a={id:id,name:nm,type:type,n:n};if(buf.byteLength>MAXF)a.big=1;l.a.push(a);save();if(!a.big)queueUp(id,n);if(--left==0){$("fm").textContent=a.big?"Saved here. Too big to sync (over 8 MB), it stays on this device.":"";inp.value="";files(l)}})})})};
  $("fi").onchange=function(){upl(this)};$("fc").onchange=function(){upl(this)};
- bindExtras(l);links(l);files(l);showT(dtab);
+ Array.prototype.forEach.call(document.querySelectorAll("details[data-k]"),function(d){d.ontoggle=function(){DO[d.getAttribute("data-k")]=d.open}});bindExtras(l);links(l);files(l);showT(dtab);
 }
 function links(l){
  var h="",ph=(l.p||"").replace(/[^+\d]/g,""),ph2=(l.p2||"").replace(/[^+\d]/g,"");
@@ -383,7 +392,7 @@ function fd(s){if(!s)return"";var d=new Date(s+"T00:00:00");return isNaN(d)?s:d.
 function over(l){return !l.ar&&l.d&&l.s!=S[7]&&l.d<today()}
 function money(v){var n=+String(v||"").replace(/[^0-9.]/g,"");return n?"$"+n.toLocaleString("en-US"):""}
 function mval(l){return +String(l.pv||"").replace(/[^0-9.]/g,"")||0}
-function ttl(l){return l.bn||l.c||l.n||"Untitled"}
+function ttl(l){return l.c||l.n||l.bn||"Untitled"}
 function reps(){var o={};leads.forEach(function(l){if(l.sp)o[l.sp]=1});return Object.keys(o).sort()}
 function uniq(k){var o={};leads.forEach(function(l){if(l[k])o[l[k]]=1});return Object.keys(o).sort()}
 function hay(l){var r=[];for(var k in l){if(k=="a"||k=="id"||k=="pic")continue;var v=l[k];if(typeof v=="string"||typeof v=="number")r.push(v);else if(v&&typeof v=="object")try{r.push(JSON.stringify(v))}catch(e){}}return r.join(" ").toLowerCase()}
@@ -403,7 +412,7 @@ function lcard(l,mode){
  if(mode=="b"){
   if(city)h+='<div class="ln">'+ico("pin")+esc(city)+'</div>';
   h+='<div class="ln">'+ico("bldg")+esc([l.nb?l.nb+" bldg"+(l.nb>1?"s":""):"",l.bt,l.sf?(+l.sf).toLocaleString()+" sq ft":""].filter(Boolean).join(" · ")||"No building info yet")+'</div>';
-  h+='<div class="ln">'+ico("bulb")+esc((tot(l)||l.el||"—")+" lights"+(l.uc?" · "+l.uc:""))+'</div>';
+  h+='<div class="ln">'+ico("bulb")+esc((tot(l)||l.el||"—")+" lights")+'</div>';
   h+='<div class="ln">'+ico("user")+esc([l.pm?"PM: "+l.pm:"",l.mm?"Maint: "+l.mm:""].filter(Boolean).join(" · ")||"No managers listed")+'</div>'}
  else{
   if(city)h+='<div class="ln">'+ico("pin")+esc(city)+'</div>';
@@ -419,7 +428,7 @@ function lcard(l,mode){
  return h}
 function filtersHTML(lite){
  function so(id,lb,arr,v){return '<select data-fl="'+id+'"><option value="">'+lb+'</option>'+arr.map(function(x){var o=Array.isArray(x)?x:[x,x];return '<option value="'+esc(o[0])+'"'+(o[0]==v?' selected':'')+'>'+esc(o[1])+'</option>'}).join("")+'</select>'}
- return '<div class="fb">'+so("sp","Salesperson",reps(),F.sp)+(lite?"":so("s","Status",S.map(function(s,i){return[s,COLT[i]]}),F.s))+(lite?"":so("fu","Follow-up date",[["over","Overdue"],["today","Today"],["week","Next 7 days"],["none","No date set"]],F.fu)+so("uc","Utility company",uniq("uc"),F.uc)+so("tg","Hot / Warm / Cold",["Hot","Warm","Cold"],F.tg))
+ return '<div class="fb">'+so("sp","Salesperson",reps(),F.sp)+(lite?"":so("s","Status",S.map(function(s,i){return[s,COLT[i]]}),F.s))+(lite?"":so("fu","Follow-up date",[["over","Overdue"],["today","Today"],["week","Next 7 days"],["none","No date set"]],F.fu)+so("tg","Hot / Warm / Cold",["Hot","Warm","Cold"],F.tg))
   +'<select data-fl="sort">'+[["fu","Sort: Next follow-up"],["name","Sort: Name"],["val","Sort: Project value"],["recent","Sort: Recently updated"],["status","Sort: Status"]].map(function(o){return '<option value="'+o[0]+'"'+(F.sort==o[0]?' selected':'')+'>'+o[1]+'</option>'}).join("")+'</select>'
   +(F.sp||(!lite&&(F.s||F.fu||F.uc||F.tg))?'<button class="ghost" id="fclr">Clear</button>':'')+'</div>'}
 function statsHTML(){
@@ -491,18 +500,16 @@ function openAdd(){
   s=function(id,lb,arr,v){return '<label class="af"><span>'+lb+'</span><select id="a_'+id+'"><option value="">Choose...</option>'+arr.map(function(x){return '<option'+(x==v?' selected':'')+'>'+esc(x)+'</option>'}).join("")+'</select></label>'},
   last="";try{last=localStorage.getItem("sdm-sp")||""}catch(e){}
  m.innerHTML='<div class="amc"><div class="amh"><h2>Add New Lead</h2><button class="ghost" id="a_x">×</button></div><div class="ams">'+
- '<section><h3>Contact</h3><div class="ag">'+f("c","Company","text","ABC Industrial Properties")+f("n","Contact name","text","John Smith")+f("ti","Title","text","Property Manager")+f("p","Mobile / cell","tel")+f("p2","Landline","tel")+f("e","Email","email")+'</div></section>'+
- '<section><h3>Property</h3><div class="ag">'+f("bn","Building name")+f("ad","Address")+s("st","State",STATES)+f("nb","Number of buildings","number")+s("bt","Building type",BT)+f("sf","Building size (sq ft)","number")+'<label class="af"><span>Photos</span><input id="a_ph" type="file" multiple accept="image/*"></label></div></section>'+
- '<section><h3>Project</h3><div class="ag">'+f("uc","Utility company")+f("el","Estimated number of lights","number")+f("bl","Last 12 months bills","text","Total $ or notes")+f("pv","Project value ($)","number")+s("ps","Proposal status",PS)+f("lx","Lighting information","text","Types, wattage, hours...")+'</div></section>'+
- '<section><h3>Follow-up</h3><div class="ag"><label class="af"><span>Status</span><select id="a_s">'+opts(S[0])+'</select></label>'+f("lc","Last contact","date")+f("d","Next follow-up","date")+'<label class="af"><span>Assigned salesperson</span><input id="a_sp" list="spl" value="'+esc(last)+'"><datalist id="spl">'+reps().map(function(r){return '<option value="'+esc(r)+'">'}).join("")+'</datalist></label><label class="af wide"><span>Follow-up notes</span><textarea id="a_fn" rows="2"></textarea></label><label class="af wide"><span>Notes</span><textarea id="a_t" rows="2"></textarea></label></div></section>'+
+ '<section><div class="ag">'+f("c","Company","text","ABC Industrial Properties")+f("n","Contact name","text","John Smith")+f("p","Mobile / cell","tel")+f("e","Email","email")+f("ad","Address")+'<label class="af"><span>Stage</span><select id="a_s">'+opts(S[0])+'</select></label>'+f("d","Next follow-up","date")+'<label class="af"><span>Photos</span><input id="a_ph" type="file" multiple accept="image/*"></label><label class="af wide"><span>Notes</span><textarea id="a_t" rows="2" placeholder="Anything to remember..."></textarea></label></div></section>'+
+ '<details class="dsec amore"><summary>More details (optional)</summary><div class="ag" style="margin-top:10px">'+f("ti","Title","text","Property Manager")+f("p2","Landline","tel")+s("st","State",STATES)+s("bt","Building type",BT)+f("sf","Building size (sq ft)","number")+f("el","Estimated number of lights","number")+f("pv","Project value ($)","number")+s("ps","Proposal status",PS)+f("lx","Lighting information","text","Types, wattage, hours...")+f("lc","Last contact","date")+'<label class="af"><span>Assigned salesperson</span><input id="a_sp" list="spl" value="'+esc(last)+'"><datalist id="spl">'+reps().map(function(r){return '<option value="'+esc(r)+'">'}).join("")+'</datalist></label><label class="af wide"><span>Follow-up notes</span><textarea id="a_fn" rows="2"></textarea></label></div></details>'+
  '</div><div class="amf"><div class="smsg bad" id="a_m"></div><button class="ghost" id="a_c">Cancel</button><button id="a_s2">Save lead</button></div></div>';
  document.body.appendChild(m);
  var close=function(){m.remove()};$("a_x").onclick=close;$("a_c").onclick=close;
  $("a_s2").onclick=function(){
   var v=function(id){return ($("a_"+id).value||"").trim()},o={};
-  ["c","n","ti","p","p2","e","bn","ad","st","nb","bt","sf","uc","el","bl","pv","ps","lx","lc","d","sp","fn","t"].forEach(function(k){o[k]=v(k)});o.s=$("a_s").value;
-  if(!(o.c||o.n||o.bn||o.ad)){$("a_m").textContent="Type a company, name, building or address.";return}
-  if(!o.n)o.n=o.c||o.bn||o.ad;o.cr=Date.now();
+  ["c","n","ti","p","p2","e","ad","st","bt","sf","el","pv","ps","lx","lc","d","sp","fn","t"].forEach(function(k){o[k]=v(k)});o.s=$("a_s").value;
+  if(!(o.c||o.n||o.ad)){$("a_m").textContent="Type a company, name, building or address.";return}
+  if(!o.n)o.n=o.c||o.ad;o.cr=Date.now();
   var l=norm(o);leads.unshift(l);save();try{if(o.sp)localStorage.setItem("sdm-sp",o.sp)}catch(e){}
   var fs=Array.prototype.slice.call($("a_ph").files||[]),finish=function(){close();openId=l.id;dtab="i";render()},left=fs.length;
   if(!left)return finish();
@@ -588,13 +595,13 @@ function reportHTML(){
  var card=function(b,l){return '<div class="stc"><div><b>'+b+'</b><span>'+l+'</span></div></div>'};
  var mx=Math.max.apply(null,S.map(function(s){return A.filter(function(l){return l.s==s}).length}).concat([1]));
  var bars=S.map(function(s,i){var n=A.filter(function(l){return l.s==s}).length;return '<div class="rbar"><span>'+esc(COLT[i])+'</span><i style="width:'+Math.round(n/mx*100)+'%"></i><b>'+n+'</b></div>'}).join("");
- return '<div class="sech"><b>Report · last 7 days</b><button class="ghost keep" onclick="window.print()">Print / Save PDF</button></div><div class="sc rp">'+card(nw,"New leads this week")+card(moves,"Stage moves this week")+card(od,"Overdue follow-ups")+card(fw,"Follow-ups next 7 days")+card(hot,"Hot leads open")+card(ins,"Installs next 7 days")+card(money(pv)||"$0","Open pipeline value")+card(money(cv)||"$0","Completed value")+card(money(sv)||"$0","Est. savings per year")+card(lights.toLocaleString(),"Lights in open jobs")+'</div><div class="card" style="margin-top:12px"><h3 style="margin:0 0 8px">Leads by stage</h3>'+bars+'</div>'}
+ return '<div class="sech"><b>Report · last 7 days</b><button class="ghost keep" onclick="window.print()">Print / Save PDF</button></div><div class="sc rp">'+card(nw,"New leads this week")+card(moves,"Stage moves this week")+card(od,"Overdue follow-ups")+card(fw,"Follow-ups next 7 days")+card(hot,"Hot leads open")+card(ins,"Installs next 7 days")+card(money(pv)||"$0","Open pipeline value")+card(money(cv)||"$0","Completed value")+card(lights.toLocaleString(),"Lights in open jobs")+'</div><div class="card" style="margin-top:12px"><h3 style="margin:0 0 8px">Leads by stage</h3>'+bars+'</div>'}
 function dl(name,type,txt){var b=new Blob([txt],{type:type}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(u)},500)}
 function stampName(){return new Date().toISOString().slice(0,10)}
 function doBackup(){dl("sales-backup-"+stampName()+".json","application/json",JSON.stringify({v:1,at:Date.now(),leads:leads,workers:workers,lt:LT}));lss("sdm-bk",String(Date.now()))}
-function doCSV(){var H=["Company","Contact","Title","Mobile","Landline","Email","Address","State","Building","Stage","Temperature","Source","Lights","Project value","Est. savings/yr","Install date","Last contact","Next follow-up","Salesperson","Archived","Notes"],
+function doCSV(){var H=["Company","Contact","Title","Mobile","Landline","Email","Address","State","Stage","Temperature","Source","Lights","Project value","Install date","Last contact","Next follow-up","Salesperson","Archived","Notes"],
  q=function(v){v=String(v==null?"":v);return '"'+v.replace(/"/g,'""')+'"'};
- var rows=[H].concat(leads.map(function(l){return [l.c,l.n,l.ti,l.p,l.p2,l.e,l.ad,l.st,l.bn,l.s,l.tg,l.ls,tot(l)||l.el,l.pv,l.sv,l.ins,l.lc,l.d,l.sp,l.ar?"Yes":"",l.t]}));
+ var rows=[H].concat(leads.map(function(l){return [l.c,l.n,l.ti,l.p,l.p2,l.e,l.ad,l.st,l.s,l.tg,l.ls,tot(l)||l.el,l.pv,l.ins,l.lc,l.d,l.sp,l.ar?"Yes":"",l.t]}));
  dl("sales-leads-"+stampName()+".csv","text/csv;charset=utf-8","﻿"+rows.map(function(r){return r.map(q).join(",")}).join("\r\n"))}
 function doRestore(f,msg){var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result),L=Array.isArray(d)?d:(d.leads||[]),n=0;L.forEach(function(x){if(x&&!find(x.id)){leads.push(norm(x));n++}});if(d.workers)d.workers.forEach(function(w){if(!workers.some(function(y){return y.id==w.id}))workers.push(w)});save();msg.textContent="Restored "+n+" new lead"+(n==1?"":"s")+".";render()}catch(e){msg.textContent="That file isn't a Sales backup."}};r.readAsText(f)}
 function onoff(v){return v?"On":"Off"}
@@ -602,7 +609,7 @@ function settingsExtra(){var rm=lsg("sdm-rm")!="0",hm=lsg("sdm-home")||"dash";
  return '<h3>Options</h3><div class="row"><span style="flex:1">Follow-up pop-up when app opens</span><button class="keep" id="st_rm">'+onoff(rm)+'</button></div><div class="row"><span style="flex:1">Show archived leads</span><button class="keep" id="st_ar">'+onoff(ARCH)+'</button></div><div class="row"><span style="flex:1">Open app on</span><select class="keep" id="st_hm">'+NAVS.filter(function(n){return n[0]!="set"}).map(function(n){return '<option value="'+n[0]+'"'+(n[0]==hm?' selected':'')+'>'+n[2]+'</option>'}).join("")+'</select></div>'+
  '<h3>Backup & export</h3><div class="row"><button class="keep" id="st_bk">Download backup</button><button class="keep" id="st_xl">Export to Excel</button></div><label class="sub">Restore from backup file<input id="st_rs" type="file" accept=".json,application/json"></label><div class="sub" id="st_m">Backup saves lead info (not attached photos/PDFs).</div>'+
  '<h3>Start over</h3><div class="row"><span style="flex:1">Delete all my leads (cannot undo)</span><button class="keep tmx" id="st_da">Delete all</button></div><h3>App</h3><div class="row"><button class="keep" id="st_rf">Refresh app (get latest version)</button><button class="keep" id="st_so">Sign out</button></div><div class="sub">Sales · version '+APPV+(SY.user?' · '+esc(SY.user.email):'')+'</div>'}
-var APPV="33";
+var APPV="34";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn};
  b("st_rm",function(){lss("sdm-rm",lsg("sdm-rm")=="0"?"1":"0");drawContent()});
