@@ -601,7 +601,7 @@ function settingsExtra(){var rm=lsg("sdm-rm")!="0",hm=lsg("sdm-home")||"dash";
  return '<h3>Options</h3><div class="row"><span style="flex:1">Follow-up pop-up when app opens</span><button class="keep" id="st_rm">'+onoff(rm)+'</button></div><div class="row"><span style="flex:1">Show archived leads</span><button class="keep" id="st_ar">'+onoff(ARCH)+'</button></div><div class="row"><span style="flex:1">Open app on</span><select class="keep" id="st_hm">'+NAVS.filter(function(n){return n[0]!="set"}).map(function(n){return '<option value="'+n[0]+'"'+(n[0]==hm?' selected':'')+'>'+n[2]+'</option>'}).join("")+'</select></div>'+
  '<h3>Backup & export</h3><div class="row"><button class="keep" id="st_bk">Download backup</button><button class="keep" id="st_xl">Export to Excel</button></div><label class="sub">Restore from backup file<input id="st_rs" type="file" accept=".json,application/json"></label><div class="sub" id="st_m">Backup saves lead info (not attached photos/PDFs).</div>'+
  '<h3>Start over</h3><div class="row"><span style="flex:1">Delete all my leads (cannot undo)</span><button class="keep tmx" id="st_da">Delete all</button></div><h3>App</h3><div class="row"><button class="keep" id="st_rf">Refresh app (get latest version)</button><button class="keep" id="st_so">Sign out</button></div><div class="sub">Sales · version '+APPV+(SY.user?' · '+esc(SY.user.email):'')+'</div>'}
-var APPV="31";
+var APPV="32";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn};
  b("st_rm",function(){lss("sdm-rm",lsg("sdm-rm")=="0"?"1":"0");drawContent()});
@@ -663,7 +663,9 @@ function syncStart(u){SY.authed=true;SY.denied=false;SY.why2="";
     if(j!=w+"|"+u.uid){leads=[];Object.keys(DEAD).forEach(function(k){delete DEAD[k]});try{localStorage.setItem("sdm-wsj",w+"|"+u.uid)}catch(e){}localSave()}
     go(w,r);gate()}
   }).catch(function(e){own("Team sharing is not ready yet, so this is your own app for now.")})}
- else{go(u.uid,"owner");gate();var pw="";try{pw=localStorage.getItem("sdm-wsp")||""}catch(e){}if(pw&&pw!=u.uid&&SY.ad.getRole)SY.ad.getRole(pw,u.email).then(function(r){if(SY.user===u&&(r=="view"||r=="edit")){wsSet(pw);try{localStorage.removeItem("sdm-wsp")}catch(e){}location.reload()}}).catch(function(){})}
+ else{go(u.uid,"owner");gate();var cand=[],pw="",lf="";try{pw=localStorage.getItem("sdm-wsp")||"";lf=localStorage.getItem("sdm-left")||""}catch(e){}
+  var tryJoin=function(ids){var i=0;(function nx(){if(SY.user!==u||i>=ids.length)return;var w=ids[i++];if(!w||w==u.uid||lf.indexOf(w)>=0)return nx();SY.ad.getRole(w,u.email).then(function(r){if(SY.user===u&&(r=="view"||r=="edit")){wsSet(w);try{localStorage.removeItem("sdm-wsp")}catch(e){}location.reload()}else nx()}).catch(nx)})()};
+  if(SY.ad.getInvites)SY.ad.getInvites(u.email).then(function(a){tryJoin((pw?[pw]:[]).concat(a||[]))}).catch(function(){tryJoin(pw?[pw]:[])});else tryJoin(pw?[pw]:[])}
  function own(m,wipe){if(SY.user!==u)return;if(wipe)dropTeam();go(u.uid,"owner");gate();var t=document.createElement("div");t.style.cssText="position:fixed;left:12px;right:12px;bottom:84px;z-index:99999;background:#14532d;color:#fff;border-radius:14px;padding:14px;font-size:15px;text-align:center";t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},7000)}
  function go(ws,role){
   if(SY.user!==u)return;SY.ws=ws;SY.role=role;
@@ -705,8 +707,9 @@ function realAdapter(){
   listen:function(uid,cb,eb){return col(uid).onSnapshot(function(s){cb(s.docChanges().map(function(c){return c.doc.data()}))},eb)},
   getRole:function(ws,em){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).get().then(function(x){return x.exists?x.data().role:null})},
   listMembers:function(ws,cb,eb){return fs.collection("users").doc(ws).collection("members").onSnapshot(function(s){cb(s.docs.map(function(d){return{email:d.id,role:d.data().role}}))},eb)},
-  setMember:function(ws,em,role){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).set({role:role})},
-  delMember:function(ws,em){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).delete()},
+  setMember:function(ws,em,role){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).set({role:role}).then(function(){return fs.collection("invites").doc(em.toLowerCase()).collection("owners").doc(ws).set({t:Date.now()}).catch(function(){})})},
+  getInvites:function(em){return fs.collection("invites").doc(em.toLowerCase()).collection("owners").get().then(function(s){return s.docs.map(function(d){return d.id})})},
+  delMember:function(ws,em){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).delete().then(function(){return fs.collection("invites").doc(em.toLowerCase()).collection("owners").doc(ws).delete().catch(function(){})})},
   put:function(uid,id,d){return col(uid).doc(id).set(d)},
   putChunk:function(uid,id,s){return fs.collection("users").doc(uid).collection("fchunks").doc(id).set({d:s})},
   getChunk:function(uid,id){return fs.collection("users").doc(uid).collection("fchunks").doc(id).get().then(function(x){return x.exists?x.data().d:null})},
@@ -745,13 +748,13 @@ function syncOpen(keep){
  var nr="view";m.querySelectorAll("[data-nr]").forEach(function(el){el.onclick=function(){nr=el.dataset.nr;m.querySelectorAll("[data-nr]").forEach(function(o){o.classList.toggle("on",o===el)})}});
  if($("tma"))$("tma").onclick=function(){var e=$("tme").value.trim().toLowerCase(),tm=$("tmm");tm.className="smsg bad";if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){tm.textContent="That email doesn't look right. Check it.";return}
   if(e==(SY.user.email||"").toLowerCase()){tm.textContent="That's your own email.";return}
-  SY.ad.setMember(SY.ws,e,nr).then(function(){$("tme").value="";tm.className="smsg ok";tm.textContent="Added \u2713 Now tap Send invite link and send it to them."}).catch(function(x){tm.textContent="Could not add: "+((x&&x.code)||"error")})};
+  SY.ad.setMember(SY.ws,e,nr).then(function(){$("tme").value="";tm.className="smsg ok";tm.textContent="Added \u2713 They just open the app and sign in with that email. (Send the link if they don't have the app.)"}).catch(function(x){tm.textContent="Could not add: "+((x&&x.code)||"error")})};
  m.querySelectorAll("[data-mr]").forEach(function(el){el.onclick=function(){var x=SY.members[+el.dataset.mr];if(x.role==el.dataset.r)return;SY.ad.setMember(SY.ws,x.email,el.dataset.r)}});
  m.querySelectorAll("[data-md]").forEach(function(el){el.onclick=function(){var x=SY.members[+el.dataset.md];if(!el.classList.contains("sure")){el.classList.add("sure");el.textContent="Tap again to remove";setTimeout(function(){if(el.isConnected){el.classList.remove("sure");el.textContent="Remove"}},4000);return}
    el.textContent="Removing\u2026";SY.ad.delMember(SY.ws,x.email).then(function(){el.closest(".tmr")&&el.closest(".tmr").remove()}).catch(function(){el.textContent="Failed, try again";el.classList.remove("sure")})}});
  if($("tms"))$("tms").onclick=function(){var t="Open this link, tap Install, then Create account with the email I added: "+inv;if(navigator.share)navigator.share({title:"Sales app",text:t}).catch(function(){});else if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){$("tmm").textContent="Link copied. Paste it in a text."});else prompt("Copy this:",t)};
- if($("tml"))$("tml").onclick=function(){wsSet("");try{localStorage.removeItem("sdm-wsj")}catch(e){}leads=[];localSave();location.reload()}}
-function invCheck(){try{var w=new URLSearchParams(location.search).get("w");if(w){wsSet(w);history.replaceState(null,"",location.pathname);window.__inv=1}}catch(e){}}
+ if($("tml"))$("tml").onclick=function(){try{localStorage.setItem("sdm-left",(localStorage.getItem("sdm-left")||"")+" "+SY.ws)}catch(e){}wsSet("");try{localStorage.removeItem("sdm-wsj")}catch(e){}leads=[];localSave();location.reload()}}
+function invCheck(){try{var w=new URLSearchParams(location.search).get("w");if(w){try{localStorage.setItem("sdm-left",(localStorage.getItem("sdm-left")||"").split(w).join(""))}catch(e){}wsSet(w);history.replaceState(null,"",location.pathname);window.__inv=1}}catch(e){}}
 invCheck();
 var DIP=null;window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();DIP=e;if(window.matchMedia("(display-mode: standalone)").matches)return;var d=document.createElement("div");d.className="inst";d.innerHTML="<b>Install the Sales app</b><button id=\"ib\">Install</button><button id=\"ix\" style=\"background:transparent;color:#fff\">✕</button>";document.body.appendChild(d);$("ib").onclick=function(){DIP.prompt();d.remove()};$("ix").onclick=function(){d.remove()}});
 
