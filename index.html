@@ -542,9 +542,9 @@ function openAdd(){
  m.innerHTML='<div class="amc"><div class="amh"><h2>Add New Lead</h2><button class="ghost" id="a_x">×</button></div><div class="ams"><label class="scn"><span class="bigbtn" style="display:block;text-align:center;padding:12px;border-radius:12px;background:var(--tint,#e8f5ee);font-weight:700;cursor:pointer">📷 Scan business card</span><input id="a_scan" type="file" accept="image/*" capture="environment" style="display:none"></label>'+
  '<section><div class="ag">'+f("c","Company","text","ABC Industrial Properties")+f("n","Contact name","text","John Smith")+f("p","Mobile / cell","tel")+f("e","Email","email")+f("ad","Address")+'<label class="af"><span>Stage</span><select id="a_s">'+opts(lsg("sdm-ds")||S[0])+'</select></label>'+f("d","Next follow-up","date")+'<label class="af"><span>Photos</span><input id="a_ph" type="file" multiple accept="image/*"></label><label class="af wide"><span>Notes</span><textarea id="a_t" rows="2" placeholder="Anything to remember..."></textarea></label></div></section>'+
  '<details class="dsec amore"><summary>More details (optional)</summary><div class="ag" style="margin-top:10px">'+f("ti","Title","text","Property Manager")+f("p2","Landline","tel")+s("st","State",STATES)+s("bt","Building type",BT)+f("sf","Building size (sq ft)","number")+f("el","Estimated number of lights","number")+f("pv","Project value ($)","number")+s("ps","Proposal status",PS)+f("lx","Lighting information","text","Types, wattage, hours...")+f("lc","Last contact","date")+'<label class="af"><span>Assigned salesperson</span><input id="a_sp" list="spl" value="'+esc(last)+'"><datalist id="spl">'+reps().map(function(r){return '<option value="'+esc(r)+'">'}).join("")+'</datalist></label><label class="af wide"><span>Follow-up notes</span><textarea id="a_fn" rows="2"></textarea></label></div></details>'+
- '</div><div class="amf"><div class="smsg bad" id="a_m"></div><button class="ghost" id="a_c">Cancel</button><button id="a_s2">Save lead</button></div></div>';
+ '</div><div class="amf"><div class="smsg bad" id="a_m"></div><button class="ghost" id="a_cx">Cancel</button><button id="a_s2">Save lead</button></div></div>';
  document.body.appendChild(m);
- var close=function(){m.remove()};$("a_x").onclick=close;$("a_c").onclick=close;
+ var close=function(){m.remove()};$("a_x").onclick=close;$("a_cx").onclick=close;
  $("a_s2").onclick=function(){
   var v=function(id){return ($("a_"+id).value||"").trim()},o={};
   ["c","n","ti","p","p2","e","ad","st","bt","sf","el","pv","ps","lx","lc","d","sp","fn","t"].forEach(function(k){o[k]=v(k)});o.s=$("a_s").value;
@@ -679,7 +679,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="43";
+var APPV="44";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
