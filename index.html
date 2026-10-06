@@ -601,7 +601,7 @@ function settingsExtra(){var rm=lsg("sdm-rm")!="0",hm=lsg("sdm-home")||"dash";
  return '<h3>Options</h3><div class="row"><span style="flex:1">Follow-up pop-up when app opens</span><button class="keep" id="st_rm">'+onoff(rm)+'</button></div><div class="row"><span style="flex:1">Show archived leads</span><button class="keep" id="st_ar">'+onoff(ARCH)+'</button></div><div class="row"><span style="flex:1">Open app on</span><select class="keep" id="st_hm">'+NAVS.filter(function(n){return n[0]!="set"}).map(function(n){return '<option value="'+n[0]+'"'+(n[0]==hm?' selected':'')+'>'+n[2]+'</option>'}).join("")+'</select></div>'+
  '<h3>Backup & export</h3><div class="row"><button class="keep" id="st_bk">Download backup</button><button class="keep" id="st_xl">Export to Excel</button></div><label class="sub">Restore from backup file<input id="st_rs" type="file" accept=".json,application/json"></label><div class="sub" id="st_m">Backup saves lead info (not attached photos/PDFs).</div>'+
  '<h3>Start over</h3><div class="row"><span style="flex:1">Delete all my leads (cannot undo)</span><button class="keep tmx" id="st_da">Delete all</button></div><h3>App</h3><div class="row"><button class="keep" id="st_rf">Refresh app (get latest version)</button><button class="keep" id="st_so">Sign out</button></div><div class="sub">Sales · version '+APPV+(SY.user?' · '+esc(SY.user.email):'')+'</div>'}
-var APPV="30";
+var APPV="31";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn};
  b("st_rm",function(){lss("sdm-rm",lsg("sdm-rm")=="0"?"1":"0");drawContent()});
@@ -650,7 +650,7 @@ function gate(){var g=$("lg");if(!g)return;
  setM();
  $("lgi").onclick=function(){go(cm?SY.ad.signUp:SY.ad.signIn)};$("lgc").onclick=function(){cm=!cm;$("lgm").textContent="";setM()};
  $("lgp").onkeydown=function(e){if(e.key=="Enter")go(cm?SY.ad.signUp:SY.ad.signIn)}}
-function dropTeam(){wsSet("");try{localStorage.removeItem("sdm-wsj")}catch(e){}if(SY.unsub){try{SY.unsub()}catch(e){}SY.unsub=null}leads=[];Object.keys(DEAD).forEach(function(k){delete DEAD[k]});try{localStorage.setItem("sdm-dead","{}")}catch(e){}localSave()}
+function dropTeam(){var pv=wsGet();if(pv)try{localStorage.setItem("sdm-wsp",pv)}catch(e){}wsSet("");try{localStorage.removeItem("sdm-wsj")}catch(e){}if(SY.unsub){try{SY.unsub()}catch(e){}SY.unsub=null}leads=[];Object.keys(DEAD).forEach(function(k){delete DEAD[k]});try{localStorage.setItem("sdm-dead","{}")}catch(e){}localSave()}
 function syncStart(u){SY.authed=true;SY.denied=false;SY.why2="";
  if(SY.unsub)SY.unsub();SY.unsub=null;if(SY.munsub)SY.munsub();SY.munsub=null;SY.members=[];
  SY.user=u;SY.snap={};SY.ltu=0;SY.sent={};SY.first=true;SY.ready=false;SY.err="";SY.role="owner";SY.ws=u?u.uid:"";
@@ -663,7 +663,7 @@ function syncStart(u){SY.authed=true;SY.denied=false;SY.why2="";
     if(j!=w+"|"+u.uid){leads=[];Object.keys(DEAD).forEach(function(k){delete DEAD[k]});try{localStorage.setItem("sdm-wsj",w+"|"+u.uid)}catch(e){}localSave()}
     go(w,r);gate()}
   }).catch(function(e){own("Team sharing is not ready yet, so this is your own app for now.")})}
- else{go(u.uid,"owner");gate()}
+ else{go(u.uid,"owner");gate();var pw="";try{pw=localStorage.getItem("sdm-wsp")||""}catch(e){}if(pw&&pw!=u.uid&&SY.ad.getRole)SY.ad.getRole(pw,u.email).then(function(r){if(SY.user===u&&(r=="view"||r=="edit")){wsSet(pw);try{localStorage.removeItem("sdm-wsp")}catch(e){}location.reload()}}).catch(function(){})}
  function own(m,wipe){if(SY.user!==u)return;if(wipe)dropTeam();go(u.uid,"owner");gate();var t=document.createElement("div");t.style.cssText="position:fixed;left:12px;right:12px;bottom:84px;z-index:99999;background:#14532d;color:#fff;border-radius:14px;padding:14px;font-size:15px;text-align:center";t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},7000)}
  function go(ws,role){
   if(SY.user!==u)return;SY.ws=ws;SY.role=role;
