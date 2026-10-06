@@ -248,6 +248,9 @@ input,textarea,select{font-size:16px!important}
 .chk:hover,.chk:active{background:#0d9488;border-color:#0d9488}
 .chk:hover:after,.chk:active:after{content:"\2713";color:#fff;font-size:12px;font-weight:700;line-height:1}
 .fug{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fug button{min-height:46px;font-weight:600}.fug button:last-child{grid-column:1/-1}
+.fadd{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.fab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 4px;border:1px solid var(--line);border-radius:14px;background:var(--card);font-size:13px;font-weight:600;text-align:center;cursor:pointer}.fab span{font-size:22px}.fab input{display:none}
+.cvb{display:block;width:100%;margin-top:4px;padding:4px 2px!important;min-height:0;border:0;background:transparent!important;color:var(--mute)!important;font-size:12px;font-weight:600;text-align:left}.cvb.on{color:#0d9488!important}
 </style>
 </head>
 <body>
@@ -354,7 +357,7 @@ function detail(l){
  extrasHTML(l)+(nextI(l.s)!=S.indexOf(l.s)?'<button class="big" id="mv" data-s="i">Move to: '+esc(SN(S[nextI(l.s)]))+'</button>':'')+
   '<div class="card" data-s="n"><div class="row" style="margin-bottom:8px"><button type="button" class="ghost keep" id="cpn">Copy notes</button><button type="button" class="ghost keep" id="shn">Share</button></div><textarea id="dt" rows="10" placeholder="Notes about the job...">'+esc(l.t)+'</textarea></div>'+
  lightsHTML(l)+
- '<div class="card" data-s="f"><div class="row"><b style="flex:1">Attachments</b></div><div class="g" style="margin-top:8px"><label class="sub">Take a photo<input id="fc" type="file" accept="image/*" capture="environment"></label><label class="sub">Add pictures or PDFs from your device<input id="fi" type="file" multiple accept="image/*,application/pdf,.pdf"></label></div></div><div class="files" id="fl"></div><p class="sub" id="fm"></p></div>';
+ '<div class="card" data-s="f"><div class="row"><b style="flex:1">Attachments</b></div><div class="fadd"><label class="fab"><span>\uD83D\uDCF7</span>Take photo<input id="fc" type="file" accept="image/*" capture="environment"></label><label class="fab"><span>\uD83D\uDDBC</span>Add pictures<input id="fi" type="file" multiple accept="image/*"></label><label class="fab"><span>\uD83D\uDCC4</span>Add PDF<input id="fp" type="file" multiple accept="application/pdf,.pdf"></label></div><div class="sub" style="margin-top:6px">Pictures stay in this list. Tap \u2606 under a picture if you want it as the card cover.</div></div><div class="files" id="fl"></div><p class="sub" id="fm"></p></div>';
  fillAv();
  $("bk").onclick=function(){openId=null;dtab="i";ltEdit=false;render()};
  $("dl").onclick=function(){ask(this,function(){l.a.forEach(function(a){delF(a.id,a.n)});delF(l.pic);leads=leads.filter(function(x){return x!==l});tomb(l.id);save();openId=null;render()})};
@@ -373,7 +376,7 @@ function detail(l){
    prep(f,function(buf,type){if(!buf){$("fm").textContent="Couldn't read "+f.name;left--;return}
     var n=Math.max(1,Math.ceil(Math.ceil(buf.byteLength/3)*4/CH)),nm=f.name||("Photo "+new Date().toLocaleString());
     putF({id:id,name:nm,type:type,buf:buf},function(ok){var a={id:id,name:nm,type:type,n:n};if(buf.byteLength>MAXF)a.big=1;l.a.push(a);save();if(!a.big)queueUp(id,n);if(--left==0){$("fm").textContent=a.big?"Saved here. Too big to sync (over 8 MB), it stays on this device.":"";inp.value="";files(l)}})})})};
- $("fi").onchange=function(){upl(this)};$("fc").onchange=function(){upl(this)};
+ $("fi").onchange=function(){upl(this)};if($("fp"))$("fp").onchange=function(){upl(this)};$("fc").onchange=function(){upl(this)};
  Array.prototype.forEach.call(document.querySelectorAll("details[data-k]"),function(d){d.ontoggle=function(){DO[d.getAttribute("data-k")]=d.open}});bindExtras(l);links(l);files(l);showT(dtab);
 }
 function links(l){
@@ -394,8 +397,10 @@ function files(l){
   var d=document.createElement("div");d.className="f";
   if(!isImg)d.appendChild(document.createTextNode("PDF"));
   var x=document.createElement("button");x.className="x";x.textContent="\u00d7";
-  x.onclick=function(e){e.stopPropagation();ask(x,function(){delF(a.id,a.n);l.a=l.a.filter(function(y){return y!==a});save();files(l)},"Delete?")};
-  d.appendChild(x);w.appendChild(d);var cap=document.createElement("div");cap.className="cap";cap.textContent=a.name||"";w.appendChild(cap);box.appendChild(w);
+  x.onclick=function(e){e.stopPropagation();ask(x,function(){delF(a.id,a.n);l.a=l.a.filter(function(y){return y!==a});if(l.pic==a.id)l.pic="";save();files(l)},"Delete?")};
+  d.appendChild(x);w.appendChild(d);var cap=document.createElement("div");cap.className="cap";cap.textContent=a.name||"";w.appendChild(cap);
+  if(isImg&&SY.role!="view"){var cb=document.createElement("button");cb.type="button";cb.className="cvb keep"+(l.pic==a.id?" on":"");cb.textContent=l.pic==a.id?"\u2605 Cover":"\u2606 Make cover";cb.onclick=function(e){e.stopPropagation();l.pic=l.pic==a.id?"":a.id;save();files(l)};w.appendChild(cb)}
+  box.appendChild(w);
   urlFor(a.id,function(u){if(isImg){var im=document.createElement("img");im.src=u;d.appendChild(im)}
    d.onclick=function(){$("ob").innerHTML=isImg?'<img src="'+u+'">':'<iframe src="'+u+'"></iframe>';$("oo").href=u;$("ov").className="on"}})})}
 $("oc").onclick=function(){$("ov").className="";$("ob").innerHTML=""};
@@ -549,7 +554,7 @@ function bindContent(){
  Array.prototype.forEach.call(c.querySelectorAll("[data-lr2]"),function(e){e.onclick=function(){var i=+e.getAttribute("data-lr2"),o=LT[i];ask(e,function(){leads.forEach(function(x){if(x.lt)delete x.lt[o]});LT.splice(i,1);saveLT();save();drawContent()},"Tap again: deletes counts")}});
  if($("lad2"))$("lad2").onclick=function(){var n=$("lnew2").value.trim();if(n&&LT.indexOf(n)<0){LT.push(n);saveLT();drawContent()}};
  applyRO()}
-function coverId(l){if(l.pic)return l.pic;var a=(l.a||[]).filter(function(x){return (x.type||"").indexOf("image")==0})[0];return a?a.id:""}
+function coverId(l){return l.pic&&(l.a||[]).some(function(x){return x.id==l.pic})?l.pic:""}
 function fillCovers(){Array.prototype.forEach.call(document.querySelectorAll("[data-cv]"),function(e){var id=e.getAttribute("data-cv");urlFor(id,function(u){e.style.backgroundImage="url("+u+")";e.classList.add("on")})})}
 function drawContent(){var p=$("pl");if(p)PSL=p.scrollLeft;var c=$("content");if(!c)return;c.innerHTML=pageContent();if(q&&q.trim()&&NAV!="set"&&NAV!="rep"){var n=vis().length;c.insertAdjacentHTML("afterbegin",'<div class="qinfo">'+n+(n==1?" result":" results")+' for \u201c'+esc(q.trim())+'\u201d</div>')}p=$("pl");if(p)p.scrollLeft=PSL;bindContent();fillCovers()}
 var NAVS=[["dash","home","Dashboard"],["pipe","pipe","Pipeline"],["fu","cal","Follow-Ups"],["rep","bill","Reports"],["set","gear","Settings"]];
@@ -710,7 +715,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="51";
+var APPV="52";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
