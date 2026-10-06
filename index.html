@@ -238,6 +238,9 @@ button,.hb,.tab,nav,.ph,.pill,.sh,.srow b{-webkit-user-select:none;user-select:n
 input,textarea,select{font-size:16px!important}
 .tabbar,nav.bt,#tb{padding-bottom:env(safe-area-inset-bottom)}
 .adl{color:inherit;text-decoration:underline;text-decoration-color:rgba(20,83,45,.35);text-underline-offset:3px}
+.sbox{position:relative}.sbox .qx{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;border:0;background:var(--line);color:var(--mute);font-size:12px;display:grid;place-items:center;padding:0;min-height:0}
+.sbox input[type=search]::-webkit-search-cancel-button{display:none}.sbox input{padding-right:40px!important}
+.qinfo{font-size:13px;color:var(--mute);margin:0 4px 10px;font-weight:600}
 </style>
 </head>
 <body>
@@ -299,7 +302,7 @@ function list(){
 }
 function drawItems(){
  var qq=q.toLowerCase(),h="";
- var it=leads.filter(function(l){var m=filter=="All"||(filter=="Due"?due(l):l.s==filter);return m&&(!qq||qq.split(/\s+/).every(function(w){w=w.replace(/[^a-z0-9]+/g,"");return !w||(" "+hay(l).replace(/[^a-z0-9]+/g," ")).indexOf(" "+w)>=0}))});
+ var it=leads.filter(function(l){var m=filter=="All"||(filter=="Due"?due(l):l.s==filter);return m&&(!qq||qScore(l,qq)>=0)});
  it.sort(function(a,b){return (a.d||"9").localeCompare(b.d||"9")});
  if(!it.length)h='<p class="sub">No leads here yet.</p>';else h='<div class="th"><span>Company / Building</span><span>Status</span><span>Next step</span><span>Follow-up</span><span>Phone</span></div>';
  it.forEach(function(l){var ph=(l.p||"").replace(/[^+\d]/g,"");h+='<div class="card item lead" data-o="'+l.id+'"><div class="dcols"><div><b>'+esc(l.n)+'</b><div class="sub">'+esc([l.c,l.ad].filter(Boolean).join(" \u00b7 "))+'</div></div><div>'+pill(l.s)+'</div><div>'+esc(NEXT[S.indexOf(l.s)])+'</div><div style="'+(due(l)?'color:var(--red);font-weight:600':'')+'">'+esc(l.d||"\u2014")+'</div><div>'+(l.p||l.p2?(l.p?'<div>'+esc(l.p)+' <span class="sub">mobile</span></div>':'')+(l.p2?'<div>'+esc(l.p2)+' <span class="sub">landline</span></div>':''):'\u2014')+'</div></div><div class="mob row" style="flex-wrap:nowrap;align-items:flex-start"><div style="flex:1;min-width:0"><div class="row" style="flex-wrap:nowrap;justify-content:space-between;align-items:flex-start"><h3>'+esc(l.n)+'</h3>'+pill(l.s)+'</div><div class="sub">'+esc([l.c,l.ti].filter(Boolean).join(" \u00b7 "))+'</div><div class="sub">'+esc([l.p?l.p+' (mobile)':'',l.p2?l.p2+' (landline)':''].filter(Boolean).join(' \u00b7 '))+'</div>'+((l.ad||l.st)?'<div class="sub">'+esc([l.ad,l.st].filter(Boolean).join(", "))+'</div>':'')+(l.sf?'<div class="sub">'+Number(l.sf).toLocaleString()+' sq ft'+(l.bt?' \u00b7 '+esc(l.bt):'')+'</div>':'')+(tot(l)?'<div class="sub">Lights: '+tot(l)+'</div>':'')+(l.d?'<div class="sub" style="'+(due(l)?'color:var(--red);font-weight:600':'')+'">Follow up: '+esc(l.d)+'</div>':'')+(l.a.length?'<div class="sub">'+l.a.length+' file'+(l.a.length>1?'s':'')+'</div>':'')+'</div></div></div>'});
@@ -444,15 +447,23 @@ function ttl(l){return l.c||l.n||l.bn||"Untitled"}
 function reps(){var o={};leads.forEach(function(l){if(l.sp)o[l.sp]=1});return Object.keys(o).sort()}
 function uniq(k){var o={};leads.forEach(function(l){if(l[k])o[l[k]]=1});return Object.keys(o).sort()}
 function hay(l){var r=[];["n","c","ti","p","p2","e","ad","st","bt","uc","t","fn","ls","sp","tg","bn"].forEach(function(k){var v=l[k];if(typeof v=="string"||typeof v=="number")r.push(v)});var d=[l.p,l.p2].join(" ").replace(/\D/g,"");return r.join(" ").toLowerCase()+" "+d}
-function vis(){var qq=q.toLowerCase(),t=today();
+function qn(x){return String(x||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}
+function qScore(l,qq){var toks=qn(qq).split(" ").filter(Boolean);if(!toks.length)return 0;
+ var pri=qn([l.c,l.n,l.bn].join(" ")),priW=" "+pri,sec=" "+qn([l.ti,l.e,l.ad,l.st,l.uc,l.bt,l.ls,l.sp,l.fn,l.t,l.pm,l.mm].join(" "))+" "+[l.p,l.p2].join(" ").replace(/\D/g,""),long=qn(qq).length>=2;
+ var allPri=toks.every(function(w){return priW.indexOf(" "+w)>=0});
+ if(allPri){var s0=qn(l.c||l.n||l.bn);return (qn(l.c).indexOf(toks.join(" "))==0||qn(l.n).indexOf(toks.join(" "))==0)?0:1}
+ if(!long)return -1;
+ var ok=toks.every(function(w){return priW.indexOf(" "+w)>=0||sec.indexOf(" "+w)>=0});return ok?2:-1}
+function vis(){var qq=q.toLowerCase(),t=today(),sc={};
  var a=leads.filter(function(l){
-  if(qq){var hh=" "+hay(l).replace(/[^a-z0-9]+/g," "),h2=hh.replace(/ /g,"");if(qq.split(/\s+/).some(function(w){w=w.replace(/[^a-z0-9]+/g,"");return w&&hh.indexOf(" "+w)<0}))return false}
+  if(qq&&qn(qq)){var r=qScore(l,qq);if(r<0)return false;sc[l.id]=r}
   if(STG!=null&&l.s!=S[STG])return false;if(F.sp&&(l.sp||"")!=F.sp)return false;if(STG==null&&F.s&&l.s!=F.s)return false;if(F.st&&l.st!=F.st)return false;if(F.uc&&l.uc!=F.uc)return false;if(F.tg&&l.tg!=F.tg)return false;if(l.ar&&!ARCH)return false;
   if(F.fu=="over"&&!over(l))return false;if(F.fu=="today"&&l.d!=t)return false;if(F.fu=="week"&&!(l.d&&l.d>=t&&l.d<=plusDays(7)))return false;if(F.fu=="none"&&l.d)return false;
   return true});
  var so=F.sort;a.sort(function(x,y){
   if(so=="name")return ttl(x).localeCompare(ttl(y));if(so=="val")return mval(y)-mval(x);if(so=="recent")return (y.u||0)-(x.u||0);if(so=="status")return S.indexOf(x.s)-S.indexOf(y.s);
   return (x.d||"9").localeCompare(y.d||"9")});
+ if(qq&&qn(qq))a.sort(function(x,y){return (sc[x.id]-sc[y.id])||ttl(x).localeCompare(ttl(y))});
  return a}
 function mapUrl(a){var q=encodeURIComponent(a),u=navigator.userAgent||"";return /Android/i.test(u)?"geo:0,0?q="+q:/iPhone|iPad|iPod/i.test(u)?"https://maps.apple.com/?q="+q:"https://www.google.com/maps/search/?api=1&query="+q}
 function mapT(){return /Android/i.test(navigator.userAgent||"")?"":' target="_blank" rel="noopener"'}
@@ -533,15 +544,17 @@ function bindContent(){
  applyRO()}
 function coverId(l){if(l.pic)return l.pic;var a=(l.a||[]).filter(function(x){return (x.type||"").indexOf("image")==0})[0];return a?a.id:""}
 function fillCovers(){Array.prototype.forEach.call(document.querySelectorAll("[data-cv]"),function(e){var id=e.getAttribute("data-cv");urlFor(id,function(u){e.style.backgroundImage="url("+u+")";e.classList.add("on")})})}
-function drawContent(){var p=$("pl");if(p)PSL=p.scrollLeft;var c=$("content");if(!c)return;c.innerHTML=pageContent();p=$("pl");if(p)p.scrollLeft=PSL;bindContent();fillCovers()}
+function drawContent(){var p=$("pl");if(p)PSL=p.scrollLeft;var c=$("content");if(!c)return;c.innerHTML=pageContent();if(q&&q.trim()&&NAV!="set"&&NAV!="rep"){var n=vis().length;c.insertAdjacentHTML("afterbegin",'<div class="qinfo">'+n+(n==1?" result":" results")+' for \u201c'+esc(q.trim())+'\u201d</div>')}p=$("pl");if(p)p.scrollLeft=PSL;bindContent();fillCovers()}
 var NAVS=[["dash","home","Dashboard"],["pipe","pipe","Pipeline"],["fu","cal","Follow-Ups"],["rep","bill","Reports"],["set","gear","Settings"]];
 function deskView(){
  var nm=(NAVS.filter(function(n){return n[0]==NAV})[0]||NAVS[0]),em=SY.user?SY.user.email:"",ini=(em||"S")[0].toUpperCase();
  $("app").innerHTML='<div class="shell"><div class="sbd" id="sbd"></div><aside class="side"><div class="brand"><i>'+ico("bulb")+'</i><span>Sales</span></div>'+NAVS.map(function(n){return '<button class="nv'+(n[0]==NAV?' on':'')+'" data-nav="'+n[0]+'" title="'+n[2]+'">'+ico(n[1])+'<span>'+n[2]+'</span></button>'}).join("")+'</aside>'+
- '<main class="main"><div class="top"><button class="mnu" id="mnu" aria-label="Menu">\u2630</button><h1>'+(NAV=="dash"?"Sales Dashboard":nm[2])+'</h1><div class="sbox">'+ico("search")+'<input id="q" placeholder="Search leads, companies, buildings..." value="'+esc(q)+'"></div><button class="addb" id="ab2">'+ico("plus")+'<span>Add New Lead</span></button>'+syncChip()+'<button class="prof" id="pf" title="'+esc(em||"Sign in")+'">'+esc(ini)+'</button></div><div id="content"></div></main></div>';
+ '<main class="main"><div class="top"><button class="mnu" id="mnu" aria-label="Menu">\u2630</button><h1>'+(NAV=="dash"?"Sales Dashboard":nm[2])+'</h1><div class="sbox">'+ico("search")+'<input id="q" type="search" placeholder="Search leads, companies, buildings..." value="'+esc(q)+'" enterkeyhint="search"><button type="button" class="qx keep" id="qc" aria-label="Clear search"'+(q?'':' style="display:none"')+'>\u2715</button></div><button class="addb" id="ab2">'+ico("plus")+'<span>Add New Lead</span></button>'+syncChip()+'<button class="prof" id="pf" title="'+esc(em||"Sign in")+'">'+esc(ini)+'</button></div><div id="content"></div></main></div>';
  Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"),function(b){b.onclick=function(){NAV=b.getAttribute("data-nav");STG=null;SETSUB=null;PSL2=0;PSL=0;SCT={};render()}});
  var sh=document.querySelector(".shell");if($("mnu"))$("mnu").onclick=function(){sh.classList.toggle("so")};if($("sbd"))$("sbd").onclick=function(){sh.classList.remove("so")};
- $("q").oninput=function(){q=this.value;drawContent()};
+ $("q").oninput=function(){q=this.value;var c=$("qc");if(c)c.style.display=q?"":"none";drawContent()};
+ $("q").onkeydown=function(e){if(e.key=="Enter"){e.preventDefault();this.blur()}else if(e.key=="Escape"){q="";this.value="";var c=$("qc");if(c)c.style.display="none";drawContent()}};
+ if($("qc"))$("qc").onclick=function(){q="";var i=$("q");i.value="";this.style.display="none";drawContent();i.focus()};
  $("ab2").onclick=openAdd;$("pf").onclick=syncOpen;
  drawContent()}
 function openAdd(){
@@ -689,7 +702,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="47";
+var APPV="48";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
