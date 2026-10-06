@@ -181,6 +181,7 @@ body.ro #ab2{display:none}
 .shell.so .sbd{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:39}}
 .lb{align-items:center;gap:8px!important;margin-top:8px!important}.lb a{flex:none!important;width:38px;height:38px;padding:0!important;border-radius:50%!important;display:grid;place-items:center;background:var(--tint)}.lb a .ic2{width:18px;height:18px}.lb a.c1{background:#dcfce7;color:#15803d}.lb a.c2{background:#dbeafe;color:#1d4ed8}.lb a.c3{background:#fef3c7;color:#b45309}.lb a.c4{background:#fee2e2;color:#b91c1c}
 .lb button{flex:1!important;margin-left:auto;display:flex;align-items:center;justify-content:center;gap:6px;padding:0!important;height:38px;border-radius:19px!important;font-size:12.5px!important;letter-spacing:.4px!important}.lb button .ic2{width:16px;height:16px}
+.cov{display:none;margin:-12px -13px 6px -9px;height:140px;border-radius:14px 14px 0 0;background:var(--tint) center/cover no-repeat}.cov.on{display:block}
 </style>
 </head>
 <body>
@@ -392,7 +393,7 @@ function vis(){var qq=q.toLowerCase(),t=today();
  return a}
 function lcard(l,mode){
  var ph=(l.p||l.p2||"").replace(/[^+\d]/g,""),city=l.ad||l.st||"",fu=l.d?(over(l)?'<span class="bad">Overdue · '+fd(l.d)+'</span>':l.d==today()?'<span class="warn">Today</span>':'<span>'+fd(l.d)+'</span>'):'<span class="mut">—</span>';
- var h='<div class="lc'+(over(l)?' od':'')+(l.ar?' arch':'')+'" data-o="'+l.id+'"'+(SY.role=="view"?'':' draggable="true"')+' data-id="'+l.id+'"><b class="lt">'+esc(ttl(l))+'</b>'+tagB(l);
+ var h='<div class="lc'+(over(l)?' od':'')+(l.ar?' arch':'')+'" data-o="'+l.id+'"'+(SY.role=="view"?'':' draggable="true"')+' data-id="'+l.id+'"><b class="lt">'+esc(ttl(l))+'</b>'+tagB(l);var cv=coverId(l);if(cv)h=h.replace('<b class="lt">','<div class="cov" data-cv="'+esc(cv)+'"></div><b class="lt">');
  if(mode=="b"){
   if(city)h+='<div class="ln">'+ico("pin")+esc(city)+'</div>';
   h+='<div class="ln">'+ico("bldg")+esc([l.nb?l.nb+" bldg"+(l.nb>1?"s":""):"",l.bt,l.sf?(+l.sf).toLocaleString()+" sq ft":""].filter(Boolean).join(" · ")||"No building info yet")+'</div>';
@@ -465,7 +466,9 @@ function bindContent(){
  Array.prototype.forEach.call(c.querySelectorAll("[data-lr2]"),function(e){e.onclick=function(){var i=+e.getAttribute("data-lr2"),o=LT[i];ask(e,function(){leads.forEach(function(x){if(x.lt)delete x.lt[o]});LT.splice(i,1);saveLT();save();drawContent()},"Tap again: deletes counts")}});
  if($("lad2"))$("lad2").onclick=function(){var n=$("lnew2").value.trim();if(n&&LT.indexOf(n)<0){LT.push(n);saveLT();drawContent()}};
  applyRO()}
-function drawContent(){var p=$("pl");if(p)PSL=p.scrollLeft;var c=$("content");if(!c)return;c.innerHTML=pageContent();p=$("pl");if(p)p.scrollLeft=PSL;bindContent()}
+function coverId(l){if(l.pic)return l.pic;var a=(l.a||[]).filter(function(x){return (x.type||"").indexOf("image")==0})[0];return a?a.id:""}
+function fillCovers(){Array.prototype.forEach.call(document.querySelectorAll("[data-cv]"),function(e){var id=e.getAttribute("data-cv");urlFor(id,function(u){e.style.backgroundImage="url("+u+")";e.classList.add("on")})})}
+function drawContent(){var p=$("pl");if(p)PSL=p.scrollLeft;var c=$("content");if(!c)return;c.innerHTML=pageContent();p=$("pl");if(p)p.scrollLeft=PSL;bindContent();fillCovers()}
 var NAVS=[["dash","home","Dashboard"],["pipe","pipe","Pipeline"],["fu","cal","Follow-Ups"],["prop","doc","Proposals"],["sch","jobs","Schedule"],["rep","bill","Reports"],["set","gear","Settings"]];
 function deskView(){
  var nm=(NAVS.filter(function(n){return n[0]==NAV})[0]||NAVS[0]),em=SY.user?SY.user.email:"",ini=(em||"S")[0].toUpperCase();
@@ -592,7 +595,7 @@ function settingsExtra(){var rm=lsg("sdm-rm")!="0",hm=lsg("sdm-home")||"dash";
  return '<h3>Options</h3><div class="row"><span style="flex:1">Follow-up pop-up when app opens</span><button class="keep" id="st_rm">'+onoff(rm)+'</button></div><div class="row"><span style="flex:1">Show archived leads</span><button class="keep" id="st_ar">'+onoff(ARCH)+'</button></div><div class="row"><span style="flex:1">Open app on</span><select class="keep" id="st_hm">'+NAVS.filter(function(n){return n[0]!="set"}).map(function(n){return '<option value="'+n[0]+'"'+(n[0]==hm?' selected':'')+'>'+n[2]+'</option>'}).join("")+'</select></div>'+
  '<h3>Backup & export</h3><div class="row"><button class="keep" id="st_bk">Download backup</button><button class="keep" id="st_xl">Export to Excel</button></div><label class="sub">Restore from backup file<input id="st_rs" type="file" accept=".json,application/json"></label><div class="sub" id="st_m">Backup saves lead info (not attached photos/PDFs).</div>'+
  '<h3>App</h3><div class="row"><button class="keep" id="st_rf">Refresh app (get latest version)</button><button class="keep" id="st_so">Sign out</button></div><div class="sub">Sales · version '+APPV+(SY.user?' · '+esc(SY.user.email):'')+'</div>'}
-var APPV="21";
+var APPV="22";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn};
  b("st_rm",function(){lss("sdm-rm",lsg("sdm-rm")=="0"?"1":"0");drawContent()});
