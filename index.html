@@ -256,6 +256,8 @@ input,textarea,select{font-size:16px!important}
 .lc.hck:has(.chk.done) .lt{color:var(--mute)}
 .fvs{margin:0 0 12px}.fvs .tab{font-size:13px;padding:8px 4px}
 .sech.up{margin-top:18px}
+.pill.pb{border:0;cursor:pointer;font:inherit;font-size:.78em;font-weight:700;padding:5px 11px;border-radius:99px}
+.spo{display:block;width:100%;text-align:left;margin-bottom:6px;min-height:44px;font-weight:600}.spo.on{background:var(--tint,#e8f5ee)!important;color:#14532d}
 </style>
 </head>
 <body>
@@ -501,7 +503,7 @@ function lcard(l,mode){
   if(l.p||l.p2)h+='<div class="ln">'+ico("phone")+esc(l.p||l.p2)+'</div>';
   if(mode=="p"&&l.ps)h+='<div class="ln">'+ico("doc")+esc("Proposal: "+l.ps)+'</div>';
   if(mval(l))h+='<div class="ln val">'+ico("dollar")+'Estimated project: '+money(l.pv)+'</div>'}
- if(mode)h+='<div class="ln">'+pill(l.s)+'</div>';
+ if(mode)h+='<div class="ln">'+(SY.role=="view"?pill(l.s):'<button type="button" class="pill pb keep p'+(Math.max(0,S.indexOf(l.s))%8)+'" data-sp="'+l.id+'">'+esc(SN(l.s))+' \u25BE</button>')+'</div>';
  h+='<div class="lm"><div><small>Last contact</small><span>'+(l.lc?fd(l.lc):'<span class="mut">—</span>')+'</span></div><div><small>Next follow-up</small>'+fu+'</div></div>';
  if(l.sp)h+='<div class="rep">'+esc(l.sp)+'</div>';
  h+='<div class="lb">'+(ph?'<a href="tel:'+esc(ph)+'" data-x title="Call" class="c1">'+ico("phone")+'</a><a href="sms:'+esc(ph)+'" data-x title="Text" class="c2">'+ico("sms")+'</a>':'')+(l.e?'<a href="mailto:'+esc(l.e)+'" data-x title="Email" class="c3">'+ico("mail")+'</a>':'')+(l.ad?'<a href="'+mapUrl(l.ad+(l.st?", "+l.st:""))+'"'+mapT()+' data-x title="Map" class="c4">'+ico("pin")+'</a>':'')+'<button data-v2="'+l.id+'">'+ico("eye")+'View</button></div></div>';
@@ -731,7 +733,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="55";
+var APPV="56";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
@@ -769,7 +771,7 @@ function mics(){["dt","a_t","fu_n"].forEach(function(i){var e=document.getElemen
 fix();mics();new MutationObserver(function(){fix();mics()}).observe(document.documentElement,{childList:true,subtree:true})})();
 /* ===== Phone back button: go back a step instead of leaving the app ===== */
 var BG=false,BGI=0;
-function bgModal(){return document.querySelector("#am,#sm,#qnm,#rmd,#fum,#msgm")}
+function bgModal(){return document.querySelector("#am,#sm,#qnm,#rmd,#fum,#msgm,#spm")}
 function bgNon(){return !!(openId||STG!=null||NAV!="dash"||SETSUB||bgModal())}
 function bgSync(){if(bgNon()&&!BG){try{history.pushState({g:1},"")}catch(e){return}BG=true}else if(!bgNon()&&BG){BG=false;BGI=1;try{history.back()}catch(e){BGI=0}}}
 window.addEventListener("popstate",function(){if(BGI){BGI=0;return}BG=false;if(!bgNon())return;var m=bgModal();if(m)m.remove();else if(openId){openId=null;dtab="i";ltEdit=false}else if(SETSUB)SETSUB=null;else if(STG!=null)STG=null;else NAV="dash";render();bgSync()});
@@ -940,6 +942,12 @@ function billScan(l,f){if(!f)return;toast("Reading the bill… (needs internet t
     prep(f,function(buf,type){var fin=function(){var tx="Electric bill "+fd(today())+": "+(ln||"couldn't read numbers, see photo");l.t=(l.t?l.t+"\n\n":"")+tx;if(o.u&&!l.uc)l.uc=o.u;logAdd(l,"Scanned electric bill");save();toast(ln?"Bill added to notes":"Photo saved, numbers not clear");detail(l)};
      if(buf){var n=Math.max(1,Math.ceil(Math.ceil(buf.byteLength/3)*4/CH)),nm=f.name||"Electric bill";putF({id:id,name:nm,type:type,buf:buf},function(){var a={id:id,name:nm,type:type,n:n};if(buf.byteLength>MAXF)a.big=1;l.a.push(a);if(!a.big)queueUp(id,n);fin()})}else fin()})}).catch(function(){toast("Couldn't read the bill. Try a clearer photo.")})},function(){toast("Needs internet the first time. Try again online.")})})}
 
+/* ===== quick stage change ===== */
+function stagePick(l){var old=document.getElementById("spm");if(old)old.remove();var m=document.createElement("div");m.id="spm";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:flex-end;justify-content:center;padding:12px";
+ m.innerHTML='<div class="card g" style="max-width:440px;width:100%;margin:0 0 8px;padding:16px;max-height:88dvh;overflow:auto"><h2 style="margin:0 0 2px">Move to stage</h2><div class="sub" style="margin-bottom:10px">'+esc(ttl(l))+'</div>'+S.map(function(x,i){return '<button class="ghost keep spo'+(x==l.s?' on':'')+'" data-sx="'+i+'">'+(x==l.s?'\u2713 ':'')+esc(SN(x))+'</button>'}).join("")+'<button class="ghost keep" id="sp_x" style="width:100%;margin-top:6px">Cancel</button></div>';
+ document.body.appendChild(m);m.onclick=function(e){if(e.target==m)m.remove()};$("sp_x").onclick=function(){m.remove()};
+ Array.prototype.forEach.call(m.querySelectorAll("[data-sx]"),function(b){b.onclick=function(){var ns=S[+b.getAttribute("data-sx")];if(ns!=l.s){l.s=ns;logAdd(l,"Moved to "+SN(ns));save()}m.remove();render()}})}
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-sp]");if(!b)return;e.preventDefault();e.stopPropagation();var l=find(b.getAttribute("data-sp"));if(l)stagePick(l)},true);
 /* ===== Follow-up done ===== */
 function fuDone(l,after){if(!l||SY.role=="view")return;var old=document.getElementById("fum");if(old)old.remove();var ot=document.getElementById("fut");if(ot)ot.remove();
  var m=document.createElement("div");m.id="fum";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:flex-end;justify-content:center;padding:12px";
