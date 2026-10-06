@@ -251,6 +251,7 @@ input,textarea,select{font-size:16px!important}
 .fadd{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
 .fab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 4px;border:1px solid var(--line);border-radius:14px;background:var(--card);font-size:13px;font-weight:600;text-align:center;cursor:pointer}.fab span{font-size:22px}.fab input{display:none}
 .cvb{display:block;width:100%;margin-top:4px;padding:4px 2px!important;min-height:0;border:0;background:transparent!important;color:var(--mute)!important;font-size:12px;font-weight:600;text-align:left}.cvb.on{color:#0d9488!important}
+.fadd{grid-template-columns:repeat(2,1fr)!important}.vpl{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;font-size:15px;pointer-events:none}
 </style>
 </head>
 <body>
@@ -357,7 +358,7 @@ function detail(l){
  extrasHTML(l)+(nextI(l.s)!=S.indexOf(l.s)?'<button class="big" id="mv" data-s="i">Move to: '+esc(SN(S[nextI(l.s)]))+'</button>':'')+
   '<div class="card" data-s="n"><div class="row" style="margin-bottom:8px"><button type="button" class="ghost keep" id="cpn">Copy notes</button><button type="button" class="ghost keep" id="shn">Share</button></div><textarea id="dt" rows="10" placeholder="Notes about the job...">'+esc(l.t)+'</textarea></div>'+
  lightsHTML(l)+
- '<div class="card" data-s="f"><div class="row"><b style="flex:1">Attachments</b></div><div class="fadd"><label class="fab"><span>\uD83D\uDCF7</span>Take photo<input id="fc" type="file" accept="image/*" capture="environment"></label><label class="fab"><span>\uD83D\uDDBC</span>Add pictures<input id="fi" type="file" multiple accept="image/*"></label><label class="fab"><span>\uD83D\uDCC4</span>Add PDF<input id="fp" type="file" multiple accept="application/pdf,.pdf"></label></div><div class="sub" style="margin-top:6px">Pictures stay in this list. Tap \u2606 under a picture if you want it as the card cover.</div></div><div class="files" id="fl"></div><p class="sub" id="fm"></p></div>';
+ '<div class="card" data-s="f"><div class="row"><b style="flex:1">Attachments</b></div><div class="fadd"><label class="fab"><span>\uD83D\uDCF7</span>Take photo<input id="fc" type="file" accept="image/*" capture="environment"></label><label class="fab"><span>\uD83D\uDDBC</span>Add pictures<input id="fi" type="file" multiple accept="image/*"></label><label class="fab"><span>\uD83C\uDFA5</span>Add video<input id="fv" type="file" multiple accept="video/*"></label><label class="fab"><span>\uD83D\uDCC4</span>Add PDF<input id="fp" type="file" multiple accept="application/pdf,.pdf"></label></div><div class="sub" style="margin-top:6px">Pictures and videos stay in this list. Tap \u2606 under a picture if you want it as the card cover.</div></div><div class="files" id="fl"></div><p class="sub" id="fm"></p></div>';
  fillAv();
  $("bk").onclick=function(){openId=null;dtab="i";ltEdit=false;render()};
  $("dl").onclick=function(){ask(this,function(){l.a.forEach(function(a){delF(a.id,a.n)});delF(l.pic);leads=leads.filter(function(x){return x!==l});tomb(l.id);save();openId=null;render()})};
@@ -373,10 +374,11 @@ function detail(l){
  Array.prototype.forEach.call(document.querySelectorAll("[data-t]"),function(b){b.onclick=function(){showT(b.getAttribute("data-t"))}});
  var upl=function(inp){var fs=Array.prototype.slice.call(inp.files),left=fs.length;if(!left){$("fm").textContent="No file chosen.";return}$("fm").textContent="Saving...";
   fs.forEach(function(f){var id="f"+Date.now()+Math.random().toString(36).slice(2,6);
+   if(f.size>200e6){$("fm").textContent="That file is too big (200 MB max).";left--;return}
    prep(f,function(buf,type){if(!buf){$("fm").textContent="Couldn't read "+f.name;left--;return}
     var n=Math.max(1,Math.ceil(Math.ceil(buf.byteLength/3)*4/CH)),nm=f.name||("Photo "+new Date().toLocaleString());
-    putF({id:id,name:nm,type:type,buf:buf},function(ok){var a={id:id,name:nm,type:type,n:n};if(buf.byteLength>MAXF)a.big=1;l.a.push(a);save();if(!a.big)queueUp(id,n);if(--left==0){$("fm").textContent=a.big?"Saved here. Too big to sync (over 8 MB), it stays on this device.":"";inp.value="";files(l)}})})})};
- $("fi").onchange=function(){upl(this)};if($("fp"))$("fp").onchange=function(){upl(this)};$("fc").onchange=function(){upl(this)};
+    putF({id:id,name:nm,type:type,buf:buf},function(ok){var a={id:id,name:nm,type:type,n:n};if(buf.byteLength>MAXF)a.big=1;l.a.push(a);save();if(!a.big)queueUp(id,n);if(--left==0){$("fm").textContent=a.big?(/^video/.test(a.type||"")?"Video saved. Videos stay on this device (they don't sync to other phones).":"Saved here. Too big to sync (over 8 MB), it stays on this device."):"";inp.value="";files(l)}})})})};
+ $("fi").onchange=function(){upl(this)};if($("fp"))$("fp").onchange=function(){upl(this)};if($("fv"))$("fv").onchange=function(){upl(this)};$("fc").onchange=function(){upl(this)};
  Array.prototype.forEach.call(document.querySelectorAll("details[data-k]"),function(d){d.ontoggle=function(){DO[d.getAttribute("data-k")]=d.open}});bindExtras(l);links(l);files(l);showT(dtab);
 }
 function links(l){
@@ -392,18 +394,19 @@ function files(l){
  if(!db)$("fm").textContent="Heads up: this device blocks file storage, so files only stay until you close the page.";if(!l.a.length){if(db&&!$("fm").textContent)$("fm").textContent="Nothing attached yet.";return}
  if(db&&$("fm").textContent.indexOf("Couldn")!=0&&$("fm").textContent.indexOf("Too big")!=0)$("fm").textContent="";
  l.a.forEach(function(a){
-  var isImg=(a.type||"").indexOf("image")==0;
+  var isImg=(a.type||"").indexOf("image")==0,isVid=(a.type||"").indexOf("video")==0||/\.(mp4|mov|m4v|webm|3gp)$/i.test(a.name||"");
   var w=document.createElement("div");w.className="fw";
   var d=document.createElement("div");d.className="f";
-  if(!isImg)d.appendChild(document.createTextNode("PDF"));
+  if(!isImg&&!isVid)d.appendChild(document.createTextNode("PDF"));
   var x=document.createElement("button");x.className="x";x.textContent="\u00d7";
   x.onclick=function(e){e.stopPropagation();ask(x,function(){delF(a.id,a.n);l.a=l.a.filter(function(y){return y!==a});if(l.pic==a.id)l.pic="";save();files(l)},"Delete?")};
   d.appendChild(x);w.appendChild(d);var cap=document.createElement("div");cap.className="cap";cap.textContent=a.name||"";w.appendChild(cap);
   if(isImg&&SY.role!="view"){var cb=document.createElement("button");cb.type="button";cb.className="cvb keep"+(l.pic==a.id?" on":"");cb.textContent=l.pic==a.id?"\u2605 Cover":"\u2606 Make cover";cb.onclick=function(e){e.stopPropagation();l.pic=l.pic==a.id?"":a.id;save();files(l)};w.appendChild(cb)}
   box.appendChild(w);
   urlFor(a.id,function(u){if(isImg){var im=document.createElement("img");im.src=u;d.appendChild(im)}
-   d.onclick=function(){$("ob").innerHTML=isImg?'<img src="'+u+'">':'<iframe src="'+u+'"></iframe>';$("oo").href=u;$("ov").className="on"}})})}
-$("oc").onclick=function(){$("ov").className="";$("ob").innerHTML=""};
+   else if(isVid){var vd=document.createElement("video");vd.src=u+"#t=0.1";vd.preload="metadata";vd.muted=true;vd.playsInline=true;vd.style.cssText="width:100%;height:100%;object-fit:cover";d.appendChild(vd);var pb=document.createElement("span");pb.className="vpl";pb.textContent="\u25B6";d.appendChild(pb)}
+   d.onclick=function(){$("ob").innerHTML=isImg?'<img src="'+u+'">':isVid?'<video src="'+u+'" controls autoplay playsinline style="max-width:100%;max-height:80vh"></video>':'<iframe src="'+u+'"></iframe>';$("oo").href=u;$("ov").className="on"}})})}
+$("oc").onclick=function(){var v=$("ob").querySelector("video");if(v)try{v.pause()}catch(e){}$("ov").className="";$("ob").innerHTML=""};
 function boardView(){
  var h='<div class="hdr"><h1>Sales</h1><span style="flex:1"></span>'+syncChip()+'<button class="hb" id="vb">List</button></div><button class="big" id="add">+ Add New Lead</button><div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;align-items:flex-start">';
  S.forEach(function(s,si){var c=leads.filter(function(l){return l.s==s});
@@ -575,7 +578,7 @@ function openAdd(){
   s=function(id,lb,arr,v){return '<label class="af"><span>'+lb+'</span><select id="a_'+id+'"><option value="">Choose...</option>'+arr.map(function(x){return '<option'+(x==v?' selected':'')+'>'+esc(x)+'</option>'}).join("")+'</select></label>'},
   last="";try{last=localStorage.getItem("sdm-sp")||""}catch(e){}
  m.innerHTML='<div class="amc"><div class="amh"><h2>Add New Lead</h2><button class="ghost" id="a_x">×</button></div><div class="ams"><label class="scn"><span class="bigbtn" style="display:block;text-align:center;padding:12px;border-radius:12px;background:var(--tint,#e8f5ee);font-weight:700;cursor:pointer">📷 Scan business card</span><input id="a_scan" type="file" accept="image/*" capture="environment" style="display:none"></label>'+
- '<section><div class="ag">'+f("c","Company","text","ABC Industrial Properties")+f("n","Contact name","text","John Smith")+f("p","Mobile / cell","tel")+f("e","Email","email")+f("ad","Address")+'<label class="af"><span>Stage</span><select id="a_s">'+opts(lsg("sdm-ds")||S[0])+'</select></label>'+f("d","Next follow-up","date")+'<label class="af"><span>Photos</span><input id="a_ph" type="file" multiple accept="image/*"></label><label class="af wide"><span>Notes</span><textarea id="a_t" rows="2" placeholder="Anything to remember..."></textarea></label></div></section>'+
+ '<section><div class="ag">'+f("c","Company","text","ABC Industrial Properties")+f("n","Contact name","text","John Smith")+f("p","Mobile / cell","tel")+f("e","Email","email")+f("ad","Address")+'<label class="af"><span>Stage</span><select id="a_s">'+opts(lsg("sdm-ds")||S[0])+'</select></label>'+f("d","Next follow-up","date")+'<label class="af"><span>Photos / videos</span><input id="a_ph" type="file" multiple accept="image/*,video/*"></label><label class="af wide"><span>Notes</span><textarea id="a_t" rows="2" placeholder="Anything to remember..."></textarea></label></div></section>'+
  '<details class="dsec amore"><summary>More details (optional)</summary><div class="ag" style="margin-top:10px">'+f("ti","Title","text","Property Manager")+f("p2","Landline","tel")+s("st","State",STATES)+s("bt","Building type",BT)+f("sf","Building size (sq ft)","number")+f("el","Estimated number of lights","number")+f("pv","Project value ($)","number")+s("ps","Proposal status",PS)+f("lx","Lighting information","text","Types, wattage, hours...")+f("lc","Last contact","date")+'<label class="af"><span>Assigned salesperson</span><input id="a_sp" list="spl" value="'+esc(last)+'"><datalist id="spl">'+reps().map(function(r){return '<option value="'+esc(r)+'">'}).join("")+'</datalist></label><label class="af wide"><span>Follow-up notes</span><textarea id="a_fn" rows="2"></textarea></label></div></details>'+
  '</div><div class="amf"><div class="smsg bad" id="a_m"></div><button class="ghost" id="a_cx">Cancel</button><button id="a_s2">Save lead</button></div></div>';
  document.body.appendChild(m);
@@ -715,7 +718,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="52";
+var APPV="53";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
