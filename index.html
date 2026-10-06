@@ -646,7 +646,7 @@ function settingsPage(){
  '<div class="sh">Help</div><div class="scard"><details class="hq"><summary>How do I add a worker?</summary><p>Sync & team → type their email → pick View or Edit → Add. They sign in with that email and see your leads.</p></details><details class="hq"><summary>How do I remove a worker?</summary><p>Sync & team → tap Remove next to their name, then tap again. They lose access right away.</p></details><details class="hq"><summary>The app looks old or something is missing</summary><p>Tap Refresh app above, then close the app completely and open it again.</p></details><details class="hq"><summary>Install on iPhone or iPad</summary><p>Open in Safari → tap Share → Add to Home Screen.</p></details></div>'+
  '</div>'}
 function bindSet(c){}
-var APPV="39";
+var APPV="40";
 function bindExtra2(c){
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn},flip=function(id,k,invert){b(id,function(){var off=invert?lsg(k)!="1":lsg(k)=="0";lss(k,off?(invert?"1":"1"):"0");if(k=="sdm-arch")ARCH=lsg(k)=="1";drawContent()})};
  flip("st_rm","sdm-rm");flip("st_bd","sdm-bd");flip("st_bkr","sdm-bkr");
@@ -687,6 +687,9 @@ function bgNon(){return !!(openId||STG!=null||NAV!="dash"||bgModal())}
 function bgSync(){if(bgNon()&&!BG){try{history.pushState({g:1},"")}catch(e){return}BG=true}else if(!bgNon()&&BG){BG=false;BGI=1;try{history.back()}catch(e){BGI=0}}}
 window.addEventListener("popstate",function(){if(BGI){BGI=0;return}BG=false;if(!bgNon())return;var m=bgModal();if(m)m.remove();else if(openId){openId=null;dtab="i";ltEdit=false}else if(STG!=null)STG=null;else NAV="dash";render();bgSync()});
 setInterval(bgSync,250);
+/* remember where you were (phone may reload the app after a call/switch) */
+(function(){var v=jget("sdm-vs");if(v&&Date.now()-v.t<4*36e5&&NAVS.some(function(n){return n[0]==v.n})){NAV=v.n;STG=v.g==null?null:+v.g;if(v.o){openId=v.o;dtab=v.d||"i"}}
+ var last="";setInterval(function(){var j=JSON.stringify({n:NAV,g:STG,o:openId,d:dtab});if(j!=last){last=j;try{localStorage.setItem("sdm-vs",JSON.stringify({n:NAV,g:STG,o:openId,d:dtab,t:Date.now()}))}catch(e){}}},500)})();
 /* ===== Show/hide password + iPhone/iPad install tip ===== */
 function addEye(i){if(!i||i.parentNode.classList.contains("pw"))return;var w=document.createElement("div");w.className="pw";i.parentNode.insertBefore(w,i);w.appendChild(i);var b=document.createElement("button");b.type="button";b.className="pwb";b.textContent="Show";b.onclick=function(e){e.preventDefault();var h=i.type=="password";i.type=h?"text":"password";b.textContent=h?"Hide":"Show"};w.appendChild(b)}
 (function(){var ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform=="MacIntel"&&navigator.maxTouchPoints>1);
