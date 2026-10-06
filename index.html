@@ -242,11 +242,11 @@ input,textarea,select{font-size:16px!important}
 .sbox input[type=search]::-webkit-search-cancel-button{display:none}.sbox input{padding-right:40px!important}
 .qinfo{font-size:13px;color:var(--mute);margin:0 4px 10px;font-weight:600}
 
-.lc.hck .lt{padding-right:34px}
-.chk{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;border:2px solid #b8c2bc;background:var(--card);padding:0;min-height:0;z-index:2;display:grid;place-items:center;transition:all .15s}
+.lc.hck .lt{padding-right:30px}.chk:before{content:"";position:absolute;inset:-12px}
+.chk{position:absolute;top:12px;right:12px;width:20px;height:20px;border-radius:50%;border:1.5px solid #b8c2bc;background:var(--card);padding:0;min-height:0;z-index:2;display:grid;place-items:center;transition:all .15s}
 .chk.due{border-color:#0d9488}
 .chk:hover,.chk:active{background:#0d9488;border-color:#0d9488}
-.chk:hover:after,.chk:active:after{content:"\2713";color:#fff;font-size:15px;font-weight:700;line-height:1}
+.chk:hover:after,.chk:active:after{content:"\2713";color:#fff;font-size:12px;font-weight:700;line-height:1}
 .fug{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fug button{min-height:46px;font-weight:600}.fug button:last-child{grid-column:1/-1}
 </style>
 </head>
@@ -710,7 +710,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="50";
+var APPV="51";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
