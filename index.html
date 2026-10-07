@@ -736,7 +736,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="65";
+var APPV="66";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
@@ -1122,7 +1122,7 @@ window.addEventListener("online",function(){if(window.SY)syncStatus();render()})
 /* signature */
 function sigBlock(l,quote){if(!quote)return"";if(l.sig&&l.sig.i)return '<div style="margin-top:46px"><img src="'+l.sig.i+'" style="max-height:90px;border-bottom:1px solid #111;display:block"><div style="display:flex;justify-content:space-between;max-width:420px;margin-top:6px;font-size:13px;color:#444"><span>Signed by '+esc(l.sig.n||"customer")+'</span><span>'+esc(new Date(l.sig.t).toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}))+'</span></div></div>';return '<div class="sg"><div>Customer signature</div><div>Date</div></div>'}
 function sigOpen(l){var old=document.getElementById("sgm");if(old)old.remove();var m=document.createElement("div");m.id="sgm";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99998;display:flex;align-items:flex-end;justify-content:center";
- m.innerHTML='<div class="sgc"><h2 style="margin:0 0 4px">Customer signature</h2><div class="sub" style="margin-bottom:10px">Hand the phone to the customer to sign with a finger.</div><canvas id="sgv"></canvas><input id="sgn" placeholder="Customer name" value="'+esc((l.sig&&l.sig.n)||l.n||"")+'" style="margin:10px 0"><div class="row"><button class="ghost keep" id="sgc">Clear</button><button class="ghost keep" id="sgx">Cancel</button></div><button class="big keep" id="sgs" style="margin-top:8px">Save signature</button><button class="ghost keep" id="sgp" style="margin-top:8px;width:100%">Save &amp; open signed proposal PDF</button><div class="smsg bad" id="sgm2"></div></div>';
+ m.innerHTML='<div class="sgc"><h2 style="margin:0 0 4px">Customer signature</h2><div class="sub" style="margin-bottom:10px">Hand the phone to the customer to sign with a finger.</div><canvas id="sgv"></canvas><input id="sgn" placeholder="Customer name" value="'+esc((l.sig&&l.sig.n)||l.n||"")+'" style="margin:10px 0"><div class="row"><button class="ghost keep" id="sgc">Clear</button><button class="ghost keep" id="sgx">Cancel</button></div><button class="big keep" id="sgs" style="margin-top:8px">Save signature</button><button class="ghost keep" id="sgp" style="margin-top:8px;width:100%">Save &amp; keep signed PDF in Files</button><div class="smsg bad" id="sgm2"></div></div>';
  document.body.appendChild(m);var cv=document.getElementById("sgv"),W=600,H=220;cv.width=W;cv.height=H;var x=cv.getContext("2d");x.lineWidth=4;x.lineCap="round";x.lineJoin="round";x.strokeStyle="#111";var dr=false,has=false,lp=null;
  var pt=function(e){var r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}};
  cv.onpointerdown=function(e){dr=true;has=true;lp=pt(e);try{cv.setPointerCapture(e.pointerId)}catch(z){}x.beginPath();x.moveTo(lp.x,lp.y);x.lineTo(lp.x+.1,lp.y+.1);x.stroke();e.preventDefault()};
@@ -1131,7 +1131,7 @@ function sigOpen(l){var old=document.getElementById("sgm");if(old)old.remove();v
  document.getElementById("sgc").onclick=function(){x.clearRect(0,0,W,H);has=false};
  document.getElementById("sgx").onclick=function(){m.remove()};
  var save=function(pdf){var nm=document.getElementById("sgn").value.trim();if(!has){document.getElementById("sgm2").textContent="Please sign first.";return}
-  l.sig={i:cv.toDataURL("image/png"),n:nm,t:Date.now()};logAdd(l,"Proposal signed"+(nm?" by "+nm:""));save2();m.remove();if(pdf)leadPrint(l,true);detail(l)};
+  l.sig={i:cv.toDataURL("image/png"),n:nm,t:Date.now()};logAdd(l,"Proposal signed"+(nm?" by "+nm:""));save2();if(!pdf){m.remove();detail(l);return}document.getElementById("sgm2").className="smsg ok";document.getElementById("sgm2").textContent="Saving PDF\u2026";proposalPdf(l,function(by){attachPdf(l,by,"Signed proposal - "+ttl(l)+" - "+new Date().toISOString().slice(0,10)+".pdf",function(){logAdd(l,"Signed proposal PDF saved to Files");save2();m.remove();dtab="f";detail(l)})})};
  var save2=function(){window.save()};
  document.getElementById("sgs").onclick=function(){save(false)};document.getElementById("sgp").onclick=function(){save(true)}}
 /* calendar */
@@ -1154,6 +1154,53 @@ function calHTML(){var t=today();if(!CM){var n=new Date();CM={y:n.getFullYear(),
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-cm],[data-cd]");if(!b||!$("content"))return;e.stopPropagation();
  if(b.hasAttribute("data-cm")){var v=+b.getAttribute("data-cm");if(!v){var n=new Date();CM={y:n.getFullYear(),m:n.getMonth()};CDY=today()}else{var d=new Date(CM.y,CM.m+v,1);CM={y:d.getFullYear(),m:d.getMonth()}}}else CDY=b.getAttribute("data-cd");
  drawContent()},true);
+
+/* ===== v66: signed proposal PDF saved to the lead's Files ===== */
+function pdfAscii(t){return String(t==null?"":t).replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/[–—]/g,"-").replace(/•/g,"-").replace(/ /g," ").replace(/[^\x20-\x7e\xa0-\xff\n]/g,"?")}
+function pdfEsc(t){return pdfAscii(t).replace(/\\/g,"\\\\").replace(/\(/g,"\\(").replace(/\)/g,"\\)")}
+function pdfBytes(s){var u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i)&255;return u}
+function pdfBuild(items,img,after){ /* items: {t,s,b,c,gap} ; img:{bytes,w,h} */
+ var cx=document.createElement("canvas").getContext("2d"),pages=[[]],y=740,M=54,MW=504;
+ var wid=function(t,s,b){cx.font=(b?"bold ":"")+s+"px Helvetica, Arial, sans-serif";return cx.measureText(t).width};
+ var wrap=function(t,s,b){var out=[];pdfAscii(t).split("\n").forEach(function(par){var w=par.split(/\s+/),cur="";w.forEach(function(x){var tt=cur?cur+" "+x:x;if(wid(tt,s,b)>MW&&cur){out.push(cur);cur=x}else cur=tt});out.push(cur)});return out};
+ var np=function(){pages.push([]);y=740};
+ var draw=function(list){list.forEach(function(it){var s=it.s||11,lh=s*1.4;y-=it.gap||0;wrap(it.t,s,it.b).forEach(function(ln){if(y<70)np();var col=it.c||"0 0 0";pages[pages.length-1].push("BT /"+(it.b?"F2":"F1")+" "+s+" Tf "+col+" rg "+(it.x||M)+" "+y.toFixed(1)+" Td ("+pdfEsc(ln)+") Tj ET");y-=lh})})};
+ draw(items);
+ var hasImg=!!img;
+ if(img){var iw=Math.min(260,img.w*0.5),ih=iw*img.h/img.w;if(y<ih+110)np();y-=8;pages[pages.length-1].push("q "+iw.toFixed(1)+" 0 0 "+ih.toFixed(1)+" "+M+" "+(y-ih).toFixed(1)+" cm /Im1 Do Q");y-=ih;pages[pages.length-1].push("0.4 w 0 0 0 RG "+M+" "+(y-2).toFixed(1)+" m "+(M+280)+" "+(y-2).toFixed(1)+" l S");y-=4}
+ draw(after||[]);
+ var parts=[],off=[],len=0,add=function(x){var b=typeof x=="string"?pdfBytes(x):x;parts.push(b);len+=b.length},obj=function(n,body){off[n]=len;add(n+" 0 obj\n");add(body);add("\nendobj\n")};
+ var np2=pages.length,first=5+(hasImg?1:0);
+ add("%PDF-1.4\n");
+ obj(1,"<< /Type /Catalog /Pages 2 0 R >>");
+ var kids=[];for(var i=0;i<np2;i++)kids.push((first+i*2)+" 0 R");
+ obj(2,"<< /Type /Pages /Kids ["+kids.join(" ")+"] /Count "+np2+" >>");
+ obj(3,"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+ obj(4,"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+ if(hasImg){off[5]=len;add("5 0 obj\n<< /Type /XObject /Subtype /Image /Width "+img.w+" /Height "+img.h+" /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length "+img.bytes.length+" >>\nstream\n");add(img.bytes);add("\nendstream\nendobj\n")}
+ for(var p=0;p<np2;p++){var st=pages[p].join("\n"),pn=first+p*2;
+  obj(pn,"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >>"+(hasImg?" /XObject << /Im1 5 0 R >>":"")+" >> /Contents "+(pn+1)+" 0 R >>");
+  obj(pn+1,"<< /Length "+st.length+" >>\nstream\n"+st+"\nendstream")}
+ var total=first+np2*2,xr=len;add("xref\n0 "+total+"\n0000000000 65535 f \n");
+ for(var k=1;k<total;k++)add(("0000000000"+off[k]).slice(-10)+" 00000 n \n");
+ add("trailer\n<< /Size "+total+" /Root 1 0 R >>\nstartxref\n"+xr+"\n%%EOF");
+ var out=new Uint8Array(len),pos=0;parts.forEach(function(b){out.set(b,pos);pos+=b.length});return out}
+function sigJpeg(dataUrl,cb){var im=new Image();im.onload=function(){var c=document.createElement("canvas");c.width=im.width;c.height=im.height;var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);var u=c.toDataURL("image/jpeg",.9),b=atob(u.slice(u.indexOf(",")+1)),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);cb({bytes:a,w:c.width,h:c.height})};im.onerror=function(){cb(null)};im.src=dataUrl}
+function proposalPdf(l,cb){var b=brGet(),G="0.078 0.325 0.176",dt=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}),pv=money(l.pv),it=[];
+ it.push({t:b.co||"",s:18,b:1,c:G});var ct=[b.ph,b.em,b.web].filter(Boolean).join("   |   ");if(ct)it.push({t:ct,s:10,c:"0.3 0.3 0.3"});
+ it.push({t:"Proposal for "+ttl(l),s:20,b:1,gap:18});it.push({t:"Proposal - "+dt,s:11,c:"0.35 0.35 0.35",gap:2});
+ var sec=function(h,rows){rows=rows.filter(function(r){return r[1]});if(!rows.length)return;it.push({t:h.toUpperCase(),s:11,b:1,c:G,gap:16});rows.forEach(function(r){it.push({t:r[0]+":  "+r[1],s:11,gap:3})})};
+ sec("Contact",[["Name",l.n&&l.n!=ttl(l)?l.n:""],["Title",l.ti],["Company",l.c],["Mobile",l.p],["Landline",l.p2],["Email",l.e]]);
+ sec("Property",[["Address",[l.ad,l.st].filter(Boolean).join(", ")],["Building type",l.bt],["Building size",l.sf?(+l.sf).toLocaleString()+" sq ft":""],["Estimated lights",tot(l)||l.el||""]]);
+ var lt=Object.keys(l.lt||{}).filter(function(k){return +l.lt[k]}).map(function(k){return[k,l.lt[k]]});if(lt.length){sec("Lights",lt);it.push({t:"Total:  "+tot(l),s:11,b:1,gap:4})}
+ if(pv){it.push({t:"PROJECT VALUE",s:11,b:1,c:G,gap:16});it.push({t:pv,s:18,b:1,gap:3})}
+ if(b.terms){it.push({t:"TERMS",s:11,b:1,c:G,gap:16});it.push({t:b.terms,s:10,gap:3})}
+ var nm=l.sig&&l.sig.n||"customer",sd=l.sig?new Date(l.sig.t).toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}):"";
+ it.push({t:"CUSTOMER SIGNATURE",s:11,b:1,c:G,gap:22});
+ var extra=[{t:"Signed by "+nm+(sd?"  -  "+sd:""),s:11,gap:10}];if(l.sp||b.co)extra.push({t:"Prepared by "+(l.sp||b.co),s:10,c:"0.4 0.4 0.4",gap:10});
+ if(l.sig&&l.sig.i)sigJpeg(l.sig.i,function(img){cb(pdfBuild(it,img,extra))});else cb(pdfBuild(it,null,extra))}
+function attachPdf(l,bytes,name,done){var id="f"+Date.now()+Math.random().toString(36).slice(2,6),buf=bytes.buffer,n=Math.max(1,Math.ceil(Math.ceil(buf.byteLength/3)*4/CH));
+ putF({id:id,name:name,type:"application/pdf",buf:buf},function(){l.a=l.a||[];l.a.push({id:id,name:name,type:"application/pdf",n:n});save();queueUp(id,n);if(done)done()})}
 </script>
 </body>
 </html>
