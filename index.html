@@ -736,7 +736,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="75";
+var APPV="76";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
@@ -1280,7 +1280,7 @@ function pdfFromJpegs(js){var parts=[],off=[],len=0,add=function(v){var b=typeof
   off[p+2]=len;add((p+2)+" 0 obj\n<< /Type /XObject /Subtype /Image /Width "+j.w+" /Height "+j.h+" /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length "+j.bytes.length+" >>\nstream\n");add(j.bytes);add("\nendstream\nendobj\n")});
  var total=3+n*3,xr=len;add("xref\n0 "+total+"\n0000000000 65535 f \n");for(var k=1;k<total;k++)add(("0000000000"+off[k]).slice(-10)+" 00000 n \n");
  add("trailer\n<< /Size "+total+" /Root 1 0 R >>\nstartxref\n"+xr+"\n%%EOF");var out=new Uint8Array(len),pos=0;parts.forEach(function(b){out.set(b,pos);pos+=b.length});return out}
-function ppBuild(l,d,photoId,cb){ppLoadImg("sdm-logo.png",function(logo){ppPhoto(l,photoId,function(photo){var go=function(sigImg){
+function ppBuild(l,d,photoId,cb){ppLoadImg("sdm-logo.png",function(logo){ppMap(d.ad,function(photo){var go=function(sigImg){
   var cs=[ppCover(d,logo,photo),ppPage2(logo),ppPage3(d,logo,l.sig,sigImg)],js=cs.map(function(c){var u=c.toDataURL("image/jpeg",.9),b=atob(u.slice(u.indexOf(",")+1)),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return{bytes:a,w:c.width,h:c.height}});cb(pdfFromJpegs(js))};
   if(l.sig&&l.sig.i)ppLoadImg(l.sig.i,go);else go(null)})})}
 window.proposalPdf=function(l,cb){ppBuild(l,ppForm(l),"auto",cb)};
@@ -1289,19 +1289,29 @@ function proposalBox(l){if(SY.role=="view")return"";var i=S.indexOf(l.s);if(i!=3
  return '<div class="card ppb" data-s="i"><h3 style="margin:0 0 4px">Proposal for the customer</h3><div class="sub" style="margin-bottom:10px">'+esc([d.n,d.c].filter(Boolean).join(" · ")||"Fill in the customer")+(d.ad?'<br>'+esc(d.ad.replace(/\n/g,", ")):'')+'</div><button class="big keep" id="pp_o" style="width:100%">Create &amp; send proposal</button></div>'}
 function proposalOpen(l){var old=document.getElementById("ppm");if(old)old.remove();var d=ppForm(l),imgs=(l.a||[]).filter(function(a){return(a.type||"").indexOf("image")==0}),m=document.createElement("div");m.id="ppm";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99998;display:flex;align-items:flex-end;justify-content:center";
  var f=function(id,lb,v,t){return '<label class="fld"><span>'+lb+'</span><input id="'+id+'" type="'+(t||"text")+'" value="'+esc(v)+'"></label>'};
- m.innerHTML='<div class="sgc"><h2 style="margin:0 0 4px">Proposal for the customer</h2><div class="sub" style="margin-bottom:8px">Check the details, then create the PDF. It goes on the cover page.</div>'+f("pp_n","Customer name",d.n)+f("pp_c","Company",d.c)+'<label class="fld"><span>Address</span><textarea id="pp_ad" rows="2">'+esc(d.ad)+'</textarea></label>'+f("pp_p","Phone",d.p,"tel")+f("pp_e","Email",d.e,"email")+f("pp_t","Project title",d.t)+f("pp_d","Date issued",d.d,"date")
- +'<label class="fld"><span>Photo on cover</span><select id="pp_ph"><option value="auto">Automatic (lead photo)</option><option value="none">No photo</option>'+imgs.map(function(a,i){return '<option value="'+a.id+'">'+esc(a.name||("Picture "+(i+1)))+'</option>'}).join("")+'</select></label>'
+ m.innerHTML='<div class="sgc"><h2 style="margin:0 0 4px">Proposal for the customer</h2><div class="sub" style="margin-bottom:8px">Check the customer info, then create the PDF.</div>'+f("pp_n","Customer name",d.n)+f("pp_c","Company",d.c)+'<label class="fld"><span>Address</span><textarea id="pp_ad" rows="2">'+esc(d.ad)+'</textarea></label>'+f("pp_p","Phone",d.p,"tel")+f("pp_e","Email",d.e,"email")+f("pp_t","Project title",d.t)+f("pp_d","Date issued",d.d,"date")
+ +'<div class="sub" style="margin-top:6px">The cover picture is the satellite view of this address, found automatically.</div><button class="ghost keep" id="pp_g" style="margin-top:8px;width:100%">Check the address in Google Maps</button>'
  +'<div class="row" style="margin-top:10px"><button class="ghost keep" id="pp_cp">Copy details</button><button class="ghost keep" id="pp_x">Close</button></div><button class="big keep" id="pp_s" style="margin-top:8px">Create PDF &amp; send…</button><button class="ghost keep" id="pp_v" style="margin-top:8px;width:100%">Preview only</button><button class="ghost keep" id="pp_f" style="margin-top:8px;width:100%">Save to Files</button><div class="smsg ok" id="pp_m"></div></div>';
  document.body.appendChild(m);var g=function(i){return document.getElementById(i)},msg=function(t,bad){g("pp_m").className="smsg "+(bad?"bad":"ok");g("pp_m").textContent=t};
  var read=function(){var o={n:g("pp_n").value.trim(),c:g("pp_c").value.trim(),ad:g("pp_ad").value.trim(),p:g("pp_p").value.trim(),e:g("pp_e").value.trim(),t:g("pp_t").value.trim()||"Lighting/Sensor Upgrade",d:g("pp_d").value||today()};l.pp=o;save();return o};
- g("pp_x").onclick=function(){m.remove()};
+ g("pp_x").onclick=function(){m.remove()};g("pp_g").onclick=function(){var a=g("pp_ad").value.replace(/\n/g,", ").trim();if(a)window.open(mapUrl(a),"_blank")};
  g("pp_cp").onclick=function(){var o=read(),tx=[o.n,o.c,o.ad,o.p,o.e].filter(Boolean).join("\n");if(navigator.clipboard)navigator.clipboard.writeText(tx).then(function(){msg("Copied.")});else prompt("Copy:",tx)};
- var make=function(cb){var o=read();msg("Creating…");setTimeout(function(){ppBuild(l,o,g("pp_ph").value,function(by){cb(by,o)})},30)};
+ var make=function(cb){var o=read();msg("Finding the picture of the address…");setTimeout(function(){ppBuild(l,o,"auto",function(by){cb(by,o)})},30)};
  g("pp_v").onclick=function(){make(function(by,o){var u=URL.createObjectURL(new Blob([by],{type:"application/pdf"}));m.remove();pdfView(u,ppName(l,o))})};
  g("pp_f").onclick=function(){make(function(by,o){attachPdf(l,by,ppName(l,o),function(){logAdd(l,"Proposal PDF created");save();msg("Saved in the Files tab ✓")})})};
  g("pp_s").onclick=function(){make(function(by,o){var nm=ppName(l,o);attachPdf(l,by,nm,function(){logAdd(l,"Proposal PDF created");save();var fl=new File([by],nm,{type:"application/pdf"}),sub="Project Proposal - "+(o.ad||o.c||"").replace(/\n/g,", "),body="Hi"+(o.n?" "+o.n.split(" ")[0]:"")+", attached is your project proposal. Please review and let me know if you have any questions.";
    if(navigator.canShare&&navigator.canShare({files:[fl]})){navigator.share({files:[fl],title:sub,text:body}).then(function(){m.remove();dtab="f";detail(l)}).catch(function(){msg("Saved in Files. Sharing was cancelled.")})}
    else{var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([by],{type:"application/pdf"}));a.download=nm;document.body.appendChild(a);a.click();a.remove();msg("PDF downloaded and saved in Files. Attach it to your email.");if(o.e)setTimeout(function(){location.href="mailto:"+encodeURIComponent(o.e)+"?subject="+encodeURIComponent(sub)+"&body="+encodeURIComponent(body)},600)}})})}}
+
+/* ===== v76: cover picture comes from the address (satellite map) ===== */
+var PPMC={};
+function ppGeo(q,cb){var tryPhoton=function(){fetch("https://photon.komoot.io/api/?limit=1&q="+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(j){var f=j.features&&j.features[0];cb(f?{lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]}:null)}).catch(function(){cb(null)})};
+ fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us&q="+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(j){if(j&&j[0])cb({lat:+j[0].lat,lon:+j[0].lon});else tryPhoton()}).catch(tryPhoton)}
+function ppMap(addr,cb){addr=(addr||"").replace(/\n/g,", ").trim();if(!addr)return cb(null);if(PPMC[addr])return cb(PPMC[addr]);
+ ppGeo(addr,function(g){if(!g)return cb(null);var z=19,n=Math.pow(2,z),W=1092,H=768,la=g.lat*Math.PI/180,tx=(g.lon+180)/360*n,ty=(1-Math.log(Math.tan(la)+1/Math.cos(la))/Math.PI)/2*n,c=document.createElement("canvas");c.width=W;c.height=H;var x=c.getContext("2d");x.fillStyle="#cfd8c8";x.fillRect(0,0,W,H);
+  var x0=Math.floor(tx-W/2/256),x1=Math.floor(tx+W/2/256),y0=Math.floor(ty-H/2/256),y1=Math.floor(ty+H/2/256),left=0,ok=0,tot=0;
+  for(var xx=x0;xx<=x1;xx++)for(var yy=y0;yy<=y1;yy++)(function(xx,yy){tot++;left++;var im=new Image();im.crossOrigin="anonymous";im.onload=function(){x.drawImage(im,Math.round((xx-tx)*256+W/2),Math.round((yy-ty)*256+H/2),256,256);ok++;fin()};im.onerror=function(){fin()};im.src="https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"+z+"/"+yy+"/"+xx})(xx,yy);
+  function fin(){if(--left)return;if(!ok)return cb(null);var out=new Image();try{out.onload=function(){PPMC[addr]=out;cb(out)};out.onerror=function(){cb(null)};out.src=c.toDataURL("image/jpeg",.9)}catch(e){cb(null)}}})}
 </script>
 </body>
 </html>
