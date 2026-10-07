@@ -258,7 +258,7 @@ input,textarea,select{font-size:16px!important}
 .sech.up{margin-top:18px}
 .pill.pb{border:0;cursor:pointer;font:inherit;font-size:.78em;font-weight:700;padding:5px 11px;border-radius:99px}
 .spo{display:block;width:100%;text-align:left;margin-bottom:6px;min-height:44px;font-weight:600}.spo.on{background:var(--tint,#e8f5ee)!important;color:#14532d}
-.fu2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fu2 .fld{min-width:0}.fu2 .cpy{display:none}</style>
+.fu2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fu2 .fld{min-width:0}.fu2 .cpy{display:none}.nlb{margin-top:8px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 12px;font-size:14px;width:100%}.nlb.on{background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:700}</style>
 </head>
 <body>
 <div id="lg"><div class="lgc"><div class="lgl">Sales</div><p class="sub">Loading…</p></div></div>
@@ -736,7 +736,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="60";
+var APPV="61";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
@@ -994,7 +994,7 @@ function syncStart(u){SY.authed=true;SY.denied=false;SY.why2="";
   if(SY.ad.getInvites)SY.ad.getInvites(u.email).then(function(a){tryJoin((pw?[pw]:[]).concat(a||[]))}).catch(function(){tryJoin(pw?[pw]:[])});else tryJoin(pw?[pw]:[])}
  function own(m,wipe){if(SY.user!==u)return;if(wipe)dropTeam();go(u.uid,"owner");gate();var t=document.createElement("div");t.style.cssText="position:fixed;left:12px;right:12px;bottom:84px;z-index:99999;background:#14532d;color:#fff;border-radius:14px;padding:14px;font-size:15px;text-align:center";t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},7000)}
  function go(ws,role){
-  if(SY.user!==u)return;SY.ws=ws;SY.role=role;
+  if(SY.user!==u)return;SY.ws=ws;SY.role=role;SY.nl=role!="owner"&&!!(SY.nlw&&SY.nlw[ws]);if(role!="owner"&&SY.ad.watchMe){if(SY.wm){try{SY.wm()}catch(e){}}SY.wm=SY.ad.watchMe(ws,u.email,function(n){if(n!==SY.nl){SY.nl=n;render()}})}
   try{var lw=localStorage.getItem("sdm-lw"),wj=localStorage.getItem("sdm-wsj")||"";if((lw&&lw!=ws)||(!lw&&ws==u.uid&&wj&&wj.split("|")[0]!=u.uid)){leads=[];Object.keys(DEAD).forEach(function(k){delete DEAD[k]});localStorage.setItem("sdm-dead","{}");localSave()}localStorage.setItem("sdm-lw",ws)}catch(e){}
   SY.unsub=SY.ad.listen(ws,function(docs){if(role!="owner"&&SY.denied)return;
    var wasFirst=SY.first;
@@ -1031,9 +1031,10 @@ function realAdapter(){
  return{onAuth:function(cb){au.onAuthStateChanged(function(u){cb(u?{uid:u.uid,email:u.email}:null)})},
   signIn:function(e,p){return au.signInWithEmailAndPassword(e,p)},signUp:function(e,p){return au.createUserWithEmailAndPassword(e,p)},signOut:function(){return au.signOut()},
   listen:function(uid,cb,eb){return col(uid).onSnapshot(function(s){cb(s.docChanges().map(function(c){return c.doc.data()}))},eb)},
-  getRole:function(ws,em){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).get().then(function(x){return x.exists?x.data().role:null})},
-  listMembers:function(ws,cb,eb){return fs.collection("users").doc(ws).collection("members").onSnapshot(function(s){cb(s.docs.map(function(d){return{email:d.id,role:d.data().role}}))},eb)},
-  setMember:function(ws,em,role){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).set({role:role}).then(function(){return fs.collection("invites").doc(em.toLowerCase()).collection("owners").doc(ws).set({t:Date.now()}).catch(function(){})})},
+  getRole:function(ws,em){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).get().then(function(x){if(x.exists){SY.nlw=SY.nlw||{};SY.nlw[ws]=!!x.data().nl}return x.exists?x.data().role:null})},
+  watchMe:function(ws,em,cb){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).onSnapshot(function(x){if(x.exists)cb(!!x.data().nl)},function(){})},
+  listMembers:function(ws,cb,eb){return fs.collection("users").doc(ws).collection("members").onSnapshot(function(s){cb(s.docs.map(function(d){return{email:d.id,role:d.data().role,nl:!!d.data().nl}}))},eb)},
+  setMember:function(ws,em,role,nl){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).set({role:role,nl:!!nl}).then(function(){return fs.collection("invites").doc(em.toLowerCase()).collection("owners").doc(ws).set({t:Date.now()}).catch(function(){})})},
   getInvites:function(em){return fs.collection("invites").doc(em.toLowerCase()).collection("owners").get().then(function(s){return s.docs.map(function(d){return d.id})})},
   delMember:function(ws,em){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).delete().then(function(){return fs.collection("invites").doc(em.toLowerCase()).collection("owners").doc(ws).delete().catch(function(){})})},
   put:function(uid,id,d){return col(uid).doc(id).set(d)},
@@ -1056,8 +1057,8 @@ function syncOpen(keep){
   h='<div class="card"><h2>Sync is on</h2><p class="sub">Signed in as '+esc(SY.user.email)+'.<br>'+(SY.err?'Problem: '+esc(SY.err)+'.':SY.ready?(own?'Your leads, notes, light counts and files are the same on every device you sign in on.':'You are on a team ('+(SY.role=="view"?'view only':'can edit')+').'):'Syncing…')+'</p>';
   if(own){var ms=SY.members||[];
    h+='<div class="tmh"><h3>Team</h3><span class="tmc">'+ms.length+(ms.length==1?' member':' members')+'</span></div><p class="sub" style="margin:0 0 10px">People you add can open your leads from their own phone. <b>View</b> = only look. <b>Edit</b> = can change leads.</p>'
-   +(ms.length?ms.map(function(x,k){return '<div class="tmr"><div class="tav">'+esc((x.email||"?")[0].toUpperCase())+'</div><div class="tmi"><b>'+esc(x.email)+'</b><div class="seg2"><button data-mr="'+k+'" data-r="view" class="'+(x.role=="view"?'on':'')+'">View</button><button data-mr="'+k+'" data-r="edit" class="'+(x.role=="edit"?'on':'')+'">Edit</button></div></div><button class="tmx" data-md="'+k+'" title="Remove">Remove</button></div>'}).join(''):'<div class="tme0">No one yet. Add someone below.</div>')
-   +'<div class="tma"><b>Add a person</b><input id="tme" type="email" placeholder="their@email.com" autocapitalize="none"><div class="seg2 wide" id="tmrs"><button data-nr="view" class="on">View only</button><button data-nr="edit">Can edit</button></div><button class="big" id="tma">+ Add to team</button><div class="smsg" id="tmm"></div></div>'
+   +(ms.length?ms.map(function(x,k){return '<div class="tmr"><div class="tav">'+esc((x.email||"?")[0].toUpperCase())+'</div><div class="tmi"><b>'+esc(x.email)+'</b><div class="seg2"><button data-mr="'+k+'" data-r="view" class="'+(x.role=="view"?'on':'')+'">View</button><button data-mr="'+k+'" data-r="edit" class="'+(x.role=="edit"?'on':'')+'">Edit</button></div><button class="nlb keep'+(x.nl?' on':'')+'" data-mn="'+k+'">'+(x.nl?'\u2713 ':'')+'Only sees New leads</button></div><button class="tmx" data-md="'+k+'" title="Remove">Remove</button></div>'}).join(''):'<div class="tme0">No one yet. Add someone below.</div>')
+   +'<div class="tma"><b>Add a person</b><input id="tme" type="email" placeholder="their@email.com" autocapitalize="none"><div class="seg2 wide" id="tmrs"><button data-nr="view" class="on">View only</button><button data-nr="edit">Can edit</button></div><button class="nlb keep" id="tmnl">Only sees New leads</button><button class="big" id="tma">+ Add to team</button><div class="smsg" id="tmm"></div></div>'
    +'<button class="tmshare" id="tms">\u2197 Send invite link</button>'}
   else h+='<button class="ghost" id="tml">Leave team (go back to my own leads)</button>';
   h+='<button class="ghost" id="smo">Sign out</button><button id="smx">Close</button></div>'}
@@ -1071,11 +1072,12 @@ function syncOpen(keep){
  if($("smc"))$("smc").onclick=function(){go(SY.ad.signUp)};
  if($("smo"))$("smo").onclick=function(){SY.ad.signOut().then(function(){m.remove()})};
  if($("smx"))$("smx").onclick=function(){m.remove()};
- var nr="view";m.querySelectorAll("[data-nr]").forEach(function(el){el.onclick=function(){nr=el.dataset.nr;m.querySelectorAll("[data-nr]").forEach(function(o){o.classList.toggle("on",o===el)})}});
+ var nr="view",nn=0;if($("tmnl"))$("tmnl").onclick=function(){nn=nn?0:1;this.classList.toggle("on",!!nn);this.textContent=(nn?"\u2713 ":"")+"Only sees New leads"};m.querySelectorAll("[data-nr]").forEach(function(el){el.onclick=function(){nr=el.dataset.nr;m.querySelectorAll("[data-nr]").forEach(function(o){o.classList.toggle("on",o===el)})}});
  if($("tma"))$("tma").onclick=function(){var e=$("tme").value.trim().toLowerCase(),tm=$("tmm");tm.className="smsg bad";if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){tm.textContent="That email doesn't look right. Check it.";return}
   if(e==(SY.user.email||"").toLowerCase()){tm.textContent="That's your own email.";return}
-  SY.ad.setMember(SY.ws,e,nr).then(function(){$("tme").value="";tm.className="smsg ok";tm.textContent="Added \u2713 They just open the app and sign in with that email. (Send the link if they don't have the app.)"}).catch(function(x){tm.textContent="Could not add: "+((x&&x.code)||"error")})};
- m.querySelectorAll("[data-mr]").forEach(function(el){el.onclick=function(){var x=SY.members[+el.dataset.mr];if(x.role==el.dataset.r)return;SY.ad.setMember(SY.ws,x.email,el.dataset.r)}});
+  SY.ad.setMember(SY.ws,e,nr,nn).then(function(){$("tme").value="";tm.className="smsg ok";tm.textContent="Added \u2713 They just open the app and sign in with that email. (Send the link if they don't have the app.)"}).catch(function(x){tm.textContent="Could not add: "+((x&&x.code)||"error")})};
+ m.querySelectorAll("[data-mr]").forEach(function(el){el.onclick=function(){var x=SY.members[+el.dataset.mr];if(x.role==el.dataset.r)return;SY.ad.setMember(SY.ws,x.email,el.dataset.r,x.nl)}});
+ m.querySelectorAll("[data-mn]").forEach(function(el){el.onclick=function(){var x=SY.members[+el.dataset.mn];SY.ad.setMember(SY.ws,x.email,x.role,!x.nl)}});
  m.querySelectorAll("[data-md]").forEach(function(el){el.onclick=function(){var x=SY.members[+el.dataset.md];if(!el.classList.contains("sure")){el.classList.add("sure");el.textContent="Tap again to remove";setTimeout(function(){if(el.isConnected){el.classList.remove("sure");el.textContent="Remove"}},4000);return}
    el.textContent="Removing\u2026";SY.ad.delMember(SY.ws,x.email).then(function(){el.closest(".tmr")&&el.closest(".tmr").remove()}).catch(function(){el.textContent="Failed, try again";el.classList.remove("sure")})}});
  if($("tms"))$("tms").onclick=function(){var t="Open this link, tap Install, then Create account with the email I added: "+inv;if(navigator.share)navigator.share({title:"Sales app",text:t}).catch(function(){});else if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){$("tmm").textContent="Link copied. Paste it in a text."});else prompt("Copy this:",t)};
@@ -1087,6 +1089,9 @@ var DIP=null;window.addEventListener("beforeinstallprompt",function(e){e.prevent
 window.addEventListener("load",syncInit);
 load();openDB(render);
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+
+(function(){var D=0,full=null,names=["render","drawContent","detail","remind","reportHTML","list","drawItems","pageContent","searchHTML","boardView","deskView","routeStops","settingsAll","bindContent"];
+names.forEach(function(n){var f=window[n];if(typeof f!="function")return;window[n]=function(){var on=window.SY&&SY.nl&&SY.role!="owner";if(!on)return f.apply(this,arguments);if(D++==0){full=leads;leads=full.filter(function(l){return l.s==S[0]})}try{return f.apply(this,arguments)}finally{if(--D==0){leads=full;full=null}}}})})();
 </script>
 </body>
 </html>
