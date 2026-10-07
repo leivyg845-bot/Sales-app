@@ -736,7 +736,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="63";
+var APPV="64";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
@@ -775,9 +775,10 @@ fix();mics();new MutationObserver(function(){fix();mics()}).observe(document.doc
 /* ===== Phone back button: go back a step instead of leaving the app ===== */
 var BG=!!(history.state&&history.state.g),BGI=0;
 function bgModal(){return document.querySelector("#am,#sm,#qnm,#rmd,#fum,#msgm,#spm")}
-function bgNon(){return !!(openId||STG!=null||NAV!="dash"||SETSUB||bgModal())}
+function ovOn(){var o=document.getElementById("ov");return !!(o&&o.className=="on")}
+function bgNon(){return !!(ovOn()||openId||STG!=null||NAV!="dash"||SETSUB||bgModal())}
 function bgSync(){if(bgNon()&&!BG){try{history.pushState({g:1},"")}catch(e){return}BG=true}else if(!bgNon()&&BG){BG=false;BGI=1;setTimeout(function(){BGI=0},700);try{history.back()}catch(e){BGI=0}}}
-window.addEventListener("popstate",function(){if(BGI){BGI=0;return}BG=false;if(!bgNon())return;var m=bgModal();if(m)m.remove();else if(openId){openId=null;dtab="i";ltEdit=false}else if(SETSUB)SETSUB=null;else if(STG!=null)STG=null;else NAV="dash";render();bgSync()});
+window.addEventListener("popstate",function(){if(BGI){BGI=0;return}BG=false;if(!bgNon())return;var m=bgModal();if(ovOn())$("oc").onclick();else if(m)m.remove();else if(openId&&dtab!="i"){dtab="i";ltEdit=false}else if(openId){openId=null;dtab="i";ltEdit=false}else if(SETSUB)SETSUB=null;else if(STG!=null)STG=null;else NAV="dash";render();bgSync()});
 setInterval(bgSync,250);
 document.addEventListener("click",function(){bgSync()},false);
 document.addEventListener("touchend",function(){setTimeout(bgSync,0)},{passive:true});
