@@ -770,7 +770,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="82";
+var APPV="83";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
@@ -809,7 +809,7 @@ function mics(){["dt","a_t","fu_n"].forEach(function(i){var e=document.getElemen
 fix();mics();new MutationObserver(function(){fix();mics()}).observe(document.documentElement,{childList:true,subtree:true})})();
 /* ===== Phone back button: go back a step instead of leaving the app ===== */
 var BG=!!(history.state&&history.state.g),BGI=0;
-function bgModal(){return document.querySelector("#am,#sm,#qnm,#rmd,#fum,#msgm,#spm")}
+function bgModal(){return document.querySelector("#am,#sm,#qnm,#rmd,#fum,#msgm,#spm,#ppm,#pcm,#sgm,#cam,#rtm")}
 function ovOn(){var o=document.getElementById("ov");return !!(o&&o.classList.contains("on"))}
 function bgNon(){return !!(ovOn()||openId||STG!=null||NAV!="dash"||SETSUB||bgModal())}
 function bgSync(){if(bgNon()&&!BG){try{history.pushState({g:1},"")}catch(e){return}BG=true}else if(!bgNon()&&BG){BG=false;BGI=1;setTimeout(function(){BGI=0},700);try{history.back()}catch(e){BGI=0}}}
@@ -860,7 +860,7 @@ function calIcs(l){var d=icsDate(l.d),t=ttl(l),desc=[l.p?"Phone: "+l.p:"",l.e?"E
  return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Sales//EN","BEGIN:VEVENT","UID:"+l.id+"-"+d+"@sales","DTSTAMP:"+st,"DTSTART:"+d+"T090000","DTEND:"+d+"T093000","SUMMARY:Follow up: "+t.replace(/[,;]/g," "),"DESCRIPTION:"+desc,l.ad?"LOCATION:"+l.ad.replace(/[,;]/g," "):"","BEGIN:VALARM","TRIGGER:-PT15M","ACTION:DISPLAY","DESCRIPTION:Follow up","END:VALARM","END:VEVENT","END:VCALENDAR"].filter(Boolean).join("\r\n")}
 function calGoogle(l){var d=icsDate(l.d),n=new Date(l.d+"T00:00:00");n.setDate(n.getDate()+1);var e=n.getFullYear()+String(n.getMonth()+1).padStart(2,"0")+String(n.getDate()).padStart(2,"0");return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent("Follow up: "+ttl(l))+"&dates="+d+"/"+e+"&details="+encodeURIComponent([l.p?"Phone: "+l.p:"",l.e?"Email: "+l.e:"",l.fn||""].filter(Boolean).join("\n"))+(l.ad?"&location="+encodeURIComponent(l.ad):"")}
 function calOpen(l){if(!l.d){toast("Set a follow-up date first");return}
- var m=document.createElement("div");m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:center;justify-content:center;padding:16px";
+ var m=document.createElement("div");m.id="cam";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:center;justify-content:center;padding:16px";
  m.innerHTML='<div class="card g" style="max-width:380px;width:100%"><h2 style="margin:0 0 4px">Add to calendar</h2><div class="sub">Follow up: '+esc(ttl(l))+' · '+esc(fd(l.d))+'</div><div class="row" style="margin-top:12px;flex-direction:column"><button id="cal_i" class="keep">Phone calendar (.ics)</button><button id="cal_g" class="ghost keep">Google Calendar</button><button id="cal_c" class="ghost keep">Cancel</button></div></div>';
  document.body.appendChild(m);$("cal_c").onclick=function(){m.remove()};m.onclick=function(e){if(e.target==m)m.remove()};
  $("cal_g").onclick=function(){window.open(calGoogle(l),"_blank");m.remove()};
@@ -870,7 +870,7 @@ function calOpen(l){if(!l.d){toast("Set a follow-up date first");return}
 function routeStops(){var t=today();return AL().filter(function(l){return l.d&&l.d<=t&&l.s!=S[7]&&fullAddr(l).trim()}).sort(function(a,b){return a.d<b.d?-1:1})}
 function routeBtn(){var n=routeStops().length;return '<div class="row" style="margin:0 0 10px"><button class="ghost keep" id="rt">🗺 Today\'s route ('+n+(n==1?' stop':' stops')+')</button></div>'}
 function routeGo(){var st=routeStops();if(!st.length){toast("No addresses due today");return}
- var m=document.createElement("div");m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:center;justify-content:center;padding:16px";
+ var m=document.createElement("div");m.id="rtm";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:center;justify-content:center;padding:16px";
  var cut=st.length>9?st.slice(0,9):st;
  m.innerHTML='<div class="card g" style="max-width:440px;width:100%;max-height:80dvh;overflow:auto"><h2 style="margin:0">Today\'s route</h2><div class="sub">'+cut.length+' stop'+(cut.length==1?"":"s")+(st.length>9?' (first 9 of '+st.length+')':'')+', starting from where you are.</div>'+cut.map(function(l,i){return '<div class="tmr"><div class="tav">'+(i+1)+'</div><div class="tmi"><b>'+esc(ttl(l))+'</b><span class="sub">'+esc(l.ad)+'</span></div></div>'}).join("")+'<div class="row"><button class="ghost" id="rt_c">Close</button><button id="rt_o">Open in Maps</button></div></div>';
  document.body.appendChild(m);$("rt_c").onclick=function(){m.remove()};m.onclick=function(e){if(e.target==m)m.remove()};
@@ -1390,6 +1390,14 @@ function vcShare(){var b=brGet(),nm=(b.me||b.co||"").trim();if(!nm){toast("Add y
   document.body.appendChild(m);
   m.onclick=function(e){var b=e.target.closest("[data-r]");if(!b&&e.target!==m)return;var x=b&&b.getAttribute("data-r");m.remove();if(!x)return;l.lc=today();logAdd(l,"Call: "+x);if(x!="Spoke with them"){l.d=plusDays(2);l.fdn="";logAdd(l,"Next follow-up set to "+fd(l.d))}save();toast(x=="Spoke with them"?"Logged. Set the next follow-up date.":"Logged. Follow-up set for "+fd(l.d));if(window.render)render();if(openId&&openId==l.id)detail(l)}}
  document.addEventListener("visibilitychange",function(){if(!document.hidden)setTimeout(check,400)});window.addEventListener("focus",function(){setTimeout(check,400)});setTimeout(check,1500)})();
+
+/* ===== v83: type a ZIP and City + State fill in instantly ===== */
+(function(){var ZC={},Z={a_zp:["a_ci","a_st"],dzp:["dci","dst"]};
+ function fill(ids,r){var ci=document.getElementById(ids[0]),st=document.getElementById(ids[1]),f=function(x,v){if(!x||!v)return;x.value=v;x.dispatchEvent(new Event(x.tagName=="SELECT"?"change":"input",{bubbles:true}));x.dispatchEvent(new Event("input",{bubbles:true}))};
+  if(ci&&!ci.value.trim())f(ci,r.city);if(st&&r.state&&STATES.indexOf(r.state)>=0&&!st.value)f(st,r.state)}
+ document.addEventListener("input",function(e){var el=e.target,ids=el&&Z[el.id];if(!ids||!e.isTrusted)return;var z=el.value.replace(/\D/g,"").slice(0,5);if(z.length!=5)return;
+  if(ZC[z]){fill(ids,ZC[z]);return}
+  fetch("https://api.zippopotam.us/us/"+z).then(function(r){return r.ok?r.json():null}).then(function(j){var p=j&&j.places&&j.places[0];if(!p)return;ZC[z]={city:p["place name"],state:p.state};fill(ids,ZC[z])}).catch(function(){})},true)})();
 </script>
 </body>
 </html>
