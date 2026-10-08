@@ -681,10 +681,18 @@ function logAdd(l,x){l.lg=l.lg||[];l.lg.unshift({t:Date.now(),x:x});if(l.lg.leng
 function fdt(t){var d=new Date(t);return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}
 function logHTML(l){var a=(l.lg||[]).slice(0,15);return a.length?a.map(function(e){return '<div class="lgr"><span>'+esc(fdt(e.t))+'</span> '+esc(e.x)+'</div>'}).join(""):'<p class="sub">No activity yet.</p>'}
 function extrasHTML(l){var ck=l.ck||{};
- return '<div class="card xc" data-s="i">'+
+ return '<div class="card xc" data-s="i">'+(SY.role=="view"?"":'<div class="sub" style="margin:0 0 6px"><b>Quick log</b></div><div class="row"><button class="ghost keep" data-cl="Spoke with them">Spoke</button><button class="ghost keep" data-cl="No answer">No answer</button><button class="ghost keep" data-cl="Left voicemail">Voicemail</button></div><div class="row" style="margin-top:8px;margin-bottom:12px"><button class="ghost keep" id="xrp">'+(l.rp?"\u2713 Replied "+fd(l.rp)+" \u00b7 undo":"Customer replied")+'</button><button class="ghost keep" id="xvn">\uD83C\uDFA4 Voice note</button></div>')+
  '<div class="row"><button class="ghost keep" id="xcp">Copy lead info</button><button class="ghost keep" id="xsh">Share lead</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xpdf">Lead PDF</button><button class="ghost keep" id="xqt">Proposal PDF</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xsig">'+(l.sig?"\u2713 Signed \u00b7 sign again":"Get customer signature")+'</button></div><div class="row" style="margin-top:8px"><button class="ghost keep" id="xmsg">Send message</button><label class="ghost keep" style="text-align:center;cursor:pointer;display:grid;place-items:center">Scan electric bill<input type="file" accept="image/*" capture="environment" id="xbill" style="display:none"></label></div><div class="row" style="margin-top:8px">'+(l.d?'<button class="ghost keep" id="xcal">Add to calendar</button>':'')+'</div>'+(l.ar?'<p class="sub">This lead is archived (hidden from the dashboard).</p>':'')+
  '<h3 style="margin:14px 0 4px">Activity</h3><div id="lgl">'+logHTML(l)+'</div></div>'}
 function bindExtras(l){
+ Array.prototype.forEach.call(document.querySelectorAll("[data-cl]"),function(b){b.onclick=function(){var x=b.getAttribute("data-cl");l.lc=today();logAdd(l,"Call: "+x);if(x!="Spoke with them"){l.d=plusDays(2);l.fdn="";logAdd(l,"Next follow-up set to "+fd(l.d))}save();toast(x=="Spoke with them"?"Logged. Set the next follow-up date.":"Logged. Follow-up set for "+fd(l.d));detail(l)}});
+ if($("xrp"))$("xrp").onclick=function(){if(l.rp){l.rp="";logAdd(l,"Reply undone")}else{l.rp=today();l.lc=today();if(!l.d||l.d<plusDays(3))l.d=plusDays(3);l.fdn="";logAdd(l,"Customer replied. Follow-up moved to "+fd(l.d))}save();detail(l)};
+ if($("xvn"))$("xvn").onclick=function(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition,b=this;if(!SR){toast("Voice isn't supported in this browser");return}if(window.__rec){try{window.__rec.stop()}catch(e){}return}
+  var r=new SR();window.__rec=r;r.lang="en-US";r.interimResults=false;r.continuous=true;var txt="";b.textContent="\uD83D\uDD34 Listening\u2026 tap to stop";
+  r.onresult=function(e){for(var i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal)txt+=e.results[i][0].transcript+" "};
+  r.onerror=function(e){toast(e.error=="not-allowed"?"Allow the microphone first":"Couldn't hear. Try again")};
+  r.onend=function(){window.__rec=null;txt=txt.trim();if(txt){l.t=(l.t?l.t+"\n\n":"")+fd(today())+": "+txt;logAdd(l,"Voice note added");save();toast("Note saved");detail(l)}else{b.textContent="\uD83C\uDFA4 Voice note"}};
+  try{r.start()}catch(e){window.__rec=null}};
  Array.prototype.forEach.call(document.querySelectorAll("[data-ck]"),function(c){c.onchange=function(){l.ck=l.ck||{};var i=+c.getAttribute("data-ck");l.ck[i]=c.checked;logAdd(l,(c.checked?"Done: ":"Unchecked: ")+CKL[i]);save();var g=$("lgl");if(g)g.innerHTML=logHTML(l)}});
  if($("fdn"))$("fdn").onclick=function(){fuDone(l,function(){detail(l)})};
  if($("xpdf"))$("xpdf").onclick=function(){leadPrint(l)};
@@ -710,6 +718,9 @@ function reportHTML(){
 function dl(name,type,txt){var b=new Blob([txt],{type:type}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(u)},500)}
 function stampName(){return new Date().toISOString().slice(0,10)}
 function doBackup(){dl("sales-backup-"+stampName()+".json","application/json",JSON.stringify({v:1,at:Date.now(),leads:leads,workers:workers,lt:LT}));lss("sdm-bk",String(Date.now()))}
+function doXLS(){var H=["Company","Contact","Title","Mobile","Landline","Email","Address","State","Stage","Temperature","Source","Lights","Project value","Install date","Last contact","Next follow-up","Salesperson","Archived","Notes"],e=function(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")};
+ var rows=leads.map(function(l){return [l.c,l.n,l.ti,l.p,l.p2,l.e,fullAddr(l),l.st,l.s,l.tg,l.ls,tot(l)||l.el,l.pv,l.ins,l.lc,l.d,l.sp,l.ar?"Yes":"",l.t]});
+ dl("sales-leads-"+stampName()+".xls","application/vnd.ms-excel",'<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body><table border="1"><tr>'+H.map(function(h){return '<th style="background:#14532d;color:#fff">'+h+'</th>'}).join("")+'</tr>'+rows.map(function(r){return '<tr>'+r.map(function(c){return '<td style="mso-number-format:\'\\@\'">'+e(c)+'</td>'}).join("")+'</tr>'}).join("")+'</table></body></html>')}
 function doCSV(){var H=["Company","Contact","Title","Mobile","Landline","Email","Address","State","Stage","Temperature","Source","Lights","Project value","Install date","Last contact","Next follow-up","Salesperson","Archived","Notes"],
  q=function(v){v=String(v==null?"":v);return '"'+v.replace(/"/g,'""')+'"'};
  var rows=[H].concat(leads.map(function(l){return [l.c,l.n,l.ti,l.p,l.p2,l.e,fullAddr(l),l.st,l.s,l.tg,l.ls,tot(l)||l.el,l.pv,l.ins,l.lc,l.d,l.sp,l.ar?"Yes":"",l.t]}));
@@ -738,7 +749,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="79";
+var APPV="80";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
@@ -749,7 +760,7 @@ function bindExtra2(c){
  if($("st_ds"))$("st_ds").onchange=function(){lss("sdm-ds",this.value)};
  if($("st_sp"))$("st_sp").onchange=function(){lss("sdm-sp",this.value.trim())};
  b("st_bk",function(){doBackup();$("st_m").textContent="Backup downloaded."});
- b("st_xl",function(){doCSV();$("st_m").textContent="Downloaded. Open the file with Excel."});
+ b("st_xl",function(){doXLS();$("st_m").textContent="Downloaded. Open the file with Excel."});
  if($("st_rs"))$("st_rs").onchange=function(){if(this.files[0])doRestore(this.files[0],$("st_m"))};
  b("st_in",function(){if(window.DIP){DIP.prompt()}else if(/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform=="MacIntel"&&navigator.maxTouchPoints>1)){alert("In Safari: tap the Share button, then Add to Home Screen.")}else alert("In your browser menu (⋮), tap Install app or Add to Home screen.")});
  b("st_rf",function(){try{navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})}).then(function(){return window.caches?caches.keys().then(function(k){return Promise.all(k.map(function(x){return caches.delete(x)}))}):0}).then(function(){location.reload()})}catch(e){location.reload()}});
