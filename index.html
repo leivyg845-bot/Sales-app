@@ -361,8 +361,7 @@ function detail(l){
  '<div class="card dm" data-s="i">'+(l.d&&SY.role!="view"?'<button class="big keep" id="fdn" style="width:100%;margin:0 0 10px;background:#0d9488">\u2713 Follow-up done</button>':'')+'<div class="row" id="ql" style="margin-bottom:8px"></div><div class="dtop"><label class="fld"><span>Stage</span><select id="ds">'+opts(l.s)+'</select></label>'+'<div class="fu2">'+fld("","Last contact","dlc",l.lc,"date")+fld("","Next follow-up","dd",l.d,"date")+'</div>'+sel("Lead temperature","dtg",["Hot","Warm","Cold"],l.tg,"None")+'</div>'+proposalBox(l)+
  dsec("c","Contact",fld("","Name","dn",l.n)+fld("","Company","dc",l.c)+fld("","Title","dti",l.ti)+fld("","Mobile (cell)","dp",l.p,"tel")+fld("","Landline","dp2",l.p2,"tel")+fld("","Email","de",l.e,"email"))+
  dsec("p","Property",fld("","Street address","da",l.ad)+fld("","City","dci",l.ci)+sel("State","dst",STATES,l.st,"Choose state")+fld("","ZIP","dzp",l.zp)+sel("Building type","dbt",BT,l.bt,"Choose type")+fld("","Building size (sq ft)","dsf",l.sf,"number"))+
- dsec("j","Project",sel("Proposal status","dps",PS,l.ps,"Choose")+fld("","Install date","dins",l.ins,"date"))+
- dsec("f","Follow-up & source",fld("","Salesperson","dsp",l.sp)+fld("","Lead source","dls",l.ls)+fld("","Follow-up notes","dfn",l.fn))+'</div>'+
+ '</div>'+
  extrasHTML(l)+(nextI(l.s)!=S.indexOf(l.s)?'<button class="big" id="mv" data-s="i">Move to: '+esc(SN(S[nextI(l.s)]))+'</button>':'')+
   '<div class="card" data-s="n"><div class="row" style="margin-bottom:8px"><button type="button" class="ghost keep" id="cpn">Copy notes</button><button type="button" class="ghost keep" id="shn">Share</button></div><textarea id="dt" rows="10" placeholder="Notes about the job...">'+esc(l.t)+'</textarea></div>'+
  lightsHTML(l)+
@@ -513,7 +512,7 @@ function lcard(l,mode){
  return h}
 function filtersHTML(lite){
  function so(id,lb,arr,v){return '<select data-fl="'+id+'"><option value="">'+lb+'</option>'+arr.map(function(x){var o=Array.isArray(x)?x:[x,x];return '<option value="'+esc(o[0])+'"'+(o[0]==v?' selected':'')+'>'+esc(o[1])+'</option>'}).join("")+'</select>'}
- return '<div class="fb">'+so("sp","Salesperson",reps(),F.sp)+(lite?"":so("s","Status",S.map(function(s,i){return[s,COLT[i]]}),F.s))+(lite?"":so("fu","Follow-up date",[["over","Overdue"],["today","Today"],["week","Next 7 days"],["none","No date set"]],F.fu)+so("tg","Hot / Warm / Cold",["Hot","Warm","Cold"],F.tg))
+ F.sp="";F.s="";F.fu="";F.uc="";F.tg="";F.sort="fu";return "";return '<div class="fb">'+so("sp","Salesperson",reps(),F.sp)+(lite?"":so("s","Status",S.map(function(s,i){return[s,COLT[i]]}),F.s))+(lite?"":so("fu","Follow-up date",[["over","Overdue"],["today","Today"],["week","Next 7 days"],["none","No date set"]],F.fu)+so("tg","Hot / Warm / Cold",["Hot","Warm","Cold"],F.tg))
   +'<select data-fl="sort">'+[["fu","Sort: Next follow-up"],["name","Sort: Name"],["val","Sort: Project value"],["recent","Sort: Recently updated"],["status","Sort: Status"]].map(function(o){return '<option value="'+o[0]+'"'+(F.sort==o[0]?' selected':'')+'>'+o[1]+'</option>'}).join("")+'</select>'
   +(F.sp||(!lite&&(F.s||F.fu||F.uc||F.tg))?'<button class="ghost" id="fclr">Clear</button>':'')+'</div>'}
 function statsHTML(){
@@ -770,7 +769,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="83";
+var APPV="84";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
