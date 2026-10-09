@@ -768,11 +768,11 @@ var SETSUB=null,SG=[["app","🎨","Appearance","Light, dark or auto",["Appearanc
 function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split('<div class="sh">'),head=parts.shift().replace(/^<div class="sp">/,""),map={};
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
- return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="84";
+ return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.filter(function(g){return g[0]!="tm"||(SY.user&&SY.role=="owner")}).map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
+var APPV="85";
 function bindExtra2(c){
- Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0)}});
- if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent()};
+ Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0);restoreScroll()}});
+ if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent();restoreScroll()};
  var b=function(id,fn){var e=$(id);if(e)e.onclick=fn},flip=function(id,k,invert){b(id,function(){var off=invert?lsg(k)!="1":lsg(k)=="0";lss(k,off?(invert?"1":"1"):"0");if(k=="sdm-arch")ARCH=lsg(k)=="1";drawContent()})};
  flip("st_rm","sdm-rm");flip("st_bd","sdm-bd");flip("st_bkr","sdm-bkr");
  bindStages();bindBrand();b("rt",routeGo);b("st_ar",function(){ARCH=!ARCH;lss("sdm-arch",ARCH?"1":"0");drawContent()});
@@ -1068,8 +1068,9 @@ function realAdapter(){
   listen:function(uid,cb,eb){return col(uid).onSnapshot(function(s){cb(s.docChanges().map(function(c){return c.doc.data()}))},eb)},
   getRole:function(ws,em){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).get().then(function(x){if(x.exists){SY.nlw=SY.nlw||{};SY.nlw[ws]=!!x.data().nl}return x.exists?x.data().role:null})},
   watchMe:function(ws,em,cb){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).onSnapshot(function(x){if(x.exists)cb(!!x.data().nl)},function(){})},
-  listMembers:function(ws,cb,eb){return fs.collection("users").doc(ws).collection("members").onSnapshot(function(s){cb(s.docs.map(function(d){return{email:d.id,role:d.data().role,nl:!!d.data().nl}}))},eb)},
+  listMembers:function(ws,cb,eb){return fs.collection("users").doc(ws).collection("members").onSnapshot(function(s){cb(s.docs.map(function(d){return{email:d.id,role:d.data().role,nl:!!d.data().nl,seen:d.data().seen||0}}))},eb)},
   setMember:function(ws,em,role,nl){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).set({role:role,nl:!!nl}).then(function(){return fs.collection("invites").doc(em.toLowerCase()).collection("owners").doc(ws).set({t:Date.now()}).catch(function(){})})},
+  setSeen:function(ws,em){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).set({seen:Date.now()},{merge:true})},
   getInvites:function(em){return fs.collection("invites").doc(em.toLowerCase()).collection("owners").get().then(function(s){return s.docs.map(function(d){return d.id})})},
   delMember:function(ws,em){return fs.collection("users").doc(ws).collection("members").doc(em.toLowerCase()).delete().then(function(){return fs.collection("invites").doc(em.toLowerCase()).collection("owners").doc(ws).delete().catch(function(){})})},
   put:function(uid,id,d){return col(uid).doc(id).set(d)},
@@ -1397,6 +1398,24 @@ function vcShare(){var b=brGet(),nm=(b.me||b.co||"").trim();if(!nm){toast("Add y
  document.addEventListener("input",function(e){var el=e.target,ids=el&&Z[el.id];if(!ids||!e.isTrusted)return;var z=el.value.replace(/\D/g,"").slice(0,5);if(z.length!=5)return;
   if(ZC[z]){fill(ids,ZC[z]);return}
   fetch("https://api.zippopotam.us/us/"+z).then(function(r){return r.ok?r.json():null}).then(function(j){var p=j&&j.places&&j.places[0];if(!p)return;ZC[z]={city:p["place name"],state:p.state};fill(ids,ZC[z])}).catch(function(){})},true)})();
+
+/* ===== v85: Team & access in Settings (who uses the app, last seen, remove) ===== */
+SG.unshift(["tm","👥","Team & access","Who uses the app, last seen, remove",["Team"]]);
+function seenTxt(t){if(!t)return "Not seen yet";var m=Math.round((Date.now()-t)/60000);if(m<15)return "Active now";if(m<60)return "Last seen "+m+" min ago";var h=Math.round(m/60);if(h<24)return "Last seen "+h+" h ago";var d=Math.round(h/24);return d==1?"Last seen yesterday":"Last seen "+d+" days ago"}
+function teamSec(){var h='<div class="sh">Team</div><div class="scard">';
+ if(!SY.user||SY.role!="owner")return h+'<div class="srow" style="display:block"><span>Sign in as the owner to see your team.</span></div></div>';
+ var ms=SY.members||[];
+ h+='<div class="tmr"><div class="tav">'+esc((SY.user.email||"?")[0].toUpperCase())+'</div><div class="tmi"><b>'+esc(SY.user.email)+'</b><div class="sub">You · Owner</div></div></div>';
+ h+=ms.length?ms.map(function(x,k){var on=x.seen&&Date.now()-x.seen<15*60000;return '<div class="tmr"><div class="tav">'+esc((x.email||"?")[0].toUpperCase())+'</div><div class="tmi"><b>'+esc(x.email)+'</b><div class="sub">'+(x.role=="view"?"View only":"Can edit")+(x.nl?" · New leads only":"")+'</div><div class="sub" style="color:'+(on?"#16a34a":"inherit")+'">'+(on?"● ":"")+seenTxt(x.seen)+'</div></div><button class="tmx keep" data-tdel="'+k+'">Remove</button></div>'}).join(""):'<div class="srow" style="display:block"><span class="sub">No one added yet.</span></div>';
+ return h+'<button class="srow lnk keep" id="tm_ad"><span>Add or change people</span><i>›</i></button></div>'}
+(function(){var _sa=settingsAll;settingsAll=function(){var h=_sa.apply(this,arguments);return h.replace(/<\/div>$/,teamSec()+"</div>")};
+ var _be=bindExtra2;bindExtra2=function(c){var r=_be.apply(this,arguments);var a=$("tm_ad");if(a)a.onclick=function(){syncOpen()};
+  Array.prototype.forEach.call(document.querySelectorAll("[data-tdel]"),function(b){b.onclick=function(){var x=(SY.members||[])[+b.getAttribute("data-tdel")];if(!x)return;if(!b.classList.contains("sure")){b.classList.add("sure");b.textContent="Tap again to remove";setTimeout(function(){if(b.isConnected){b.classList.remove("sure");b.textContent="Remove"}},4000);return}
+   b.textContent="Removing…";SY.ad.delMember(SY.ws,x.email).then(function(){toast("Removed "+x.email)}).catch(function(){b.textContent="Failed, try again";b.classList.remove("sure")})}});return r};
+ var _ls=window.syncOpen;
+ setInterval(function(){if(NAV=="set"&&SETSUB=="tm"&&!document.querySelector("[data-tdel].sure")){var k=(SY.members||[]).map(function(x){return x.email+x.role+x.seen+x.nl}).join("|")+Math.floor(Date.now()/60000);if(k!==window.__tk){window.__tk=k;drawContent()}}},2000);
+ function beat(){if(!SY.user||!SY.ad||!SY.ready||SY.role=="owner"||!SY.ws||!SY.ad.setSeen)return;if(Date.now()-(+lsg("sdm-seen")||0)<600000)return;lss("sdm-seen",String(Date.now()));try{SY.ad.setSeen(SY.ws,SY.user.email).catch(function(){})}catch(e){}}
+ document.addEventListener("visibilitychange",function(){if(!document.hidden)beat()});setInterval(beat,60000);setTimeout(beat,4000)})();
 </script>
 </body>
 </html>
