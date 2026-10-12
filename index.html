@@ -606,7 +606,7 @@ function openAdd(){
   var v=function(id){return ($("a_"+id).value||"").trim()},o={};
   ["c","n","ti","p","p2","e","ad","ci","st","zp","bt","sf","el","pv","ps","lx","lc","d","sp","fn","t"].forEach(function(k){o[k]=v(k)});o.s=$("a_s").value;
   if(!(o.c||o.n||o.ad||o.ci)){$("a_m").textContent="Type a company, name, building or address.";return}
-  if(!o.n)o.n=o.c||o.ad||o.ci;o.cr=Date.now();
+  if(!o.n)o.n=o.c||o.ad||o.ci;o.cr=Date.now();o.by=(SY.user&&SY.user.email)||"";
   var dp=dupFind(o);if(dp&&m.dataset.dup!=dp.id){m.dataset.dup=dp.id;$("a_m").textContent="Already in your leads: "+ttl(dp)+" ("+SN(dp.s)+"). Tap Save lead again to add it anyway.";return}
   var l=norm(o);leads.unshift(l);save();try{if(o.sp)localStorage.setItem("sdm-sp",o.sp)}catch(e){}
   var fs=Array.prototype.slice.call($("a_ph").files||[]),finish=function(){close();openId=l.id;dtab="i";render()},left=fs.length;
@@ -676,7 +676,7 @@ function lss(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function AL(){return leads.filter(function(l){return !l.ar})}
 var CKL=["Bills received","Site survey","Proposal sent","Proposal signed","Install scheduled","Install done"];
 function tagB(l){return l.tg?'<span class="tg tg-'+esc(l.tg.toLowerCase())+'">'+esc(l.tg)+'</span>':''}
-function logAdd(l,x){l.lg=l.lg||[];l.lg.unshift({t:Date.now(),x:x});if(l.lg.length>60)l.lg.length=60}
+function logAdd(l,x){l.lg=l.lg||[];l.lg.unshift({t:Date.now(),x:x,b:(window.SY&&SY.user&&SY.user.email)||""});if(l.lg.length>60)l.lg.length=60}
 function fdt(t){var d=new Date(t);return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}
 function logHTML(l){var a=(l.lg||[]).slice(0,15);return a.length?a.map(function(e){return '<div class="lgr"><span>'+esc(fdt(e.t))+'</span> '+esc(e.x)+'</div>'}).join(""):'<p class="sub">No activity yet.</p>'}
 function extrasHTML(l){var ck=l.ck||{};
@@ -769,7 +769,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.filter(function(g){return g[0]!="tm"||(SY.user&&SY.role=="owner")}).map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="85";
+var APPV="86";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0);restoreScroll()}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent();restoreScroll()};
@@ -1416,6 +1416,25 @@ function teamSec(){var h='<div class="sh">Team</div><div class="scard">';
  setInterval(function(){if(NAV=="set"&&SETSUB=="tm"&&!document.querySelector("[data-tdel].sure")){var k=(SY.members||[]).map(function(x){return x.email+x.role+x.seen+x.nl}).join("|")+Math.floor(Date.now()/60000);if(k!==window.__tk){window.__tk=k;drawContent()}}},2000);
  function beat(){if(!SY.user||!SY.ad||!SY.ready||SY.role=="owner"||!SY.ws||!SY.ad.setSeen)return;if(Date.now()-(+lsg("sdm-seen")||0)<600000)return;lss("sdm-seen",String(Date.now()));try{SY.ad.setSeen(SY.ws,SY.user.email).catch(function(){})}catch(e){}}
  document.addEventListener("visibilitychange",function(){if(!document.hidden)beat()});setInterval(beat,60000);setTimeout(beat,4000)})();
+
+/* ===== v86: team progress for the owner ===== */
+function teamStats(em){em=(em||"").toLowerCase();var wk=Date.now()-7*864e5,r={add:0,act:0,last:0,lastX:""};
+ leads.forEach(function(l){if((l.by||"").toLowerCase()==em)r.add++;(l.lg||[]).forEach(function(g){if((g.b||"").toLowerCase()!=em)return;if(g.t>wk)r.act++;if(g.t>r.last){r.last=g.t;r.lastX=g.x}})});return r}
+function teamSec(){var h='<div class="sh">Team</div>';
+ if(!SY.user||SY.role!="owner")return h+'<div class="scard"><div class="srow" style="display:block"><span>Sign in as the owner to see your team.</span></div></div>';
+ var ms=(SY.members||[]).map(function(x){var st=teamStats(x.email);return Object.assign({st:st,seenAll:Math.max(x.seen||0,st.last)},x)}).sort(function(a,b){return b.seenAll-a.seenAll}),
+ on=ms.filter(function(x){return x.seenAll&&Date.now()-x.seenAll<15*60000}).length,tot=ms.reduce(function(a,x){return a+x.st.act},0),mx=Math.max.apply(null,[1].concat(ms.map(function(x){return x.st.act}))),me=teamStats(SY.user.email);
+ var tile=function(n,l,c){return '<div style="flex:1;min-width:0;background:var(--card,#fff);border:1px solid var(--line,#e5e7eb);border-radius:14px;padding:12px 8px;text-align:center"><div style="font-size:24px;font-weight:800;color:'+(c||"inherit")+'">'+n+'</div><div class="sub" style="font-size:12px">'+l+'</div></div>'};
+ h+='<div style="display:flex;gap:8px;margin:0 0 12px">'+tile(ms.length,"People")+tile(on,"Active now",on?"#16a34a":"")+tile(tot,"Actions this week")+'</div>';
+ var card=function(email,sub,seen,st,k,share){var on=seen&&Date.now()-seen<15*60000,w=Math.round(100*st.act/mx);
+  return '<div class="card" style="margin:0 0 10px;padding:14px"><div style="display:flex;gap:12px;align-items:center"><div class="tav" style="position:relative">'+esc((email||"?")[0].toUpperCase())+(on?'<span style="position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#16a34a;border:2px solid #fff"></span>':'')+'</div><div style="min-width:0;flex:1"><b style="display:block;overflow:hidden;text-overflow:ellipsis">'+esc(email)+'</b><div class="sub">'+sub+'</div></div>'+(k!=null?'<button class="tmx keep" data-tdel="'+k+'">Remove</button>':'')+'</div>'
+  +'<div class="sub" style="margin:10px 0 6px;color:'+(on?"#16a34a":"inherit")+'">'+(on?"● ":"")+seenTxt(seen)+'</div>'
+  +'<div style="height:8px;border-radius:99px;background:rgba(127,127,127,.18);overflow:hidden"><div style="height:100%;width:'+w+'%;background:linear-gradient(90deg,#16a34a,#4ade80);border-radius:99px"></div></div>'
+  +'<div style="display:flex;justify-content:space-between;margin-top:8px"><span class="sub"><b>'+st.act+'</b> actions this week</span><span class="sub"><b>'+st.add+'</b> leads added</span></div>'
+  +(st.lastX?'<div class="sub" style="margin-top:6px;font-size:12px">Last: '+esc(st.lastX)+'</div>':'')+'</div>'};
+ h+=card(SY.user.email,"You · Owner",Date.now(),me,null);
+ h+=ms.length?ms.map(function(x){return card(x.email,(x.role=="view"?"View only":"Can edit")+(x.nl?" · New leads only":""),x.seenAll,x.st,(SY.members||[]).indexOf(SY.members.filter(function(y){return y.email==x.email})[0]))}).join(""):'<div class="card"><div class="sub">No one added yet.</div></div>';
+ return h+'<div class="scard"><button class="srow lnk keep" id="tm_ad"><span>Add or change people</span><i>›</i></button></div>'}
 </script>
 </body>
 </html>
