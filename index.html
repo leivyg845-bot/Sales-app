@@ -773,7 +773,7 @@ function settingsPage(){var h=settingsAll(),parts=h.replace(/<\/div>$/,"").split
  parts.forEach(function(x){var t=x.slice(0,x.indexOf("</div>"));map[t]='<div class="sh">'+x});
  if(SETSUB){var g=SG.filter(function(x){return x[0]==SETSUB})[0];if(g)return '<div class="sp"><button class="back keep" id="ssb">\u2190 Settings</button><h2 style="margin:6px 0 4px">'+g[2]+'</h2>'+g[4].map(function(t){return map[t]||""}).join("")+'</div>'}
  return '<div class="sp">'+head+'<div class="sh">Settings</div><div class="scard">'+SG.filter(function(g){return g[0]!="tm"||(SY.user&&SY.role=="owner")}).map(function(g){return '<button class="srow lnk keep smn" data-ss="'+g[0]+'"><span class="sic">'+g[1]+'</span><span class="stx"><b>'+g[2]+'</b><small>'+g[3]+'</small></span><i>›</i></button>'}).join("")+'</div></div>'}
-var APPV="92";
+var APPV="93";
 function bindExtra2(c){
  Array.prototype.forEach.call(document.querySelectorAll("[data-ss]"),function(e){e.onclick=function(){SETSUB=e.getAttribute("data-ss");drawContent();var cc=$("content");if(cc)cc.scrollTop=0;window.scrollTo(0,0);restoreScroll()}});
  if($("ssb"))$("ssb").onclick=function(){SETSUB=null;drawContent();restoreScroll()};
@@ -850,7 +850,7 @@ function jobText(l){var L=[],ph=[l.p,l.p2].filter(Boolean).join(" / "),li=tot(l)
  if(l.c)L.push("Company: "+l.c);if(l.n)L.push("Name: "+l.n+(l.ti?" ("+l.ti+")":""));if(ph)L.push("Phone: "+ph);if(l.e)L.push("Email: "+l.e);if(l.ad||l.ci)L.push("Address: "+fullAddr(l));if(bi)L.push("Building: "+bi);if(li)L.push("Lights: "+li);if(l.fn)L.push("Next: "+l.fn);return L.join("\n")}
 function leadText(l){var L=[ttl(l)];if(l.n&&l.n!=ttl(l))L.push("Contact: "+l.n+(l.ti?" ("+l.ti+")":""));if(l.p)L.push("Mobile: "+l.p);if(l.p2)L.push("Landline: "+l.p2);if(l.e)L.push("Email: "+l.e);if(l.ad||l.ci)L.push("Address: "+fullAddr(l));L.push("Stage: "+SN(l.s));if(l.d)L.push("Next follow-up: "+l.d);var li=tot(l)||l.el;if(li)L.push("Lights: "+li);if(l.pv)L.push("Project value: "+money(l.pv));if(l.t)L.push("Notes: "+l.t);return L.join("\n")}
 function shareText(t,title){if(navigator.share)navigator.share({title:title||"Sales",text:t}).catch(function(){});else copyText(t,"Copied (sharing not available here)")}
-document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".cpy");if(!b)return;e.preventDefault();e.stopPropagation();var i=document.getElementById(b.getAttribute("data-cp"));if(i&&i.value)copyText(i.value);else toast("Nothing to copy")},true);
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".cpy");if(!b)return;e.preventDefault();e.stopPropagation();var l=openId&&find(openId),i=document.getElementById(b.getAttribute("data-cp"));if(l&&b.closest(".dsec"))copyText(jobText(l),"Copied everything");else if(i&&i.value)copyText(i.value);else toast("Nothing to copy")},true);
 /* ===== More features: duplicates, auto last contact, calendar, PDF, route, voice, scan, stages ===== */
 /* -- duplicate warning -- */
 function nrm(x){return String(x||"").toLowerCase().replace(/[^a-z0-9]/g,"")}
